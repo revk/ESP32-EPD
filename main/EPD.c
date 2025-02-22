@@ -590,4 +590,6 @@ revk_web_extra (httpd_req_t * req, int page)
    add ("widgeth");
    add ("widgety");
    add ("widgetv");
+   add ("widgets");
+   add ("widgetc");
 }
