@@ -577,7 +577,17 @@ revk_web_extra (httpd_req_t * req, int page)
       }
       return;
    }
-   revk_web_setting_title (req, "Widget settings");
-
-
+   revk_web_setting_title (req, "Widget settings %d", page);
+   revk_web_setting_info (req, "This build is for a display %dx%d pixels", gfx_width (), gfx_height ());
+   void add (const char *tag)
+   {
+      char name[20];
+      sprintf (name, "%s%d", tag, page);
+      revk_web_setting (req, NULL, name);
+   }
+   add ("widgett");
+   add ("widgetx");
+   add ("widgeth");
+   add ("widgety");
+   add ("widgetv");
 }
