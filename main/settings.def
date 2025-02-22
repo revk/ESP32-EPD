@@ -45,5 +45,4 @@ enum	widget.h		.live .array=WIDGETS .enums="Left,Centre,Right"		// Horizontal al
 s32	widget.y		.live .array=WIDGETS			// Y position (from top, or -ve from bottom)
 enum	widget.v		.live .array=WIDGETS .enums="Bottom,Middle,Top"		// Vertical align
 u32	widget.s		.live .array=WIDGETS			// Widget size, pixels (depends on widget)
-s	widget.c		.live .array=WIDGETS			// Widget content/reference
-
+text	widget.c		.live .array=WIDGETS			// Widget content/reference

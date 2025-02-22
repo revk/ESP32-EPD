@@ -548,7 +548,7 @@ app_main ()
          gfx_refresh ();
       }
       gfx_clear (0);
-      for(int w=0;w<WIDGETS;w++)
+      for (int w = 0; w < WIDGETS; w++)
       {
 
       }
@@ -559,24 +559,24 @@ app_main ()
 }
 
 void
-	revk_web_extra (httpd_req_t * req, int page)
+revk_web_extra (httpd_req_t * req, int page)
 {
-	if(!page)
-	{
-   revk_web_setting_title (req, "Main image settings");
-   revk_web_setting_info (req,
-                          "Background image at URL should be 1 bit per pixel raw data for the image. See <a href='https://github.com/revk/ESP32-RevK/blob/master/Manuals/Seasonal.md'>season code</a>.");
-   revk_web_setting (req, "Startup", "startup");
-   revk_web_setting (req, "Image invert", "gfxinvert");
-   if (rgb.set && leds > 1)
+   if (!page)
    {
-      revk_web_setting_title (req, "LEDs");
-      revk_web_setting (req, "Light pattern", "lights");
-      revk_web_setting (req, "Light on", "lighton");
-      revk_web_setting (req, "Light off", "lightoff");
+      revk_web_setting_title (req, "Main image settings");
+      revk_web_setting_info (req,
+                             "Background image at URL should be 1 bit per pixel raw data for the image. See <a href='https://github.com/revk/ESP32-RevK/blob/master/Manuals/Seasonal.md'>season code</a>.");
+      revk_web_setting (req, "Startup", "startup");
+      revk_web_setting (req, "Image invert", "gfxinvert");
+      if (rgb.set && leds > 1)
+      {
+         revk_web_setting_title (req, "LEDs");
+         revk_web_setting (req, "Light pattern", "lights");
+         revk_web_setting (req, "Light on", "lighton");
+         revk_web_setting (req, "Light off", "lightoff");
+      }
+      return;
    }
-   return;
-	}
    revk_web_setting_title (req, "Widget settings");
 
 
