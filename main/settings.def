@@ -1,0 +1,49 @@
+#define	WIDGETS		CONFIG_REVK_WEB_EXTRA_PAGES
+
+gpio	rgb		2				// RGB GPIO
+gpio	gfx.ena						// E-paper ENA
+gpio	gfx.mosi	40				// E-paper MOSI
+gpio	gfx.sck		39				// E-paper SCK
+gpio	gfx.cs		38				// E-paper CS
+gpio	gfx.dc		37				// E-paper DC
+gpio	gfx.rst		36				// E-paper RST
+gpio	gfx.busy	35				// E-paper BUSY
+u8	gfx.repeat	3	.live			// E-paper fast update repeat
+bit	gfx.night	1	.live			// E-paper overnight refresh
+
+gpio	relay						// Relay output
+
+gpio    sd.dat2                         	// MicroSD DAT2
+gpio    sd.dat3         3	.old="sdss"     // MicroSD DAT3 / SS
+gpio    sd.cmd          4	.old="sdmosi"   // MicroSD CMD / MOSI
+gpio    sd.clk          5	.old="sdsck"    // MicroSD CLK
+gpio    sd.dat0         6	.old="sdmiso"   // MicroSD DAT0 / MISO
+gpio    sd.dat1                			// MicroSD DAT1
+gpio    sd.cd           -7                	// MicroSD CD
+
+u8	gfx.flip	6				// E-paper Flip
+bit	gfx.invert	1				// E-paper invert
+u8	startup		10	.unit="s"		// Start up message
+u8	leds		25				// Number of LEDs
+u32	refresh		86400	.live .unit="s"		// Full refresh time
+
+#ifdef	CONFIG_REVK_SOLAR
+s32	pos.lat			.live .decimal=7 .unit="°N"	// Latitude
+s32	pos.lon			.live .decimal=6 .unit="°E"	// Longitude
+#endif
+
+s	lights		RGB	.live			// LEDs pattern (colour letters)
+u16	light.on		.live	.digits=4 .place="HHMM"	// Lights on time (HHMM)
+u16	light.off		.live	.digits=4 .place="HHMM"	// Lights off time (HHMM)
+
+bit	fb.version		.live			// Assume SNMP desc is FireBrick, extract version
+
+
+enum	widget.t		.live .array=WIDGETS .enums="None,Image,Text,QR,Clock"		// Widget type
+s32	widget.x		.live .array=WIDGETS			// X position (from left, or -ve from right)
+enum	widget.h		.live .array=WIDGETS .enums="Left,Centre,Right"		// Horizontal align
+s32	widget.y		.live .array=WIDGETS			// Y position (from top, or -ve from bottom)
+enum	widget.v		.live .array=WIDGETS .enums="Bottom,Middle,Top"		// Vertical align
+u32	widget.s		.live .array=WIDGETS			// Widget size, pixels (depends on widget)
+s	widget.c		.live .array=WIDGETS			// Widget content/reference
+
