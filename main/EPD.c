@@ -29,6 +29,8 @@ const char sd_mount[] = "/sd";
 uint64_t sdsize = 0,            // SD card data
    sdfree = 0;
 
+char season = 0;                // Current season
+
 static struct
 {                               // Flags
    uint8_t wificonnect:1;
@@ -75,10 +77,9 @@ gfx_qr (const char *value, int max)
    oy += d;
    for (int y = 0; y < width; y++)
       for (int x = 0; x < width; x++)
-         if (qr[width * y + x] & QR_TAG_BLACK)
-            for (int dy = 0; dy < s; dy++)
-               for (int dx = 0; dx < s; dx++)
-                  gfx_pixel (ox + x * s + dx, oy + y * s + dy, 0xFF);
+         for (int dy = 0; dy < s; dy++)
+            for (int dx = 0; dx < s; dx++)
+               gfx_pixel (ox + x * s + dx, oy + y * s + dy, qr[width * y + x] & QR_TAG_BLACK ? 0xFF : 0);
    free (qr);
 #endif
    return NULL;
@@ -335,6 +336,7 @@ download (const char *url)
    {                            // Not PNG
       free (i->data);
       i->data = NULL;
+      i->size = 0;
    }
    return i;
 }
@@ -576,6 +578,9 @@ app_main ()
       min = now / 60;
       struct tm t;
       localtime_r (&now, &t);
+      season = *revk_season (now);
+      if (*seasoncode)
+         season = *seasoncode;
       if (*lights && !b.lightoverride)
       {
          int hhmm = t.tm_hour * 100 + t.tm_min;
@@ -613,14 +618,99 @@ app_main ()
          gfx_pos (x, y, a);
          gfx_colour (widgetk[w] == REVK_SETTINGS_WIDGETK_INVERT || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
          gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 'W' : 'K');
+         // Content substitutions
+         char *c = widgetc[w];
+         if (!strcmp (c, "$TIME"))
+            asprintf (&c, "%02d:%02d", t.tm_hour, t.tm_min);
+         else if (!strcmp (c, "$DATE"))
+            asprintf (&c, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+         else if (!strcmp (c, "$DAY"))
+            c = strdup (longday[t.tm_wday]);
+         else if (!strcmp (c, "$SSID"))
+            c = strdup (wifissid);
+         else if (!strcmp (c, "$PASS"))
+            c = strdup (wifipass);
+         else if (!strcmp (c, "$WIFI"))
+         {
+            if (*wifipass)
+               asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", wifissid, wifipass);
+            else
+               asprintf (&c, "WIFI:S:%s;;", wifissid);
+         } else if (!strcmp (c, "$IPV4"))
+         {
+            esp_netif_ip_info_t ip;
+            if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
+               asprintf (&c, IPSTR, IP2STR (&ip.ip));
+         }
+#ifdef CONFIG_LWIP_IPV6
+         else if (!strcmp (c, "$IPV6") || !strcmp (c, "$IP"))
+         {
+            esp_ip6_addr_t ip[LWIP_IPV6_NUM_ADDRESSES];
+            int n = esp_netif_get_all_ip6 (sta_netif, ip);
+            if (n)
+            {
+               for (int i = 0; i < n && i < 4; i++)
+                  if (n == 1 || ip[i].addr[0] != 0x000080FE)    // Yeh FE80 backwards
+                  {
+                     asprintf (&c, IPV6STR, IPV62STR (ip[i]));
+                     for (char *q = c; *q; q++)
+                        *q = toupper (*q);
+                     break;
+                  }
+            }
+         }
+#endif
          switch (widgett[w])
          {
          case REVK_SETTINGS_WIDGETT_TEXT:
+            if (*c)
+            {
+               gfx_pos_t s = widgets[w];
+               if (!s)
+                  s = 3;
+               gfx_text (s, "%s", c);
+            }
+            break;
+         case REVK_SETTINGS_WIDGETT_BLOCKS:
+            if (*c)
+            {
+               gfx_pos_t s = widgets[w];
+               if (!s)
+                  s = 4;
+               gfx_blocky (s, "%s", c);
+            }
+            break;
+         case REVK_SETTINGS_WIDGETT_DIGITS:
+            if (*c)
+            {
+               gfx_pos_t s = widgets[w];
+               if (!s)
+                  s = 4;
+               gfx_7seg (s, "%s", c);
+            }
             break;
          case REVK_SETTINGS_WIDGETT_IMAGE:
-            if (*widgetc[w])
+            if (*c)
             {
-               image_t *i = download (widgetc[w]);
+               image_t *i = NULL;
+               char *s = strrchr (c, '*');
+               if (s)
+               {                // Season logic
+                  char *url = strdup (c);
+                  s = strrchr (url, '*');
+                  if (season)
+                  {
+                     *s = season;
+                     i = download (url);
+                  }
+                  if (!i || !i->size)
+                  {
+                     strcpy (s, s + 1);
+                     i = download (url);
+                  }
+
+               } else
+                  i = download (c);
                if (i && i->size && i->w && i->h)
                {
                   plot_t settings = { 0 };
@@ -634,10 +724,36 @@ app_main ()
             }
             break;
          case REVK_SETTINGS_WIDGETT_QR:
+            {
+               gfx_pos_t s = widgets[w];
+               if (!s)
+                  s = gfx_width () > gfx_height ()? gfx_height () : gfx_width ();
+               gfx_qr (c, s);
+            }
             break;
-         case REVK_SETTINGS_WIDGETT_CLOCK:
+         case REVK_SETTINGS_WIDGETT_HLINE:
+            {
+               gfx_pos_t s = widgets[w] ? : gfx_width ();
+               if (widgeth[w] == REVK_SETTINGS_WIDGETH_CENTRE)
+                  x -= s / 2;
+               else if (widgeth[w] == REVK_SETTINGS_WIDGETH_RIGHT)
+                  x -= s;
+               gfx_line (x, y, x + s, y, 255);
+            }
+            break;
+         case REVK_SETTINGS_WIDGETT_VLINE:
+            {
+               gfx_pos_t s = widgets[w] ? : gfx_height ();
+               if (widgetv[w] == REVK_SETTINGS_WIDGETV_MIDDLE)
+                  y -= s / 2;
+               else if (widgetv[w] == REVK_SETTINGS_WIDGETV_BOTTOM)
+                  y -= s;
+               gfx_line (x, y, x, y + s, 255);
+            }
             break;
          }
+         if (c != widgetc[w])
+            free (c);
       }
       gfx_unlock ();
       if (reshow)
@@ -675,14 +791,31 @@ revk_web_extra (httpd_req_t * req, int page)
    add (NULL, "widgett");
    add (NULL, "widgetk");
    add (NULL, "widgetx");
-   add (NULL, "widgeth");
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE)
+      add (NULL, "widgeth");
    add (NULL, "widgety");
-   add (NULL, "widgetv");
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
+      add (NULL, "widgetv");
    const char *p = NULL;
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
+      p = "Font size<br>(-ve for descenders)";
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS)
+      p = "Font size";
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_HLINE)
+      p = "Line width";
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_VLINE)
+      p = "Line height";
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE)
       add (p, "widgets");
    p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       p = "PNG Image URL";
-   add (p, "widgetc");
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
+      p = "QR code content";
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
+      add (p, "widgetc");
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
+      revk_web_setting_info (req, "URL should be http://, and can include * for season character");
+   else
+      revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $DATE, $DAY");
 }
