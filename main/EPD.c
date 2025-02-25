@@ -171,9 +171,21 @@ typedef struct image_s
    uint8_t *data;
 } image_t;
 
-int
-download (image_t * i)
+image_t *images = NULL;
+
+image_t *
+download (const char *url)
 {
+   image_t *i;
+   for (i = images; i && strcmp (i->url, url); i = i->next);
+   if (!i)
+   {
+      i = malloc (sizeof (*i));
+      memset (i, 0, sizeof (*i));
+      i->url = strdup (url);
+      i->next = images;
+      images = i;
+   }
    ESP_LOGD (TAG, "Get %s", i->url);
    time_t now = time (0);
    int32_t len = 0;
@@ -200,9 +212,9 @@ download (image_t * i)
          if (!esp_http_client_open (client, 0))
          {
             len = esp_http_client_fetch_headers (client);
-               buf = mallocspi (len);
-               if (buf)
-                  len = esp_http_client_read_response (client, (char *) buf, len);
+            buf = mallocspi (len);
+            if (buf)
+               len = esp_http_client_read_response (client, (char *) buf, len);
             response = esp_http_client_get_status_code (client);
             if (response != 200 && response != 304)
                ESP_LOGE (TAG, "Bad response %s (%d)", i->url, response);
@@ -232,6 +244,7 @@ download (image_t * i)
             response = 0;       // No change
          free (i->data);
          i->data = buf;
+         i->size = len;
          i->changed = now;
          buf = NULL;
       }
@@ -259,18 +272,18 @@ download (image_t * i)
                ESP_LOGE (TAG, "Write fail %s", fn);
          } else if (!i->data || (response && response != 304))
          {                      // Load from card
-#if 0
             FILE *f = fopen (fn, "r");
-            // TODO stat for size
             if (f)
             {
-               if (!buf)
-                  buf = mallocspi (size);
+               struct stat s;
+               fstat (fileno (f), &s);
+               free (buf);
+               buf = mallocspi (s.st_size);
                if (buf)
                {
-                  if (fread (buf, size, 1, f) == 1)
+                  if (fread (buf, s.st_size, 1, f) == 1)
                   {
-                     if (image && !memcmp (buf, image, size))
+                     if (i->data && i->size == s.st_size && !memcmp (buf, i->data, i->size))
                         response = 0;   // No change
                      else
                      {
@@ -279,8 +292,9 @@ download (image_t * i)
                         jo_string (j, "read", fn);
                         revk_info ("SD", &j);
                         response = 200; // Treat as received
-                        free (image);
-                        image = buf;
+                        free (i->data);
+                        i->data = buf;
+                        i->size = s.st_size;
                         buf = NULL;
                      }
                   }
@@ -288,13 +302,12 @@ download (image_t * i)
                fclose (f);
             } else
                ESP_LOGE (TAG, "Read fail %s", fn);
-#endif
          }
          free (fn);
       }
    }
    free (buf);
-   return response;
+   return i;
 }
 
 //--------------------------------------------------------------------------------
@@ -540,9 +553,24 @@ app_main ()
       }
       gfx_clear (0);
       for (int w = 0; w < WIDGETS; w++)
-      {
-
-      }
+         switch (widgett[w])
+         {
+         case REVK_SETTINGS_WIDGETT_TEXT:
+            break;
+         case REVK_SETTINGS_WIDGETT_IMAGE:
+            if (*imagec[w])
+            {
+               image_t *i = download (imagec[w]);
+               if (i && i->size)
+               {
+               }
+            }
+            break;
+         case REVK_SETTINGS_WIDGETT_QR:
+            break;
+         case REVK_SETTINGS_WIDGETT_CLOCK:
+            break;
+         }
       gfx_unlock ();
       if (reshow)
          b.redraw = 1;
