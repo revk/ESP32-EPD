@@ -75,10 +75,9 @@ gfx_qr (const char *value, int max)
    oy += d;
    for (int y = 0; y < width; y++)
       for (int x = 0; x < width; x++)
-         if (qr[width * y + x] & QR_TAG_BLACK)
-            for (int dy = 0; dy < s; dy++)
-               for (int dx = 0; dx < s; dx++)
-                  gfx_pixel (ox + x * s + dx, oy + y * s + dy, 0xFF);
+         for (int dy = 0; dy < s; dy++)
+            for (int dx = 0; dx < s; dx++)
+               gfx_pixel (ox + x * s + dx, oy + y * s + dy, qr[width * y + x] & QR_TAG_BLACK ? 0xFF : 0);
    free (qr);
 #endif
    return NULL;
@@ -617,6 +616,8 @@ app_main ()
          {
          case REVK_SETTINGS_WIDGETT_TEXT:
             break;
+         case REVK_SETTINGS_WIDGETT_DIGITS:
+            break;
          case REVK_SETTINGS_WIDGETT_IMAGE:
             if (*widgetc[w])
             {
@@ -634,6 +635,12 @@ app_main ()
             }
             break;
          case REVK_SETTINGS_WIDGETT_QR:
+            {
+               gfx_pos_t s = widgets[w];
+               if (!s)
+                  s = gfx_width () > gfx_height ()? gfx_height () : gfx_width ();
+               gfx_qr (widgetc[w], s);
+            }
             break;
          case REVK_SETTINGS_WIDGETT_CLOCK:
             break;
@@ -679,10 +686,16 @@ revk_web_extra (httpd_req_t * req, int page)
    add (NULL, "widgety");
    add (NULL, "widgetv");
    const char *p = NULL;
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT)
+      p = "Font size (-ve for descenders)";
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS)
+      p = "Font size";
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE)
       add (p, "widgets");
    p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       p = "PNG Image URL";
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
+      p = "QR code content";
    add (p, "widgetc");
 }
