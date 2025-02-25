@@ -42,6 +42,18 @@ volatile uint32_t override = 0;
 led_strip_handle_t strip = NULL;
 sdmmc_card_t *card = NULL;
 
+static void *
+my_alloc (void *opaque, uInt items, uInt size)
+{
+   return mallocspi (items * size);
+}
+
+static void
+my_free (void *opaque, void *address)
+{
+   free (address);
+}
+
 const char *
 gfx_qr (const char *value, int max)
 {
@@ -243,19 +255,18 @@ download (const char *url)
       if (buf)
       {
          if (i->data && i->size == len && !memcmp (buf, i->data, len))
-	 {
-		 free(buf);
+         {
+            free (buf);
             response = 0;       // No change
-	 }
-	 else
-	 { // Change
-         free (i->data);
-         i->data = buf;
-         i->size = len;
-         lwpng_get_info (i->size, i->data, &i->w, &i->h);
-         i->changed = now;
-	 ESP_LOGE(TAG,"Image %s len %lu width %lu height %lu",i->url,i->size,i->w,i->h);
-	 }
+         } else
+         {                      // Change
+            free (i->data);
+            i->data = buf;
+            i->size = len;
+            lwpng_get_info (i->size, i->data, &i->w, &i->h);
+            i->changed = now;
+            ESP_LOGE (TAG, "Image %s len %lu width %lu height %lu", i->url, i->size, i->w, i->h);
+         }
          buf = NULL;
       }
    }
@@ -294,11 +305,10 @@ download (const char *url)
                   if (fread (buf, s.st_size, 1, f) == 1)
                   {
                      if (i->data && i->size == s.st_size && !memcmp (buf, i->data, i->size))
-		     {
-			     free(buf);
+                     {
+                        free (buf);
                         response = 0;   // No change
-		     }
-                     else
+                     } else
                      {
                         ESP_LOGE (TAG, "Read %s", fn);
                         jo_t j = jo_object_alloc ();
@@ -310,7 +320,7 @@ download (const char *url)
                         i->size = s.st_size;
                         lwpng_get_info (i->size, i->data, &i->w, &i->h);
                      }
-                        buf = NULL;
+                     buf = NULL;
                   }
                }
                fclose (f);
@@ -324,8 +334,13 @@ download (const char *url)
    return i;
 }
 
-//--------------------------------------------------------------------------------
-// Web
+const char *
+plot (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
+{
+   if (a & 0x8000)
+      gfx_pixel (x, y, (gfxinvert ? 255 : 0) ^ ((g & 0x8000) ? 255 : 0));
+   return NULL;
+}
 
 #ifdef	CONFIG_REVK_APCONFIG
 #error 	Clash with CONFIG_REVK_APCONFIG set
@@ -575,8 +590,13 @@ app_main ()
             if (*widgetc[w])
             {
                image_t *i = download (widgetc[w]);
-               if (i && i->size)
+               if (i && i->size && i->w && i->h)
                {
+                  lwpng_t *p = lwpng_init (NULL, NULL, &plot, &my_alloc, &my_free, NULL);
+                  lwpng_data (p, i->size, i->data);
+                  const char *e = lwpng_end (&p);
+                  if (e)
+                     ESP_LOGE (TAG, "PNG fail %s", e);
                }
             }
             break;
