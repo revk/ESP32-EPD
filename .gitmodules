@@ -7,3 +7,6 @@
 [submodule "components/QR"]
 	path = components/QR
 	url = https://github.com/revk/QR.git
+[submodule "components/ESP32-LWPNG"]
+	path = components/ESP32-LWPNG
+	url = https://github.com/revk/ESP32-LWPNG

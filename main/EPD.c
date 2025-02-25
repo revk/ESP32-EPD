@@ -17,6 +17,7 @@ static const char TAG[] = "EPD";
 #include "iec18004.h"
 #include <hal/spi_types.h>
 #include <driver/gpio.h>
+#include <lwpng.h>
 
 #define	LEFT	0x80            // Flags on font size
 #define	RIGHT	0x40
