@@ -168,6 +168,8 @@ typedef struct image_s
    char *url;
    time_t changed;
    uint32_t size;
+   uint32_t w;
+   uint32_t h;
    uint8_t *data;
 } image_t;
 
@@ -241,11 +243,19 @@ download (const char *url)
       if (buf)
       {
          if (i->data && i->size == len && !memcmp (buf, i->data, len))
+	 {
+		 free(buf);
             response = 0;       // No change
+	 }
+	 else
+	 { // Change
          free (i->data);
          i->data = buf;
          i->size = len;
+         lwpng_get_info (i->size, i->data, &i->w, &i->h);
          i->changed = now;
+	 ESP_LOGE(TAG,"Image %s len %lu width %lu height %lu",i->url,i->size,i->w,i->h);
+	 }
          buf = NULL;
       }
    }
@@ -284,7 +294,10 @@ download (const char *url)
                   if (fread (buf, s.st_size, 1, f) == 1)
                   {
                      if (i->data && i->size == s.st_size && !memcmp (buf, i->data, i->size))
+		     {
+			     free(buf);
                         response = 0;   // No change
+		     }
                      else
                      {
                         ESP_LOGE (TAG, "Read %s", fn);
@@ -295,8 +308,9 @@ download (const char *url)
                         free (i->data);
                         i->data = buf;
                         i->size = s.st_size;
-                        buf = NULL;
+                        lwpng_get_info (i->size, i->data, &i->w, &i->h);
                      }
+                        buf = NULL;
                   }
                }
                fclose (f);
@@ -558,9 +572,9 @@ app_main ()
          case REVK_SETTINGS_WIDGETT_TEXT:
             break;
          case REVK_SETTINGS_WIDGETT_IMAGE:
-            if (*imagec[w])
+            if (*widgetc[w])
             {
-               image_t *i = download (imagec[w]);
+               image_t *i = download (widgetc[w]);
                if (i && i->size)
                {
                }
