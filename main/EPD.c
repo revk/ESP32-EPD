@@ -743,10 +743,10 @@ app_main ()
             break;
          case REVK_SETTINGS_WIDGETT_VLINE:
             {
-               gfx_pos_t s = widgets[w] ? : gfx_width ();
-               if (widgeth[w] == REVK_SETTINGS_WIDGETV_MIDDLE)
+               gfx_pos_t s = widgets[w] ? : gfx_height ();
+               if (widgetv[w] == REVK_SETTINGS_WIDGETV_MIDDLE)
                   y -= s / 2;
-               else if (widgeth[w] == REVK_SETTINGS_WIDGETV_BOTTOM)
+               else if (widgetv[w] == REVK_SETTINGS_WIDGETV_BOTTOM)
                   y -= s;
                gfx_line (x, y, x, y + s, 255);
             }
@@ -791,10 +791,10 @@ revk_web_extra (httpd_req_t * req, int page)
    add (NULL, "widgett");
    add (NULL, "widgetk");
    add (NULL, "widgetx");
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE)
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE)
       add (NULL, "widgeth");
    add (NULL, "widgety");
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE)
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
       add (NULL, "widgetv");
    const char *p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
