@@ -40,9 +40,10 @@ bit	fb.version		.live			// Assume SNMP desc is FireBrick, extract version
 
 
 enum	widget.t		.live .array=WIDGETS .enums="Text,Image,QR,Clock"		// Widget type
+enum	widget.k		.live .array=WIDGETS .enums="Normal,Invert,Mask,MaskInvert"	// Plot mode
 s32	widget.x		.live .array=WIDGETS			// X position (from left, or -ve from right)
 enum	widget.h		.live .array=WIDGETS .enums="Left,Centre,Right"		// Horizontal align
 s32	widget.y		.live .array=WIDGETS			// Y position (from top, or -ve from bottom)
 enum	widget.v		.live .array=WIDGETS .enums="Top,Middle,Bottom"		// Vertical align
 u32	widget.s		.live .array=WIDGETS			// Widget size, pixels (depends on widget)
-text	widget.c		.live .array=WIDGETS			// Widget content/reference
+text	widget.c		.live .array=WIDGETS			// Widget content/refence (depends on widget)

@@ -331,14 +331,26 @@ download (const char *url)
       }
    }
    free (buf);
+   if (i->data && !i->w)
+   {                            // Not PNG
+      free (i->data);
+      i->data = NULL;
+   }
    return i;
 }
+
+typedef struct plot_s
+{
+   gfx_pos_t ox,
+     oy;
+} plot_t;
 
 const char *
 plot (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
 {
+   plot_t *p = opaque;
    if (a & 0x8000)
-      gfx_pixel (x, y, (gfxinvert ? 255 : 0) ^ ((g & 0x8000) ? 255 : 0));
+      gfx_pixel (p->ox + x, p->oy + y, (g & 0x8000) ? 255 : 0);
    return NULL;
 }
 
@@ -582,6 +594,19 @@ app_main ()
       }
       gfx_clear (0);
       for (int w = 0; w < WIDGETS; w++)
+      {
+         gfx_align_t a = 0;
+         if (widgeth[w] <= REVK_SETTINGS_WIDGETH_CENTRE)
+            a |= GFX_L;
+         if (widgeth[w] >= REVK_SETTINGS_WIDGETH_CENTRE)
+            a |= GFX_R;
+         if (widgetv[w] <= REVK_SETTINGS_WIDGETV_MIDDLE)
+            a |= GFX_T;
+         if (widgetv[w] >= REVK_SETTINGS_WIDGETV_MIDDLE)
+            a |= GFX_B;
+         gfx_pos (widgetx[w], widgety[w], a);
+         gfx_colour (widgetk[w] == REVK_SETTINGS_WIDGETK_INVERT || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
+         gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 'W' : 'K');
          switch (widgett[w])
          {
          case REVK_SETTINGS_WIDGETT_TEXT:
@@ -592,7 +617,10 @@ app_main ()
                image_t *i = download (widgetc[w]);
                if (i && i->size && i->w && i->h)
                {
-                  lwpng_t *p = lwpng_init (NULL, NULL, &plot, &my_alloc, &my_free, NULL);
+                  plot_t settings = { 0 };
+                  gfx_draw (i->w, i->h, 0, 0, &settings.ox, &settings.oy);
+                  ESP_LOGE (TAG, "ox=%d oy=%d f=%c b=%c a=%02X", settings.ox, settings.oy, gfx_f (), gfx_b (), gfx_a ());
+                  lwpng_t *p = lwpng_init (&settings, NULL, &plot, &my_alloc, &my_free, NULL);
                   lwpng_data (p, i->size, i->data);
                   const char *e = lwpng_end (&p);
                   if (e)
@@ -605,6 +633,7 @@ app_main ()
          case REVK_SETTINGS_WIDGETT_CLOCK:
             break;
          }
+      }
       gfx_unlock ();
       if (reshow)
          b.redraw = 1;
@@ -632,17 +661,23 @@ revk_web_extra (httpd_req_t * req, int page)
    }
    revk_web_setting_title (req, "Widget settings %d", page);
    revk_web_setting_info (req, "This build is for a display %dx%d pixels", gfx_width (), gfx_height ());
-   void add (const char *tag)
+   void add (const char *pre, const char *tag)
    {
       char name[20];
       sprintf (name, "%s%d", tag, page);
-      revk_web_setting (req, NULL, name);
+      revk_web_setting (req, pre, name);
    }
-   add ("widgett");
-   add ("widgetx");
-   add ("widgeth");
-   add ("widgety");
-   add ("widgetv");
-   add ("widgets");
-   add ("widgetc");
+   add (NULL, "widgett");
+   add (NULL, "widgetk");
+   add (NULL, "widgetx");
+   add (NULL, "widgeth");
+   add (NULL, "widgety");
+   add (NULL, "widgetv");
+   const char *p = NULL;
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE)
+      add (p, "widgets");
+   p = NULL;
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
+      p = "PNG Image URL";
+   add (p, "widgetc");
 }
