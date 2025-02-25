@@ -612,16 +612,75 @@ app_main ()
          gfx_pos (x, y, a);
          gfx_colour (widgetk[w] == REVK_SETTINGS_WIDGETK_INVERT || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
          gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 'W' : 'K');
+         // Content substitutions
+         char *c = widgetc[w];
+         if (!strcmp (c, "$SSID"))
+            c = strdup (wifissid);
+         else if (!strcmp (c, "$PASS"))
+            c = strdup (wifipass);
+         else if (!strcmp (c, "$WIFI"))
+         {
+            if (*wifipass)
+               asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", wifissid, wifipass);
+            else
+               asprintf (&c, "WIFI:S:%s;;", wifissid);
+         } else if (!strcmp (c, "$IPV4"))
+         {
+            esp_netif_ip_info_t ip;
+            if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
+               asprintf (&c, IPSTR, IP2STR (&ip.ip));
+         }
+#ifdef CONFIG_LWIP_IPV6
+         else if (!strcmp (c, "$IPV6") || !strcmp (c, "$IP"))
+         {
+            esp_ip6_addr_t ip[LWIP_IPV6_NUM_ADDRESSES];
+            int n = esp_netif_get_all_ip6 (sta_netif, ip);
+            if (n)
+            {
+               for (int i = 0; i < n && i < 4; i++)
+                  if (n == 1 || ip[i].addr[0] != 0x000080FE)    // Yeh FE80 backwards
+                  {
+                     asprintf (&c, IPV6STR, IPV62STR (ip[i]));
+                     for (char *q = c; *q; q++)
+                        *q = toupper (*q);
+                     break;
+                  }
+            }
+         }
+#endif
          switch (widgett[w])
          {
          case REVK_SETTINGS_WIDGETT_TEXT:
+            if (*c)
+            {
+               gfx_pos_t s = widgets[w];
+               if (!s)
+                  s = 3;
+               gfx_text (s, "%s", c);
+            }
             break;
+         case REVK_SETTINGS_WIDGETT_BLOCKS:
+            if (*c)
+            {
+               gfx_pos_t s = widgets[w];
+               if (!s)
+                  s = 4;
+               gfx_blocky (s, "%s", c);
+            }
+	    break;
          case REVK_SETTINGS_WIDGETT_DIGITS:
+            if (*c)
+            {
+               gfx_pos_t s = widgets[w];
+               if (!s)
+                  s = 4;
+               gfx_7seg (s, "%s", c);
+            }
             break;
          case REVK_SETTINGS_WIDGETT_IMAGE:
-            if (*widgetc[w])
+            if (*c)
             {
-               image_t *i = download (widgetc[w]);
+               image_t *i = download (c);
                if (i && i->size && i->w && i->h)
                {
                   plot_t settings = { 0 };
@@ -639,12 +698,14 @@ app_main ()
                gfx_pos_t s = widgets[w];
                if (!s)
                   s = gfx_width () > gfx_height ()? gfx_height () : gfx_width ();
-               gfx_qr (widgetc[w], s);
+               gfx_qr (c, s);
             }
             break;
          case REVK_SETTINGS_WIDGETT_CLOCK:
             break;
          }
+         if (c != widgetc[w])
+            free (c);
       }
       gfx_unlock ();
       if (reshow)
@@ -686,7 +747,7 @@ revk_web_extra (httpd_req_t * req, int page)
    add (NULL, "widgety");
    add (NULL, "widgetv");
    const char *p = NULL;
-   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT)
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
       p = "Font size (-ve for descenders)";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS)
       p = "Font size";
@@ -698,4 +759,5 @@ revk_web_extra (httpd_req_t * req, int page)
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
       p = "QR code content";
    add (p, "widgetc");
+   revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI");
 }
