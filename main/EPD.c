@@ -625,7 +625,6 @@ app_main ()
                {
                   plot_t settings = { 0 };
                   gfx_draw (i->w, i->h, 0, 0, &settings.ox, &settings.oy);
-                  ESP_LOGE (TAG, "ox=%d oy=%d f=%c b=%c a=%02X", settings.ox, settings.oy, gfx_f (), gfx_b (), gfx_a ());
                   lwpng_t *p = lwpng_init (&settings, NULL, &plot, &my_alloc, &my_free, NULL);
                   lwpng_data (p, i->size, i->data);
                   const char *e = lwpng_end (&p);
