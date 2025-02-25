@@ -162,21 +162,24 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    return NULL;
 }
 
-int
-download (uint8_t ** imagep, time_t * imagetimep, const char *url, uint32_t size)
+typedef struct image_s
 {
-   ESP_LOGD (TAG, "Get %s %lu", url, size);
+   struct image_s *next;
+   char *url;
+   time_t changed;
+   uint32_t size;
+   uint8_t *data;
+} image_t;
+
+int
+download (image_t * i)
+{
+   ESP_LOGD (TAG, "Get %s", i->url);
    time_t now = time (0);
-   uint8_t *image = NULL;
-   if (imagep)
-      image = *imagep;
-   time_t imagetime = 0;
-   if (imagetimep)
-      imagetime = *imagetimep;
    int32_t len = 0;
    uint8_t *buf = NULL;
    esp_http_client_config_t config = {
-      .url = url,
+      .url = i->url,
       .crt_bundle_attach = esp_crt_bundle_attach,
       .timeout_ms = 20000,
    };
@@ -186,79 +189,67 @@ download (uint8_t ** imagep, time_t * imagetimep, const char *url, uint32_t size
       esp_http_client_handle_t client = esp_http_client_init (&config);
       if (client)
       {
-         if (imagetime)
+         if (i->changed)
          {
             char when[50];
             struct tm t;
-            gmtime_r (&imagetime, &t);
+            gmtime_r (&i->changed, &t);
             strftime (when, sizeof (when), "%a, %d %b %Y %T GMT", &t);
             esp_http_client_set_header (client, "If-Modified-Since", when);
          }
          if (!esp_http_client_open (client, 0))
          {
             len = esp_http_client_fetch_headers (client);
-            if (len == size)
-            {
-               buf = mallocspi (size);
+               buf = mallocspi (len);
                if (buf)
-                  len = esp_http_client_read_response (client, (char *) buf, size);
-            }
+                  len = esp_http_client_read_response (client, (char *) buf, len);
             response = esp_http_client_get_status_code (client);
-            if (response == 200 && len != size)
-               ESP_LOGE (TAG, "Wrong size %s (%ld expected %lu)", url, len, size);
-            else if (response != 200 && response != 304)
-               ESP_LOGE (TAG, "Bad response %s (%d)", url, response);
+            if (response != 200 && response != 304)
+               ESP_LOGE (TAG, "Bad response %s (%d)", i->url, response);
             esp_http_client_close (client);
          }
          esp_http_client_cleanup (client);
       }
    }
-   ESP_LOGD (TAG, "Get %s %d", url, response);
+   ESP_LOGD (TAG, "Got %s %d", i->url, response);
    if (response != 304)
    {
       if (response != 200)
       {
          jo_t j = jo_object_alloc ();
-         jo_string (j, "url", url);
+         jo_string (j, "url", i->url);
          if (response && response != -1)
             jo_int (j, "response", response);
          if (len == -ESP_ERR_HTTP_EAGAIN)
             jo_string (j, "error", "timeout");
          else if (len)
-         {
             jo_int (j, "len", len);
-            if (len != size)
-               jo_int (j, "expect", size);
-         }
          revk_error ("image", &j);
       }
-      if (len == size && buf)
+      if (buf)
       {
-         if (gfxinvert && size == gfx_width () * gfx_height () / 8)
-            for (int32_t i = 0; i < size; i++)
-               buf[i] ^= 0xFF;
-         if (image && !memcmp (buf, image, size))
+         if (i->data && i->size == len && !memcmp (buf, i->data, len))
             response = 0;       // No change
-         free (image);
-         image = buf;
-         imagetime = now;
+         free (i->data);
+         i->data = buf;
+         i->changed = now;
          buf = NULL;
       }
    }
    if (card)
    {                            // SD
-      char *s = strrchr (url, '/');
+      char *s = strrchr (i->url, '/');
       if (s)
       {
          char *fn = NULL;
          asprintf (&fn, "%s%s", sd_mount, s);
-         if (image && response == 200)
+         if (i->data && response == 200)
          {                      // Save to card
             FILE *f = fopen (fn, "w");
             if (f)
             {
                jo_t j = jo_object_alloc ();
-               if (fwrite (image, size, 1, f) != 1)
+               if (fwrite (i->data, i->size, 1, f) != 1)
                   jo_string (j, "error", "write failed");
                fclose (f);
                jo_string (j, "write", fn);
@@ -266,9 +257,11 @@ download (uint8_t ** imagep, time_t * imagetimep, const char *url, uint32_t size
                ESP_LOGE (TAG, "Write %s", fn);
             } else
                ESP_LOGE (TAG, "Write fail %s", fn);
-         } else if (!image || (response && response != 304))
+         } else if (!i->data || (response && response != 304))
          {                      // Load from card
+#if 0
             FILE *f = fopen (fn, "r");
+            // TODO stat for size
             if (f)
             {
                if (!buf)
@@ -295,15 +288,12 @@ download (uint8_t ** imagep, time_t * imagetimep, const char *url, uint32_t size
                fclose (f);
             } else
                ESP_LOGE (TAG, "Read fail %s", fn);
+#endif
          }
          free (fn);
       }
    }
    free (buf);
-   if (imagep)
-      *imagep = image;
-   if (imagetimep)
-      *imagetimep = imagetime;
    return response;
 }
 
