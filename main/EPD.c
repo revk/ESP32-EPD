@@ -604,7 +604,13 @@ app_main ()
             a |= GFX_T;
          if (widgetv[w] >= REVK_SETTINGS_WIDGETV_MIDDLE)
             a |= GFX_B;
-         gfx_pos (widgetx[w], widgety[w], a);
+         gfx_pos_t x = widgetx[w];
+         if (x < 0)
+            x += gfx_width ();
+         gfx_pos_t y = widgety[w];
+         if (y < 0)
+            y += gfx_height ();
+         gfx_pos (x, y, a);
          gfx_colour (widgetk[w] == REVK_SETTINGS_WIDGETK_INVERT || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
          gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 'W' : 'K');
          switch (widgett[w])
