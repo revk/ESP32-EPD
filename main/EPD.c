@@ -175,44 +175,55 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    return NULL;
 }
 
-typedef struct image_s
+typedef struct file_s
 {
-   struct image_s *next;
-   char *url;
-   time_t changed;
-   uint32_t size;
-   uint32_t w;
-   uint32_t h;
-   uint8_t *data;
-} image_t;
+   struct file_s *next;         // Next file in chain
+   char *url;                   // URL as passed to download
+   uint32_t cache;              // Cache until this uptiome
+   time_t changed;              // Last changed
+   uint32_t size;               // File size
+   uint32_t w;                  // PNG width
+   uint32_t h;                  // PNG height
+   uint8_t *data;               // File data
+} file_t;
 
-image_t *images = NULL;
+file_t *files = NULL;
 
-image_t *
-download (const char *url)
+file_t *
+download (char *url)
 {
-   image_t *i;
-   for (i = images; i && strcmp (i->url, url); i = i->next);
+   file_t *i;
+   for (i = files; i && strcmp (i->url, url); i = i->next);
    if (!i)
    {
       i = malloc (sizeof (*i));
       memset (i, 0, sizeof (*i));
       i->url = strdup (url);
-      i->next = images;
-      images = i;
+      i->next = files;
+      files = i;
    }
-   ESP_LOGD (TAG, "Get %s", i->url);
+   if (!*baseurl || !strncasecmp (i->url, "http://", 7) || !strncasecmp (i->url, "https://", 8))
+      url = strdup (i->url);    // Use as is
+   else
+   {                            // Prefix URL
+      int l = strlen (baseurl);
+      if (baseurl[l - 1] == '/')
+         l--;
+      asprintf (&url, "%.*s/%s", l, baseurl, i->url);
+   }
+   ESP_LOGD (TAG, "Get %s", url);
    time_t now = time (0);
    int32_t len = 0;
    uint8_t *buf = NULL;
    esp_http_client_config_t config = {
-      .url = i->url,
+      .url = url,
       .crt_bundle_attach = esp_crt_bundle_attach,
       .timeout_ms = 20000,
    };
    int response = -1;
-   if (!revk_link_down ())
+   if (i->cache < uptime () && !revk_link_down () && (!strncasecmp (url, "http://", 7) || !strncasecmp (url, "https://", 8)))
    {
+      i->cache = uptime () + cachetime;
       esp_http_client_handle_t client = esp_http_client_init (&config);
       if (client)
       {
@@ -232,19 +243,19 @@ download (const char *url)
                len = esp_http_client_read_response (client, (char *) buf, len);
             response = esp_http_client_get_status_code (client);
             if (response != 200 && response != 304)
-               ESP_LOGE (TAG, "Bad response %s (%d)", i->url, response);
+               ESP_LOGE (TAG, "Bad response %s (%d)", url, response);
             esp_http_client_close (client);
          }
          esp_http_client_cleanup (client);
       }
    }
-   ESP_LOGD (TAG, "Got %s %d", i->url, response);
+   ESP_LOGD (TAG, "Got %s %d", url, response);
    if (response != 304)
    {
       if (response != 200)
-      {
+      {                         // Failed
          jo_t j = jo_object_alloc ();
-         jo_string (j, "url", i->url);
+         jo_string (j, "url", url);
          if (response && response != -1)
             jo_int (j, "response", response);
          if (len == -ESP_ERR_HTTP_EAGAIN)
@@ -266,14 +277,14 @@ download (const char *url)
             i->size = len;
             lwpng_get_info (i->size, i->data, &i->w, &i->h);
             i->changed = now;
-            ESP_LOGE (TAG, "Image %s len %lu width %lu height %lu", i->url, i->size, i->w, i->h);
+            ESP_LOGE (TAG, "Image %s len %lu width %lu height %lu", url, i->size, i->w, i->h);
          }
          buf = NULL;
       }
    }
    if (card)
    {                            // SD
-      char *s = strrchr (i->url, '/');
+      char *s = strrchr (url, '/');
       if (s)
       {
          char *fn = NULL;
@@ -292,7 +303,7 @@ download (const char *url)
                ESP_LOGE (TAG, "Write %s", fn);
             } else
                ESP_LOGE (TAG, "Write fail %s", fn);
-         } else if (!i->data || (response && response != 304))
+         } else if (!i->data || (response && response != 304 && response != -1))
          {                      // Load from card
             FILE *f = fopen (fn, "r");
             if (f)
@@ -338,6 +349,7 @@ download (const char *url)
       i->data = NULL;
       i->size = 0;
    }
+   free (url);
    return i;
 }
 
@@ -692,7 +704,7 @@ app_main ()
          case REVK_SETTINGS_WIDGETT_IMAGE:
             if (*c)
             {
-               image_t *i = NULL;
+               file_t *i = NULL;
                char *s = strrchr (c, '*');
                if (s)
                {                // Season logic
