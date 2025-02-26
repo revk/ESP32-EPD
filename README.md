@@ -16,9 +16,7 @@ This new version is much more generic, allowing a number of *widgets* to be appl
 
 Each widget has basic settings with *type*, and position (*x*/*y*), and alignment (*left*/*centre*/*right* and *top*/*middle*/*bottom*) and the *size* of the widget, and, of course a *content* setting.
 
-### Text
-
-This is one of the simplest widgets, and allows simple mulkti line text to be displayed. The font size defines the text size (-ve value means allow for descenders).
+### Content
 
 The *content* for any widget can be one of a number of presets, as follows :-
 
@@ -35,21 +33,23 @@ The *content* for any widget can be one of a number of presets, as follows :-
 
 More may be added over time. All of these are only for whole string replacing it.
 
+### Text
+
+This is one of the simplest widgets, and allows simple mulkti line text to be displayed. The font size defines the text size (-ve value means allow for descenders).
+
 ### Blocks
 
 Same as `text` but blocky characters, so can allow larger size than defined fonts in build.
 
 ### Digits
 
-Same as `text` but using 7 seg format, allows quite large digits typicallty. This is ideal for `$DATE` and `$TIME`. It plots only the segments as black or white (see *mask* below).
+Same as `text` but using 7 seg format, allows quite large digits typicallty. This is ideal for `$DATE` and `$TIME`. It plots only the segments as black or white (see *mask* below). Only handles digits, `-`, `.`, `:`, `_`. Does not handle multiple lines.
 
 ### Image
 
-The content should be a simple `http://` URL serving a PNG image. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting). It can include *alpha* channel to control if plotted.
+This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting). It can include *alpha* channel to control if plotted.
 
-The image is typcially stored in SD card if present as a backup.
-
-Other formats for SD card only are planed.
+The image is typcially stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
 
 ### QR
 
@@ -69,4 +69,4 @@ For most widgets the *x*/*y* and *align* apply as expected. But there is also a 
 
 Invert simply swaps black/white.
 
-Mask means only plot for asserted colour - content of text or white in am image. However, when dealing with an *image* the mask is not sensible when the PNG image has alpha as that is used as mask.
+Mask means only plot for asserted colour - content of text or white in am image. However, when dealing with an *image* the mask is not sensible when the PNG image has alpha as that is used as mask. Depending on the display and `gfx.invert` properties images may need to be inverted.
