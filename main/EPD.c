@@ -628,8 +628,10 @@ app_main ()
          if (y < 0)
             y += gfx_height ();
          gfx_pos (x, y, a);
-         gfx_colour (widgetk[w] == REVK_SETTINGS_WIDGETK_INVERT || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
-         gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 'W' : 'K');
+         gfx_colour (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 'K' : 'W');
+         gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
+         if (widgett[w] || *widgetc[w])
+            ESP_LOGE (TAG, "Widget %2d X=%03d Y=%03d A=%02X F=%c B=%c", w + 1, gfx_x (), gfx_y (), gfx_a (), gfx_f (), gfx_b ());
          // Content substitutions
          char *c = widgetc[w];
          if (!strcmp (c, "$TIME"))
