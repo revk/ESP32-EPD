@@ -35,6 +35,7 @@ static struct
 {                               // Flags
    uint8_t wificonnect:1;
    uint8_t redraw:1;
+   uint8_t setting:1;
    uint8_t lightoverride:1;
    uint8_t startup:1;
 } volatile b = { 0 };
@@ -144,7 +145,7 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    // Not for us or not a command from main MQTT
    if (!strcmp (suffix, "setting"))
    {
-      b.redraw = 1;
+      b.setting = 1;
       return "";
    }
    if (!strcmp (suffix, "connect"))
@@ -471,6 +472,12 @@ app_main ()
       time_t now = time (0);
       if (now < 1000000000)
          now = 0;
+      if (b.setting)
+      {
+         b.setting = 0;
+         b.redraw = 1;
+         reshow = gfxrepeat;
+      }
       uint32_t up = uptime ();
       if (b.wificonnect)
       {
