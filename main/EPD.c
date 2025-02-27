@@ -66,6 +66,8 @@ gfx_qr (const char *value, int max)
  uint8_t *qr = qr_encode (strlen (value), value, widthp:&width);
    if (!qr)
       return "Failed to encode";
+   if (!max)
+      max = width;
    if (max < width)
       return "No space";
    if (max > gfx_width () || max > gfx_height ())
@@ -781,12 +783,7 @@ app_main ()
             }
             break;
          case REVK_SETTINGS_WIDGETT_QR:
-            {
-               gfx_pos_t s = widgets[w];
-               if (!s)
-                  s = gfx_width () > gfx_height ()? gfx_height () : gfx_width ();
-               gfx_qr (c, s);
-            }
+            gfx_qr (c, widgets[w]);
             break;
          case REVK_SETTINGS_WIDGETT_HLINE:
             {
@@ -847,12 +844,12 @@ revk_web_extra (httpd_req_t * req, int page)
    }
    add (NULL, "widgett");
    add (NULL, "widgetk");
-   add (NULL, "widgetx");
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE)
       add (NULL, "widgeth");
-   add (NULL, "widgety");
+   add (NULL, "widgetx");
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
       add (NULL, "widgetv");
+   add (NULL, "widgety");
    const char *p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
       p = "Font size<br>(-ve for descenders)";
