@@ -405,6 +405,7 @@ plot (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, 
 void
 app_main ()
 {
+   b.defcon = 7;
    revk_boot (&app_callback);
    revk_start ();
 
