@@ -23,6 +23,7 @@ gpio    sd.cd           -7                	// MicroSD CD
 
 u8	gfx.flip	6				// E-paper Flip
 bit	gfx.invert	1				// E-paper invert
+bit	gfx.flash	1				// E-paper startup flashy
 u8	startup		10	.unit="s"		// Start up message
 u8	leds		25				// Number of LEDs
 u32	refresh		86400	.live .unit="s"		// Full refresh time

@@ -481,20 +481,23 @@ app_main ()
          ESP_LOGE (TAG, "SD Mounted %llu/%llu", sdfree, sdsize);
       }
    }
-   gfx_lock ();
-   gfx_clear (0);
-   for (int y = 0; y < gfx_height (); y++)
-      for (int x = (y & 1); x < gfx_width (); x += 2)
-         gfx_pixel (x, y, 255);
-   gfx_refresh ();
-   gfx_unlock ();
-   gfx_lock ();
-   gfx_clear (0);
-   for (int y = 0; y < gfx_height (); y++)
-      for (int x = 1 - (y & 1); x < gfx_width (); x += 2)
-         gfx_pixel (x, y, 255);
-   gfx_refresh ();
-   gfx_unlock ();
+   if (gfxflash)
+   {
+      gfx_lock ();
+      gfx_clear (0);
+      for (int y = 0; y < gfx_height (); y++)
+         for (int x = (y & 1); x < gfx_width (); x += 2)
+            gfx_pixel (x, y, 255);
+      gfx_refresh ();
+      gfx_unlock ();
+      gfx_lock ();
+      gfx_clear (0);
+      for (int y = 0; y < gfx_height (); y++)
+         for (int x = 1 - (y & 1); x < gfx_width (); x += 2)
+            gfx_pixel (x, y, 255);
+      gfx_refresh ();
+      gfx_unlock ();
+   }
    uint32_t fresh = 0;
    uint32_t min = 0;
    uint8_t reshow = 0;
