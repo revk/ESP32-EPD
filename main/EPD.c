@@ -38,6 +38,7 @@ static struct
    uint8_t setting:1;
    uint8_t lightoverride:1;
    uint8_t startup:1;
+   uint8_t defcon:3;
 } volatile b = { 0 };
 
 volatile uint32_t override = 0;
@@ -126,6 +127,26 @@ showlights (const char *rgb)
    led_strip_refresh (strip);
 }
 
+char *
+setdefcon (int level, char *value)
+{                               // DEFCON state
+   // With value it is used to turn on/off a defcon state, the lowest set dictates the defcon level
+   // With no value, this sets the DEFCON state directly instead of using lowest of state set
+   static uint8_t state = 0;    // DEFCON state
+   if (*value)
+   {
+      if (*value == '1' || *value == 't' || *value == 'y')
+         state |= (1 << level);
+      else
+         state &= ~(1 << level);
+      int l;
+      for (l = 0; l < 7 && !(state & (1 << l)); l++);
+      b.defcon = l;
+   } else
+      b.defcon = level;
+   return "";
+}
+
 const char *
 app_callback (int client, const char *prefix, const char *target, const char *suffix, jo_t j)
 {
@@ -139,6 +160,12 @@ app_callback (int client, const char *prefix, const char *target, const char *su
          return "Expecting JSON string";
       if (len > sizeof (value))
          return "Too long";
+   }
+   if (prefix && !strcmp (prefix, "DEFCON") && target && isdigit ((int) *target) && !target[1])
+   {
+      const char *err = setdefcon (*target - '0', value);
+      b.redraw = 1;
+      return err;
    }
    if (client || !prefix || target || strcmp (prefix, topiccommand) || !suffix)
       return NULL;
@@ -222,7 +249,9 @@ download (char *url)
       .timeout_ms = 20000,
    };
    int response = -1;
-   if (i->cache < uptime () && !revk_link_down () && (!strncasecmp (url, "http://", 7) || !strncasecmp (url, "https://", 8)))
+   if (i->cache > uptime ())
+      response = (i->data ? 304 : 404); // Cached
+   else if (!revk_link_down () && (!strncasecmp (url, "http://", 7) || !strncasecmp (url, "https://", 8)))
    {
       i->cache = uptime () + cachetime;
       esp_http_client_handle_t client = esp_http_client_init (&config);
@@ -680,6 +709,13 @@ app_main ()
             }
          }
 #endif
+         else if (!strcmp (c, "$DEFCON"))
+         {
+            if (b.defcon > 5)
+               c = strdup ("-");
+            else
+               asprintf (&c, "%u", b.defcon);
+         }
          switch (widgett[w])
          {
          case REVK_SETTINGS_WIDGETT_TEXT:

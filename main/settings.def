@@ -48,6 +48,6 @@ enum	widget.h		.hide .live .array=WIDGETS .enums="Left,Centre,Right"		// Horizon
 s32	widget.y		.hide .live .array=WIDGETS			// Y position (from top, or -ve from bottom)
 enum	widget.v		.hide .live .array=WIDGETS .enums="Top,Middle,Bottom"		// Vertical align
 s32	widget.s		.hide .live .array=WIDGETS			// Widget size
-text	widget.c	"GO TO WEB PAGE SETTINGS\nTO CONFIGURE WIDGETS"	.live .array=WIDGETS			// Widget content/reference
+text	widget.c	"GO TO WEB PAGE SETTINGS\nTO CONFIGURE WIDGETS"	.hide .live .array=WIDGETS			// Widget content/reference
 
 c1	seasoncode		.live					// Override season for testing
