@@ -724,7 +724,7 @@ app_main ()
             {
                gfx_pos_t s = widgets[w];
                if (!s)
-                  s = 3;
+                  s = 5;
                gfx_text (s, "%s", c);
             }
             break;
