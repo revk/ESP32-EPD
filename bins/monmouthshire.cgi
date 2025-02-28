@@ -8,6 +8,19 @@ if(! "$UPRN") then
 	echo Specify UPRN
 	exit 1
 endif
+setenv UPRN `printenv UPRN | sed 's/[^0-9]//g'`
+
+if($?QUERY_STRING) then
+echo "Content-Type: application/json"
+echo ""
+endif
+
+setenv CACHE `date +/tmp/bins-$UPRN-%F-%H.json`
+if(-e "$CACHE") then
+	cat "$CACHE"
+	exit 0
+endif
+
 setenv TMP `mktemp`
 setenv COOKIE `mktemp`
 curl -s -L -c "$COOKIE" -b "$COOKIE" "https://maps.monmouthshire.gov.uk/?action=SetAddress&UniqueId=$UPRN" | /projects/tools/bin/htmlclean > "$TMP"
@@ -37,25 +50,24 @@ if("$DAY" == "" || ("$GREEN" != "" && `date +%s -d "$GREEN"` < `date +%s -d "$DA
 if("$DAY" == "" || ("$GARDEN" != "" && `date +%s -d "$GARDEN"` < `date +%s -d "$DAY"`)) setenv DAY "$GARDEN"
 if("$DAY" == "" || ("$YELLOW" != "" && `date +%s -d "$YELLOW"` < `date +%s -d "$DAY"`)) setenv DAY "$YELLOW"
 
-if($?QUERY_STRING) then
-echo "Content-Type: application/json"
-echo ""
-endif
 
-echo "{"
+rm -f "$CACHE"
+echo "{" >> "$CACHE"
 if("$DAY" != "") then
-echo '"baseurl":"http://epd.revk.uk",'
-echo '"collect":"'`date +%F -d "$DAY"`' 07:00:00",'
-echo '"clear":"'`date +%F -d "$DAY"`' 12:00:00",'
-echo '"bins":['
-if("$BLACK" == "$DAY") echo '{"name":"BLACK","colour":"K","icon":"Black.png"},'
-if("$RED" == "$DAY") echo '{"name":"RED","colour":"R","icon":"Red.png"},'
-if("$PURPLE" == "$DAY") echo '{"name":"PURPLE","colour":"M","icon":"Purple.png"},'
-if("$BLUE" == "$DAY") echo '{"name":"BLUE","colour":"B","icon":"Blue.png"},'
-if("$GREEN" == "$DAY") echo '{"name":"GREEN","colour":"G","icon":"Green.png"},'
-if("$GARDEN" == "$DAY") echo '{"name":"GARDEN","colour":"K","icon":"Garden.png"},'
-if("$YELLOW" == "$DAY") echo '{"name":"YELLOW","colour":"Y","icon":"Yellow.png"},'
-echo "{}"
-echo "]"
+echo '"baseurl":"http://epd.revk.uk",' >> "$CACHE"
+echo '"collect":"'`date +%F -d "$DAY"`' 07:00:00",' >> "$CACHE"
+echo '"clear":"'`date +%F -d "$DAY"`' 12:00:00",' >> "$CACHE"
+echo '"bins":[' >> "$CACHE"
+if("$BLACK" == "$DAY") echo '{"name":"BLACK","colour":"K","icon":"Black.png"},' >> "$CACHE"
+if("$RED" == "$DAY") echo '{"name":"RED","colour":"R","icon":"Red.png"},' >> "$CACHE"
+if("$PURPLE" == "$DAY") echo '{"name":"PURPLE","colour":"M","icon":"Purple.png"},' >> "$CACHE"
+if("$BLUE" == "$DAY") echo '{"name":"BLUE","colour":"B","icon":"Blue.png"},' >> "$CACHE"
+if("$GREEN" == "$DAY") echo '{"name":"GREEN","colour":"G","icon":"Green.png"},' >> "$CACHE"
+if("$GARDEN" == "$DAY") echo '{"name":"GARDEN","colour":"K","icon":"Garden.png"},' >> "$CACHE"
+if("$YELLOW" == "$DAY") echo '{"name":"YELLOW","colour":"Y","icon":"Yellow.png"},' >> "$CACHE"
+echo "{}" >> "$CACHE"
+echo "]" >> "$CACHE"
 endif
-echo "}"
+echo "}" >> "$CACHE"
+
+cat "$CACHE"
