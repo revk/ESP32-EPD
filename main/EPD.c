@@ -734,7 +734,14 @@ app_main ()
                asprintf (&c, "%02d:%02d", tm.tm_hour, tm.tm_min);
             }
 #endif
-            else if (!strcmp (c + 1, "DEFCON"))
+            else if (!strcmp (c + 1, "FULLMOON"))
+            {
+               time_t when = revk_moon_full_next (now);
+               struct tm tm = { 0 };
+               localtime_r (&when, &tm);
+               asprintf (&c, "%04d-%02d-%02d %02d:%02d:%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, tm.tm_hour, tm.tm_min,
+                         t.tm_sec);
+            } else if (!strcmp (c + 1, "DEFCON"))
             {
                if (b.defcon > 5)
                   c = strdup ("-");
@@ -896,6 +903,6 @@ revk_web_extra (httpd_req_t * req, int page)
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
    else
-      revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $DATE, $DAY%s",
+      revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $DATE, $DAY, $FULLMOON%s",
                              (poslat || poslon) ? ", $SUNRISE, $SUNSET" : "");
 }
