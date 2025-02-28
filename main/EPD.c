@@ -246,7 +246,8 @@ check_file (file_t * i)
    if (!i || !i->data || !i->size)
       return;
    i->changed = time (0);
-   if (!lwpng_get_info (i->size, i->data, &i->w, &i->h))
+   const char *e1 = lwpng_get_info (i->size, i->data, &i->w, &i->h);
+   if (!e1)
    {
       i->json = 0;              // PNG
       ESP_LOGE (TAG, "Image %s len %lu width %lu height %lu", i->url, i->size, i->w, i->h);
@@ -254,9 +255,9 @@ check_file (file_t * i)
    {                            // Not a png
       jo_t j = jo_parse_mem (i->data, i->size);
       jo_skip (j);
-      const char *e = jo_error (j, NULL);
+      const char *e2 = jo_error (j, NULL);
       jo_free (&j);
-      if (!e)
+      if (!e2)
       {                         // Valid JSON
          i->json = 1;
          i->w = i->h = 0;
@@ -268,6 +269,7 @@ check_file (file_t * i)
          i->size = 0;
          i->w = i->h = 0;
          i->changed = 0;
+         ESP_LOGE (TAG, "Unknown %s error %s", i->url, e1 ? : e2);
       }
    }
 }
@@ -315,9 +317,27 @@ download (char *url)
          if (!esp_http_client_open (client, 0))
          {
             len = esp_http_client_fetch_headers (client);
-            buf = mallocspi (len);
-            if (buf)
-               len = esp_http_client_read_response (client, (char *) buf, len);
+            ESP_LOGD (TAG, "%s Len %ld", url, len);
+            if (!len)
+            {                   // Dynamic, FFS
+               size_t l;
+               FILE *o = open_memstream ((char **) &buf, &l);
+               if (o)
+               {
+                  char temp[64];
+                  while ((len = esp_http_client_read (client, temp, sizeof (temp))) > 0)
+                     fwrite (temp, len, 1, o);
+                  fclose (o);
+                  len = l;
+               }
+               if (!buf)
+                  len = 0;
+            } else
+            {
+               buf = mallocspi (len);
+               if (buf)
+                  len = esp_http_client_read_response (client, (char *) buf, len);
+            }
             response = esp_http_client_get_status_code (client);
             if (response != 200 && response != 304)
                ESP_LOGE (TAG, "Bad response %s (%d)", url, response);
@@ -325,8 +345,8 @@ download (char *url)
          }
          esp_http_client_cleanup (client);
       }
+      ESP_LOGD (TAG, "Got %s %d", url, response);
    }
-   ESP_LOGD (TAG, "Got %s %d", url, response);
    if (response != 304)
    {
       if (response != 200)
@@ -360,10 +380,24 @@ download (char *url)
    if (card)
    {                            // SD
       char *s = strrchr (url, '/');
+      if (!s)
+         s = url;
       if (s)
       {
          char *fn = NULL;
-         asprintf (&fn, "%s%s", sd_mount, s);
+         if (*s == '/')
+            s++;
+         asprintf (&fn, "%s/%s", sd_mount, s);
+         char *q = fn + sizeof (sd_mount);
+         while (*q && isalnum ((int) (uint8_t) * q))
+            q++;
+         if (*q == '.')
+         {
+            q++;
+            while (*q && isalnum ((int) (uint8_t) * q))
+               q++;
+         }
+         *q = 0;
          if (i->data && response == 200)
          {                      // Save to card
             FILE *f = fopen (fn, "w");
@@ -876,7 +910,7 @@ app_main ()
             if (*c)
             {
                file_t *i = download (c);
-               if (i->size && i->json)
+               if (i && i->size && i->json)
                {
 
                }
@@ -932,13 +966,13 @@ revk_web_extra (httpd_req_t * req, int page)
    const char *p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
       p = "Font size<br>(-ve for descenders)";
-   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS)
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
       p = "Font size";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_HLINE)
       p = "Line width";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_VLINE)
       p = "Line height";
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE)
       add (p, "widgets");
    p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
