@@ -739,8 +739,7 @@ app_main ()
                time_t when = revk_moon_full_next (now);
                struct tm tm = { 0 };
                localtime_r (&when, &tm);
-               asprintf (&c, "%04d-%02d-%02d %02d:%02d:%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, tm.tm_hour, tm.tm_min,
-                         t.tm_sec);
+               asprintf (&c, "%04d-%02d-%02d %02d:%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, tm.tm_hour, tm.tm_min);
             } else if (!strcmp (c + 1, "DEFCON"))
             {
                if (b.defcon > 5)
