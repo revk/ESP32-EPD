@@ -675,52 +675,72 @@ app_main ()
          //if (widgett[w] || *widgetc[w]) ESP_LOGE (TAG, "Widget %2d X=%03d Y=%03d A=%02X F=%c B=%c", w + 1, gfx_x (), gfx_y (), gfx_a (), gfx_f (), gfx_b ());
          // Content substitutions
          char *c = widgetc[w];
-         if (!strcmp (c, "$TIME"))
-            asprintf (&c, "%02d:%02d", t.tm_hour, t.tm_min);
-         else if (!strcmp (c, "$DATE"))
-            asprintf (&c, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
-         else if (!strcmp (c, "$DAY"))
-            c = strdup (longday[t.tm_wday]);
-         else if (!strcmp (c, "$SSID"))
-            c = strdup (wifissid);
-         else if (!strcmp (c, "$PASS"))
-            c = strdup (wifipass);
-         else if (!strcmp (c, "$WIFI"))
+         if (*c == '$')
          {
-            if (*wifipass)
-               asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", wifissid, wifipass);
-            else
-               asprintf (&c, "WIFI:S:%s;;", wifissid);
-         } else if (!strcmp (c, "$IPV4"))
-         {
-            esp_netif_ip_info_t ip;
-            if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
-               asprintf (&c, IPSTR, IP2STR (&ip.ip));
-         }
-#ifdef CONFIG_LWIP_IPV6
-         else if (!strcmp (c, "$IPV6") || !strcmp (c, "$IP"))
-         {
-            esp_ip6_addr_t ip[LWIP_IPV6_NUM_ADDRESSES];
-            int n = esp_netif_get_all_ip6 (sta_netif, ip);
-            if (n)
+            if (!strcmp (c + 1, "TIME"))
+               asprintf (&c, "%02d:%02d", t.tm_hour, t.tm_min);
+            else if (!strcmp (c + 1, "DATE"))
+               asprintf (&c, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+            else if (!strcmp (c + 1, "DAY"))
+               c = strdup (longday[t.tm_wday]);
+            else if (!strcmp (c + 1, "SSID"))
+               c = strdup (wifissid);
+            else if (!strcmp (c + 1, "PASS"))
+               c = strdup (wifipass);
+            else if (!strcmp (c + 1, "WIFI"))
             {
-               for (int i = 0; i < n && i < 4; i++)
-                  if (n == 1 || ip[i].addr[0] != 0x000080FE)    // Yeh FE80 backwards
-                  {
-                     asprintf (&c, IPV6STR, IPV62STR (ip[i]));
-                     for (char *q = c; *q; q++)
-                        *q = toupper (*q);
-                     break;
-                  }
+               if (*wifipass)
+                  asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", wifissid, wifipass);
+               else
+                  asprintf (&c, "WIFI:S:%s;;", wifissid);
+            } else if (!strcmp (c + 1, "IPV4"))
+            {
+               esp_netif_ip_info_t ip;
+               if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
+                  asprintf (&c, IPSTR, IP2STR (&ip.ip));
             }
-         }
+#ifdef CONFIG_LWIP_IPV6
+            else if (!strcmp (c + 1, "IPV6") || !strcmp (c + 1, "IP"))
+            {
+               esp_ip6_addr_t ip[LWIP_IPV6_NUM_ADDRESSES];
+               int n = esp_netif_get_all_ip6 (sta_netif, ip);
+               if (n)
+               {
+                  for (int i = 0; i < n && i < 4; i++)
+                     if (n == 1 || ip[i].addr[0] != 0x000080FE) // Yeh FE80 backwards
+                     {
+                        asprintf (&c, IPV6STR, IPV62STR (ip[i]));
+                        for (char *q = c; *q; q++)
+                           *q = toupper (*q);
+                        break;
+                     }
+               }
+            }
 #endif
-         else if (!strcmp (c, "$DEFCON"))
-         {
-            if (b.defcon > 5)
-               c = strdup ("-");
-            else
-               asprintf (&c, "%u", b.defcon);
+#ifdef	CONFIG_REVK_SOLAR
+            else if (!strcmp (c + 1, "SUNSET") && now && (poslat || poslon))
+            {
+               time_t when = sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
+                                      (double) poslon / poslon_scale, SUN_DEFAULT);
+               struct tm tm = { 0 };
+               localtime_r (&when, &tm);
+               asprintf (&c, "%02d:%02d", tm.tm_hour, tm.tm_min);
+            } else if (!strcmp (c + 1, "SUNRISE") && now && (poslat || poslon))
+            {
+               time_t when = sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
+                                       (double) poslon / poslon_scale, SUN_DEFAULT);
+               struct tm tm = { 0 };
+               localtime_r (&when, &tm);
+               asprintf (&c, "%02d:%02d", tm.tm_hour, tm.tm_min);
+            }
+#endif
+            else if (!strcmp (c + 1, "DEFCON"))
+            {
+               if (b.defcon > 5)
+                  c = strdup ("-");
+               else
+                  asprintf (&c, "%u", b.defcon);
+            }
          }
          switch (widgett[w])
          {
@@ -876,5 +896,6 @@ revk_web_extra (httpd_req_t * req, int page)
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
    else
-      revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $DATE, $DAY");
+      revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $DATE, $DAY%s",
+                             (poslat || poslon) ? ", $SUNRISE, $SUNSET" : "");
 }
