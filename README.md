@@ -30,6 +30,9 @@ The *content* for any widget can be one of a number of presets, as follows :-
 |`$WIFI`|QR code formatted current WiFi details|
 |`$IPV6`|Current main IPv6 (also `$IP`)|
 |`$IPV4`|Current IPv4|
+|`$SUNRISE`|Next sunrise (HH:MM), needs `poslat` and `poslon` set|
+|`$SUNSET`|Next sunset (HH:MM), needs `poslat` and `poslon` set|
+|`$FULLMOON`|Next full moon (YYYY-MM-DD HH:MM)|
 
 More may be added over time. All of these are only for whole string replacing it.
 
@@ -61,17 +64,17 @@ Draws a horizontal or virtial line based on size and alignment.
 
 ### Bins
 
-This allows display of bin collection. This is based on a JSON file, the content is the URL tyo fetch the JSON. A script `monmouthire.cgi` is defined for now.
+This allows display of bin collection. This is based on a JSON file, the content is the URL tyo fetch the JSON. A script `monmouthire.cgi` is defined for now. The *size* is font side for the bin collection DAY which is shown along with icons.
 
 Top level JSON, specifies next bin collection day.
 
 |Field|Meaning|
 |-----|-------|
 |`baseurl`|Base URL for icons, default is system wide base url|
-|`cache`|Datetime for caching this JSON, default is to `clear`, or 1 hour|
+|`cache`|Datetime for caching this JSON, default is to `clear`, or 1 hour from last check|
 |`display`|Datetime when to display, default 5 days before `collect`|
 |`leds`|Datetime for LEDs show, default is 12 hours before `collect`|
-|`collect`|Datetime for collection, e.g. Monmouthshire is at `07:00:00`|
+|`collect`|Datetime for collection, e.g. Monmouthshire is at `07:00:00` on collection day|
 |`clear`|Datetime to clear dispaly, default is 12 hours after `collect`|
 |`bins`|Array of bin objects for next collection|
 
@@ -81,7 +84,7 @@ Bins array has objects, and can have an empty object if needed (useful as arrays
 |-----|-------|
 |`name`|Name of bin, used as default if icon cannot be shown - so could be `Black`, or `General`, etc.|
 |`colour`|Colour letter for LEDs|
-|`icon`|Icon URL, can be tail url from `baseurl`|
+|`icon`|Icon URL for PNG icon, can be tail url from `baseurl`|
 
 Example.
 

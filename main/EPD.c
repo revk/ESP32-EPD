@@ -269,7 +269,7 @@ check_file (file_t * i)
          i->size = 0;
          i->w = i->h = 0;
          i->changed = 0;
-         ESP_LOGE (TAG, "Unknown %s error %s", i->url, e1 ? : e2);
+         ESP_LOGE (TAG, "Unknown %s error %s %s", i->url, e1?:"",e2?:"");
       }
    }
 }
