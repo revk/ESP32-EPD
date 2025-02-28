@@ -222,18 +222,62 @@ typedef struct file_s
 file_t *files = NULL;
 
 file_t *
-download (char *url)
+find_file (char *url)
 {
    file_t *i;
    for (i = files; i && strcmp (i->url, url); i = i->next);
    if (!i)
    {
       i = malloc (sizeof (*i));
-      memset (i, 0, sizeof (*i));
-      i->url = strdup (url);
-      i->next = files;
-      files = i;
+      if (i)
+      {
+         memset (i, 0, sizeof (*i));
+         i->url = strdup (url);
+         i->next = files;
+         files = i;
+      }
    }
+   return i;
+}
+
+void
+check_file (file_t * i)
+{
+   if (!i || !i->data || !i->size)
+      return;
+   i->changed = time (0);
+   if (!lwpng_get_info (i->size, i->data, &i->w, &i->h))
+   {
+      i->json = 0;              // PNG
+      ESP_LOGE (TAG, "Image %s len %lu width %lu height %lu", i->url, i->size, i->w, i->h);
+   } else
+   {                            // Not a png
+      jo_t j = jo_parse_mem (i->data, i->size);
+      jo_skip (j);
+      const char *e = jo_error (j, NULL);
+      jo_free (&j);
+      if (!e)
+      {                         // Valid JSON
+         i->json = 1;
+         i->w = i->h = 0;
+         ESP_LOGE (TAG, "JSON %s len %lu", i->url, i->size);
+      } else
+      {                         // Not sensible
+         free (i->data);
+         i->data = NULL;
+         i->size = 0;
+         i->w = i->h = 0;
+         i->changed = 0;
+      }
+   }
+}
+
+file_t *
+download (file_t * i)
+{
+   if (!i)
+      return i;
+   char *url;
    if (!*baseurl || !strncasecmp (i->url, "http://", 7) || !strncasecmp (i->url, "https://", 8))
       url = strdup (i->url);    // Use as is
    else
@@ -244,7 +288,6 @@ download (char *url)
       asprintf (&url, "%.*s/%s", l, baseurl, i->url);
    }
    ESP_LOGD (TAG, "Get %s", url);
-   time_t now = time (0);
    int32_t len = 0;
    uint8_t *buf = NULL;
    esp_http_client_config_t config = {
@@ -309,9 +352,7 @@ download (char *url)
             free (i->data);
             i->data = buf;
             i->size = len;
-            lwpng_get_info (i->size, i->data, &i->w, &i->h);
-            i->changed = now;
-            ESP_LOGE (TAG, "Image %s len %lu width %lu height %lu", url, i->size, i->w, i->h);
+            check_file (i);
          }
          buf = NULL;
       }
@@ -365,7 +406,7 @@ download (char *url)
                         free (i->data);
                         i->data = buf;
                         i->size = s.st_size;
-                        lwpng_get_info (i->size, i->data, &i->w, &i->h);
+                        check_file (i);
                      }
                      buf = NULL;
                   }
@@ -378,12 +419,6 @@ download (char *url)
       }
    }
    free (buf);
-   if (i->data && !i->w)
-   {                            // Not PNG
-      free (i->data);
-      i->data = NULL;
-      i->size = 0;
-   }
    free (url);
    return i;
 }
@@ -792,16 +827,16 @@ app_main ()
                   if (season)
                   {
                      *s = season;
-                     i = download (url);
+                     i = download (find_file (url));
                   }
                   if (!i || !i->size)
                   {
                      strcpy (s, s + 1);
-                     i = download (url);
+                     i = download (find_file (url));
                   }
 
                } else
-                  i = download (c);
+                  i = download (find_file (c));
                if (i && i->size && i->w && i->h)
                {
                   plot_t settings = { 0 };
