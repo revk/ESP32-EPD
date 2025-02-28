@@ -42,7 +42,7 @@ bit	fb.version		.live			// Assume SNMP desc is FireBrick, extract version
 s	baseurl		.live			// Default base URL
 u32	cachetime	300 .live		// Default cache for https
 
-enum	widget.t		.hide .live .array=WIDGETS .enums="Text,Blocks,Digits,Image,QR,HLine,VLine"		// Widget type
+enum	widget.t		.hide .live .array=WIDGETS .enums="Text,Blocks,Digits,Image,QR,HLine,VLine,Bins"		// Widget type
 enum	widget.k		.hide .live .array=WIDGETS .enums="Normal,Invert,Mask,MaskInvert"	// Plot mode
 s32	widget.x		.hide .live .array=WIDGETS			// X position (from left, or -ve from right)
 enum	widget.h		.hide .live .array=WIDGETS .enums="Left,Centre,Right"		// Horizontal align

@@ -273,11 +273,11 @@ check_file (file_t * i)
 }
 
 file_t *
-download (file_t * i)
+download (char *url)
 {
+   file_t *i = find_file (url);
    if (!i)
       return i;
-   char *url;
    if (!*baseurl || !strncasecmp (i->url, "http://", 7) || !strncasecmp (i->url, "https://", 8))
       url = strdup (i->url);    // Use as is
    else
@@ -827,16 +827,16 @@ app_main ()
                   if (season)
                   {
                      *s = season;
-                     i = download (find_file (url));
+                     i = download (url);
                   }
                   if (!i || !i->size)
                   {
                      strcpy (s, s + 1);
-                     i = download (find_file (url));
+                     i = download (url);
                   }
 
                } else
-                  i = download (find_file (c));
+                  i = download (c);
                if (i && i->size && i->w && i->h)
                {
                   plot_t settings = { 0 };
@@ -870,6 +870,16 @@ app_main ()
                else if (widgetv[w] == REVK_SETTINGS_WIDGETV_BOTTOM)
                   y -= s;
                gfx_line (x, y, x, y + s, 255);
+            }
+            break;
+         case REVK_SETTINGS_WIDGETT_BINS:
+            if (*c)
+            {
+               file_t *i = download (c);
+               if (i->size && i->json)
+               {
+
+               }
             }
             break;
          }
@@ -928,18 +938,20 @@ revk_web_extra (httpd_req_t * req, int page)
       p = "Line width";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_VLINE)
       p = "Line height";
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE)
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
       add (p, "widgets");
    p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       p = "PNG Image URL";
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
+      p = "Bins data JSON URL";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
       p = "QR code content";
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
       add (p, "widgetc");
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
-   else
+   else if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
       revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $DATE, $DAY, $FULLMOON%s",
                              (poslat || poslon) ? ", $SUNRISE, $SUNSET" : "");
 }
