@@ -812,9 +812,11 @@ app_main ()
          if (c != widgetc[w])
             free (c);
       }
-      gfx_unlock ();
       if (reshow)
          b.redraw = 1;
+      if (b.redraw)
+         gfx_caffeine ();
+      gfx_unlock ();
    }
 }
 
