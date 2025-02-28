@@ -61,7 +61,43 @@ Draws a horizontal or virtial line based on size and alignment.
 
 ### Bins
 
-This allows display of bin collection. This is based on a JSON file, the content is the URL tyo fetch the JSON.
+This allows display of bin collection. This is based on a JSON file, the content is the URL tyo fetch the JSON. A script `monmouthire.cgi` is defined for now.
+
+Top level JSON, specifies next bin collection day.
+
+|Field|Meaning|
+|-----|-------|
+|`baseurl`|Base URL for icons, default is system wide base url|
+|`cache`|Datetime for caching this JSON, default is to `clear`, or 1 hour|
+|`display`|Datetime when to display, default 5 days before `collect`|
+|`leds`|Datetime for LEDs show, default is 12 hours before `collect`|
+|`collect`|Datetime for collection, e.g. Monmouthshire is at `07:00:00`|
+|`clear`|Datetime to clear dispaly, default is 12 hours after `collect`|
+|`bins`|Array of bin objects for next collection|
+
+Bins array has objects, and can have an empty object if needed (useful as arrays cannot have trailing commas).
+
+|Field|Meaning|
+|-----|-------|
+|`name`|Name of bin, used as default if icon cannot be shown - so could be `Black`, or `General`, etc.|
+|`colour`|Colour letter for LEDs|
+|`icon`|Icon URL, can be tail url from `baseurl`|
+
+Example.
+
+```
+{
+	"baseurl":"http://epd.revk.uk",
+	"collect":"2025-03-05 07:00:00",
+	"clear":"2025-03-05 12:00:00",
+	"bins":[
+		{"name":"RED","colour":"R","icon":"Red.png"},
+		{"name":"PURPLE","colour":"M","icon":"Purple.png"},
+		{"name":"BLUE","colour":"B","icon":"Blue.png"},
+		{}
+	]
+}
+```
 
 ### More
 
