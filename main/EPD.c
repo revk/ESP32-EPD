@@ -215,6 +215,8 @@ typedef struct file_s
    uint32_t w;                  // PNG width
    uint32_t h;                  // PNG height
    uint8_t *data;               // File data
+   uint8_t card:1;              // We have tried card
+   uint8_t json:1;              // Is JSON
 } file_t;
 
 file_t *files = NULL;
@@ -335,8 +337,9 @@ download (char *url)
                ESP_LOGE (TAG, "Write %s", fn);
             } else
                ESP_LOGE (TAG, "Write fail %s", fn);
-         } else if (!i->data || (response && response != 304 && response != -1))
+         } else if (!i->card && (!i->data || (response && response != 304 && response != -1)))
          {                      // Load from card
+            i->card = 1;        // card tried, no need to try again
             FILE *f = fopen (fn, "r");
             if (f)
             {
@@ -368,9 +371,8 @@ download (char *url)
                   }
                }
                fclose (f);
-            } else if (i->cache < uptime ())
+            } else
                ESP_LOGE (TAG, "Read fail %s", fn);
-            i->cache = uptime () + cachetime;
          }
          free (fn);
       }
