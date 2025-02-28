@@ -44,6 +44,7 @@ endif
 
 echo "{"
 if("$DAY" != "") then
+echo '"baseurl":"http://epd.revk.uk",'
 echo '"collect":"'`date +%F -d "$DAY"`' 07:00:00",'
 echo '"clear":"'`date +%F -d "$DAY"`' 12:00:00",'
 echo '"bins":['
