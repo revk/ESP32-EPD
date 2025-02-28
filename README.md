@@ -59,6 +59,10 @@ The content is content of QR code, and size if the overall size (width and heigh
 
 Draws a horizontal or virtial line based on size and alignment.
 
+### Bins
+
+This allows display of bin collection. This is based on a JSON file, the content is the URL tyo fetch the JSON.
+
 ### More
 
 More widgets planned
