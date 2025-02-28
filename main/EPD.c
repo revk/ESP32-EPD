@@ -352,7 +352,7 @@ download (char *url)
                      {
                         free (buf);
                         response = 0;   // No change
-                     } else
+                     } else if (i->cache < uptime ())
                      {
                         ESP_LOGE (TAG, "Read %s", fn);
                         jo_t j = jo_object_alloc ();
