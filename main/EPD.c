@@ -907,14 +907,8 @@ app_main ()
             }
             break;
          case REVK_SETTINGS_WIDGETT_BINS:
-            if (*c)
-            {
-               file_t *i = download (c);
-               if (i && i->size && i->json)
-               {
-
-               }
-            }
+	    extern void widget_bins(int8_t,const char *);
+	    widget_bins(widgets[w],c);
             break;
          }
          if (c != widgetc[w])
