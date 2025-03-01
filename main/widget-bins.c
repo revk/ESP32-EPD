@@ -227,7 +227,6 @@ widget_bins (int8_t s, const char *c)
                   else if ((a & GFX_C) == GFX_C)
                      x += (width - i->start) / 2;
                }
-               ESP_LOGE (TAG, "%s ox=%d x=%d y=%d", i->name, ox, x - ox, oy);
                if (i->file)
                   plot (i->file, x, oy + i->dy);        // Icon
                else
