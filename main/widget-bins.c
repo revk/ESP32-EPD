@@ -75,6 +75,7 @@ widget_bins (int8_t s, const char *c)
          base = jo_strdup (j);
       if (jo_find (j, "bins") == JO_ARRAY)
       {
+         char hasdesc = 0;
          while (jo_next (j) == JO_OBJECT)
          {
             icon_t *i = NULL;
@@ -94,8 +95,11 @@ widget_bins (int8_t s, const char *c)
                if (jo_next (j) == JO_STRING)
                {
                   if (!strcmp (tag, "name"))
+                  {
                      i->name = jo_strdup (j);
-                  else if (!strcmp (tag, "colour"))
+                     if (!hasdesc && i->name && gfx_text_desc (i->name))
+                        hasdesc = 1;
+                  } else if (!strcmp (tag, "colour"))
                   {
                      char *c = jo_strdup (j);
                      if (c && *c)
@@ -118,6 +122,8 @@ widget_bins (int8_t s, const char *c)
                }
             }
          }
+         if (!hasdesc)
+            s2 = -s2;           // no descenders
       }
       fclose (ledf);
       if (icons)
@@ -239,6 +245,7 @@ widget_bins (int8_t s, const char *c)
          }
          if (s < 0)
             showday ();
+         setlights (leds < now ? led : NULL);
       }
       // Cleanup
       while (icons)

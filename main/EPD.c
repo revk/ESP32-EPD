@@ -119,6 +119,17 @@ showlights (const char *rgb)
    led_strip_refresh (strip);
 }
 
+void
+setlights (const char *rgb)
+{
+   if (rgb)
+   {
+      showlights (rgb);
+      b.lightoverride = 1;
+   } else
+      b.lightoverride = 0;
+}
+
 char *
 setdefcon (int level, char *value)
 {                               // DEFCON state
