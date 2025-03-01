@@ -9,9 +9,9 @@ typedef struct icon_s
    struct icon_s *next;
    file_t *file;
    char *name;
-   char *colour;
    gfx_pos_t w,
-     h;
+     h,
+     dy;
    gfx_pos_t start,
      end;
 } icon_t;
@@ -23,8 +23,11 @@ widget_bins (int8_t s, const char *c)
    if (!c || !*c || now < 1000000000)
       return;
    if (!s)
-      s = 5;                    // Text size for day
-   int s2 = -s / 2;             // Text size for icons
+      s = 9;                    // Text size for day
+   int s1 = s;
+   if (s1 < 0)
+      s1 = -s1;
+   int s2 = -s1 / 2;            // Text size for icons
    gfx_align_t a = gfx_a ();
    file_t *bins = download ((char *) c);
    if (!bins || !bins->size || !bins->data)
@@ -59,8 +62,11 @@ widget_bins (int8_t s, const char *c)
    if (!cache)
       cache = time (0) + 3600;
    bins->cache = cache;
+   char *led = NULL;
    if (display && clear && display < now && now < clear)
    {
+      size_t ledl;
+      FILE *ledf = open_memstream (&led, &ledl);
       // Icons
       icon_t *icons = NULL,
          **ie = &icons;
@@ -90,8 +96,12 @@ widget_bins (int8_t s, const char *c)
                   if (!strcmp (tag, "name"))
                      i->name = jo_strdup (j);
                   else if (!strcmp (tag, "colour"))
-                     i->colour = jo_strdup (j);
-                  else if (!strcmp (tag, "icon"))
+                  {
+                     char *c = jo_strdup (j);
+                     if (c && *c)
+                        fwrite (c, strlen (c), 1, ledf);
+                     free (c);
+                  } else if (!strcmp (tag, "icon"))
                   {
                      char *leaf = jo_strdup (j);
                      if (leaf)
@@ -109,6 +119,7 @@ widget_bins (int8_t s, const char *c)
             }
          }
       }
+      fclose (ledf);
       if (icons)
       {
          for (icon_t * i = icons; i; i = i->next)
@@ -140,9 +151,9 @@ widget_bins (int8_t s, const char *c)
          gfx_pos_t dayw,
            dayh;
          const char *day;
-         gfx_text_size (s, day = longday[tm.tm_wday], &dayw, &dayh);
+         gfx_text_size (s1, day = longday[tm.tm_wday], &dayw, &dayh);
          if (dayw > space)
-            gfx_text_size (s, day = shortday[tm.tm_wday], &dayw, &dayh);
+            gfx_text_size (s1, day = shortday[tm.tm_wday], &dayw, &dayh);
          if (dayw > space)
             space = dayw;
          gfx_pos_t width = dayw,
@@ -164,6 +175,17 @@ widget_bins (int8_t s, const char *c)
                   i->end = lh;
                   if (w > width)
                      width = w;
+                  if ((a & GFX_M) != GFX_T)
+                     while (sol)
+                     {
+                        if ((a & GFX_M) == GFX_B)
+                           sol->dy = lh - sol->h;
+                        else
+                           sol->dy = (lh - sol->h) / 2;
+                        if (sol == i)
+                           break;
+                        sol = sol->next;
+                     }
                   height += lh;
                   lh = 0;
                   w = 0;
@@ -183,10 +205,10 @@ widget_bins (int8_t s, const char *c)
                gfx_pos (ox + width, oy, GFX_R | GFX_T);
             else
                gfx_pos (ox + width / 2, oy, GFX_C | GFX_T);
-            gfx_text (s, day);
+            gfx_text (s1, day);
             oy += dayh;
          }
-         if ((a & GFX_M) != GFX_B)
+         if (s > 0)
             showday ();
          {
             gfx_pos_t x = ox;
@@ -200,12 +222,11 @@ widget_bins (int8_t s, const char *c)
                      x += (width - i->start) / 2;
                }
                ESP_LOGE (TAG, "%s ox=%d x=%d y=%d", i->name, ox, x - ox, oy);
-               // Maybe T/B align in row?
                if (i->file)
-                  plot (i->file, x, oy);        // Icon
+                  plot (i->file, x, oy + i->dy);        // Icon
                else
                {                // Name
-                  gfx_pos (x, oy, GFX_L | GFX_T);
+                  gfx_pos (x, oy + i->dy, GFX_L | GFX_T);
                   gfx_text (s2, i->name);
                }
                x += i->w;
@@ -216,21 +237,21 @@ widget_bins (int8_t s, const char *c)
                }
             }
          }
-         if ((a & GFX_M) == GFX_B)
+         if (s < 0)
             showday ();
       }
       // Cleanup
-      free (base);
       while (icons)
       {
-         ESP_LOGD (TAG, "Icon name=%s colour=%s size=%ld width=%u height=%u start=%u end=%u", icons->name ? : "-",
-                   icons->colour ? : "-", icons->file ? icons->file->size : 0, icons->w, icons->h, icons->start, icons->end);
+         ESP_LOGD (TAG, "Icon name=%s size=%ld width=%d height=%d start=%d end=%d dy=%d led=%s", icons->name ? : "-",
+                   icons->file ? icons->file->size : 0, icons->w, icons->h, icons->start, icons->end, icons->dy, led ? : "-");
          icon_t *next = icons->next;
          free (icons->name);
-         free (icons->colour);
          free (icons);
          icons = next;
       }
+      free (base);
+      free (led);
    }
    jo_free (&j);
 }

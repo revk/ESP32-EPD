@@ -728,13 +728,13 @@ app_main ()
       for (int w = 0; w < WIDGETS; w++)
       {
          gfx_align_t a = 0;
-         if (widgeth[w] <= REVK_SETTINGS_WIDGETH_CENTRE)
+         if (!widgetx[w] || widgeth[w] <= REVK_SETTINGS_WIDGETH_CENTRE)
             a |= GFX_L;
-         if (widgeth[w] >= REVK_SETTINGS_WIDGETH_CENTRE)
+         if (widgetx[w] && widgeth[w] >= REVK_SETTINGS_WIDGETH_CENTRE)
             a |= GFX_R;
-         if (widgetv[w] <= REVK_SETTINGS_WIDGETV_MIDDLE)
+         if (!widgety[w] || widgetv[w] <= REVK_SETTINGS_WIDGETV_MIDDLE)
             a |= GFX_T;
-         if (widgetv[w] >= REVK_SETTINGS_WIDGETV_MIDDLE)
+         if (widgety[w] && widgetv[w] >= REVK_SETTINGS_WIDGETV_MIDDLE)
             a |= GFX_B;
          gfx_pos_t x = widgetx[w];
          if (x < 0)
