@@ -18,6 +18,7 @@ static const char TAG[] = "EPD";
 #include <hal/spi_types.h>
 #include <driver/gpio.h>
 #include <lwpng.h>
+#include "EPD.h"
 
 #define	LEFT	0x80            // Flags on font size
 #define	RIGHT	0x40
@@ -45,18 +46,6 @@ volatile uint32_t override = 0;
 
 led_strip_handle_t strip = NULL;
 sdmmc_card_t *card = NULL;
-
-static void *
-my_alloc (void *opaque, uInt items, uInt size)
-{
-   return mallocspi (items * size);
-}
-
-static void
-my_free (void *opaque, void *address)
-{
-   free (address);
-}
 
 const char *
 gfx_qr (const char *value, int max)
@@ -90,6 +79,7 @@ gfx_qr (const char *value, int max)
 }
 
 const char *const longday[] = { "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY" };
+const char *const shortday[] = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
 
 time_t
 parse_time (const char *t)
@@ -205,20 +195,6 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    return NULL;
 }
 
-typedef struct file_s
-{
-   struct file_s *next;         // Next file in chain
-   char *url;                   // URL as passed to download
-   uint32_t cache;              // Cache until this uptiome
-   time_t changed;              // Last changed
-   uint32_t size;               // File size
-   uint32_t w;                  // PNG width
-   uint32_t h;                  // PNG height
-   uint8_t *data;               // File data
-   uint8_t card:1;              // We have tried card
-   uint8_t json:1;              // Is JSON
-} file_t;
-
 file_t *files = NULL;
 
 file_t *
@@ -228,7 +204,7 @@ find_file (char *url)
    for (i = files; i && strcmp (i->url, url); i = i->next);
    if (!i)
    {
-      i = malloc (sizeof (*i));
+      i = mallocspi (sizeof (*i));
       if (i)
       {
          memset (i, 0, sizeof (*i));
@@ -269,7 +245,7 @@ check_file (file_t * i)
          i->size = 0;
          i->w = i->h = 0;
          i->changed = 0;
-         ESP_LOGE (TAG, "Unknown %s error %s %s", i->url, e1?:"",e2?:"");
+         ESP_LOGE (TAG, "Unknown %s error %s %s", i->url, e1 ? : "", e2 ? : "");
       }
    }
 }
@@ -409,7 +385,7 @@ download (char *url)
                fclose (f);
                jo_string (j, "write", fn);
                revk_info ("SD", &j);
-               ESP_LOGE (TAG, "Write %s", fn);
+               ESP_LOGE (TAG, "Write %s %lu", fn, i->size);
             } else
                ESP_LOGE (TAG, "Write fail %s", fn);
          } else if (!i->card && (!i->data || (response && response != 304 && response != -1)))
@@ -457,19 +433,44 @@ download (char *url)
    return i;
 }
 
+// Image plot
+
 typedef struct plot_s
 {
    gfx_pos_t ox,
      oy;
 } plot_t;
 
-const char *
-plot (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
+static void *
+my_alloc (void *opaque, uInt items, uInt size)
+{
+   return mallocspi (items * size);
+}
+
+static void
+my_free (void *opaque, void *address)
+{
+   free (address);
+}
+
+static const char *
+pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
 {
    plot_t *p = opaque;
    if (a & 0x8000)
       gfx_pixel (p->ox + x, p->oy + y, (g & 0x8000) ? 255 : 0);
    return NULL;
+}
+
+void
+plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy)
+{
+   plot_t settings = { ox, oy };
+   lwpng_t *p = lwpng_init (&settings, NULL, &pixel, &my_alloc, &my_free, NULL);
+   lwpng_data (p, i->size, i->data);
+   const char *e = lwpng_end (&p);
+   if (e)
+      ESP_LOGE (TAG, "PNG fail %s", e);
 }
 
 #ifdef	CONFIG_REVK_APCONFIG
@@ -873,13 +874,11 @@ app_main ()
                   i = download (c);
                if (i && i->size && i->w && i->h)
                {
-                  plot_t settings = { 0 };
-                  gfx_draw (i->w, i->h, 0, 0, &settings.ox, &settings.oy);
-                  lwpng_t *p = lwpng_init (&settings, NULL, &plot, &my_alloc, &my_free, NULL);
-                  lwpng_data (p, i->size, i->data);
-                  const char *e = lwpng_end (&p);
-                  if (e)
-                     ESP_LOGE (TAG, "PNG fail %s", e);
+                  gfx_pos_t ox,
+                    oy;
+                  gfx_draw (i->w, i->h, 0, 0, &ox, &oy);
+                  plot (i, ox, oy);
+
                }
             }
             break;
@@ -907,8 +906,8 @@ app_main ()
             }
             break;
          case REVK_SETTINGS_WIDGETT_BINS:
-	    extern void widget_bins(int8_t,const char *);
-	    widget_bins(widgets[w],c);
+            extern void widget_bins (int8_t, const char *);
+            widget_bins (widgets[w], c);
             break;
          }
          if (c != widgetc[w])
