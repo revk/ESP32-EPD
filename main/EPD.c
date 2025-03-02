@@ -127,7 +127,10 @@ setlights (const char *rgb)
       showlights (rgb);
       b.lightoverride = 1;
    } else
+   {
+      showlights ("");
       b.lightoverride = 0;
+   }
 }
 
 char *
@@ -582,6 +585,7 @@ app_main ()
       gfx_refresh ();
       gfx_unlock ();
    }
+      showlights ("");
    uint32_t fresh = 0;
    uint32_t min = 0;
    while (1)
