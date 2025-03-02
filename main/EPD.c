@@ -48,7 +48,7 @@ led_strip_handle_t strip = NULL;
 sdmmc_card_t *card = NULL;
 
 const char *
-gfx_qr (const char *value, int max)
+gfx_qr (const char *value, uint32_t max)
 {
 #ifndef	CONFIG_GFX_NONE
    unsigned int width = 0;
@@ -58,9 +58,15 @@ gfx_qr (const char *value, int max)
    if (!max)
       max = width;
    if (max < width)
+   {
+      free (qr);
       return "No space";
+   }
    if (max > gfx_width () || max > gfx_height ())
+   {
+      free (qr);
       return "Too big";
+   }
    int s = max / width;
    gfx_pos_t ox,
      oy;
@@ -678,17 +684,20 @@ app_main ()
                gfx_lock ();
                gfx_message (msg);
                int max = gfx_height () - gfx_y ();
-               if (max > gfx_width () / 2)
-                  max = gfx_width () / 2;
-               if (qr1)
+               if (max > 0)
                {
-                  gfx_pos (0, gfx_height () - 1, GFX_L | GFX_B);
-                  gfx_qr (qr1, max);
-               }
-               if (qr2)
-               {
-                  gfx_pos (gfx_width () - 1, gfx_height () - 1, GFX_R | GFX_B);
-                  gfx_qr (qr2, max);
+                  if (max > gfx_width () / 2)
+                     max = gfx_width () / 2;
+                  if (qr1)
+                  {
+                     gfx_pos (0, gfx_height () - 1, GFX_L | GFX_B);
+                     gfx_qr (qr1, max);
+                  }
+                  if (qr2)
+                  {
+                     gfx_pos (gfx_width () - 1, gfx_height () - 1, GFX_R | GFX_B);
+                     gfx_qr (qr2, max);
+                  }
                }
                gfx_unlock ();
             }
