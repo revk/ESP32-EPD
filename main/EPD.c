@@ -725,6 +725,8 @@ app_main ()
          fresh = now / refresh;
          gfx_refresh ();
       }
+         if (gfxnight&& t.tm_hour >= 2 && t.tm_hour < 4)
+            gfx_refresh ();     // Full update
       gfx_clear (0);
       for (int w = 0; w < WIDGETS; w++)
       {
