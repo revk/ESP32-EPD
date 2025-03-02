@@ -8,7 +8,6 @@ gpio	gfx.cs		38				// E-paper CS
 gpio	gfx.dc		37				// E-paper DC
 gpio	gfx.rst		36				// E-paper RST
 gpio	gfx.busy	35				// E-paper BUSY
-u8	gfx.repeat	3	.live			// E-paper fast update repeat
 bit	gfx.night	1	.live			// E-paper overnight refresh
 
 gpio	relay						// Relay output

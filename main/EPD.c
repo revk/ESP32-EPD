@@ -584,7 +584,6 @@ app_main ()
    }
    uint32_t fresh = 0;
    uint32_t min = 0;
-   uint8_t reshow = 0;
    while (1)
    {
       usleep (100000);
@@ -595,7 +594,6 @@ app_main ()
       {
          b.setting = 0;
          b.redraw = 1;
-         reshow = gfxrepeat;
       }
       uint32_t up = uptime ();
       if (b.wificonnect)
@@ -689,7 +687,6 @@ app_main ()
                   gfx_qr (qr2, max);
                }
                gfx_unlock ();
-               reshow = gfxrepeat;
             }
             free (qr1);
             free (qr2);
@@ -700,19 +697,10 @@ app_main ()
          if (override < up)
             min = override = 0;
          else
-         {
-            if (reshow)
-            {
-               reshow--;
-               gfx_force ();
-            }
             continue;
-         }
       }
       if (!b.startup || (now / 60 == min && !b.redraw))
          continue;              // Check / update every minute
-      if (now / 60 != min && reshow < 3)
-         reshow = gfxrepeat;
       min = now / 60;
       struct tm t;
       localtime_r (&now, &t);
@@ -728,8 +716,6 @@ app_main ()
       b.redraw = 0;
       // Image
       gfx_lock ();
-      if (reshow)
-         reshow--;
       if (refresh && now / refresh != fresh)
       {                         // Periodic refresh, e.g.once a day
          fresh = now / refresh;
@@ -924,10 +910,6 @@ app_main ()
          if (c != widgetc[w])
             free (c);
       }
-      if (reshow)
-         b.redraw = 1;
-      if (b.redraw)
-         gfx_caffeine ();
       gfx_unlock ();
    }
 }
