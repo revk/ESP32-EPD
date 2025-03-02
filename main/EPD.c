@@ -585,7 +585,7 @@ app_main ()
       gfx_refresh ();
       gfx_unlock ();
    }
-      showlights ("");
+   showlights ("");
    uint32_t fresh = 0;
    uint32_t min = 0;
    while (1)
@@ -725,8 +725,8 @@ app_main ()
          fresh = now / refresh;
          gfx_refresh ();
       }
-         if (gfxnight&& t.tm_hour >= 2 && t.tm_hour < 4)
-            gfx_refresh ();     // Full update
+      if (gfxnight && t.tm_hour >= 2 && t.tm_hour < 4)
+         gfx_refresh ();        // Full update
       gfx_clear (0);
       for (int w = 0; w < WIDGETS; w++)
       {
