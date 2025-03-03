@@ -486,7 +486,7 @@ void
 plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy)
 {
    plot_t settings = { ox, oy };
-   lwpng_t *p = lwpng_init (&settings, NULL, &pixel, &my_alloc, &my_free, NULL);
+   lwpng_t *p = lwpng_decode (&settings, NULL, &pixel, &my_alloc, &my_free, NULL);
    lwpng_data (p, i->size, i->data);
    const char *e = lwpng_end (&p);
    if (e)
