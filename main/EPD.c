@@ -526,8 +526,18 @@ web_root (httpd_req_t * req)
    if (revk_link_down ())
       return revk_web_settings (req);   // Direct to web set up
    revk_web_head (req, *hostname ? hostname : appname);
-
-   // TODO
+#ifdef	CONFIG_LWPNG_ENCODE
+   revk_web_send (req, "<p>");
+   int32_t w = gfx_width ();
+   int32_t h = gfx_height ();
+   if (gfxflip & 4)
+      revk_web_send (req,
+                     "<p><div style='width:%dpx;height:%dpx;'><img src='frame.png' style='transform:rotate(90deg)translate(%dpx,%dpx);'></div>",
+                     w, h, (h - w) / 2, (h - w) / 2);
+   else
+      revk_web_send (req, "<p><img src='frame.png'>");
+   revk_web_send (req, "</p><p><a href=/>Reload</a></p>");
+#endif
    return revk_web_foot (req, 0, 1, NULL);
 }
 
@@ -535,20 +545,21 @@ web_root (httpd_req_t * req)
 static esp_err_t
 web_frame (httpd_req_t * req)
 {
-   uint8_t *png=NULL;
-   size_t len=0;
    gfx_lock ();
-   uint32_t w=gfx_raw_w();
-   uint32_t h=gfx_raw_h();
-   uint8_t *b=gfx_raw_b();
+   uint8_t *png = NULL;
+   size_t len = 0;
+   uint32_t w = gfx_raw_w ();
+   uint32_t h = gfx_raw_h ();
+   uint8_t *b = gfx_raw_b ();
+   ESP_LOGD (TAG, "Encode W=%lu H=%lu", w, h);
    lwpng_encode_t *p = lwpng_encode_1bit (w, h, &my_alloc, &my_free, NULL);
-   while(h--)
+   while (h--)
    {
-	   lwpng_encode_scanline(p,b);
-	   b+=(w+7)/8;
+      lwpng_encode_scanline (p, b);
+      b += (w + 7) / 8;
    }
    const char *e = lwpng_encoded (&p, &len, &png);
-   gfx_unlock ();
+   ESP_LOGD (TAG, "Encoded %u bytes %s", len, e ? : "");
    if (e)
    {
       revk_web_head (req, *hostname ? hostname : appname);
@@ -559,7 +570,8 @@ web_frame (httpd_req_t * req)
       httpd_resp_set_type (req, "image/png");
       httpd_resp_send (req, (char *) png, len);
    }
-   free(png);
+   free (png);
+   gfx_unlock ();
    return ESP_OK;
 }
 #endif
