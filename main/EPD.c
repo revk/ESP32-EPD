@@ -546,15 +546,15 @@ web_root (httpd_req_t * req)
 void
 epd_lock (void)
 {
-   gfx_lock ();
    xSemaphoreTake (epd_mutex, portMAX_DELAY);
+   gfx_lock ();
 }
 
 void
 epd_unlock (void)
 {
-   xSemaphoreGive (epd_mutex);
    gfx_unlock ();
+   xSemaphoreGive (epd_mutex);
 }
 
 #ifdef	CONFIG_LWPNG_ENCODE
