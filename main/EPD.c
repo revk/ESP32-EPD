@@ -540,7 +540,7 @@ web_frame (httpd_req_t * req)
    gfx_lock ();
    uint32_t w=gfx_raw_w();
    uint32_t h=gfx_raw_h();
-   uint8_t b=gfx_raw_b();
+   uint8_t *b=gfx_raw_b();
    lwpng_encode_t *p = lwpng_encode_1bit (w, h, &my_alloc, &my_free, NULL);
    while(h--)
    {
