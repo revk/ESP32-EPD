@@ -538,8 +538,15 @@ web_frame (httpd_req_t * req)
    uint8_t *png=NULL;
    size_t len=0;
    gfx_lock ();
-   lwpng_encode_t *p = lwpng_encode_1bit (gfx_width (), gfx_height (), &my_alloc, &my_free, NULL);
-
+   uint32_t w=gfx_raw_w();
+   uint32_t h=gfx_raw_h();
+   uint8_t b=gfx_raw_b();
+   lwpng_encode_t *p = lwpng_encode_1bit (w, h, &my_alloc, &my_free, NULL);
+   while(h--)
+   {
+	   lwpng_encode_scanline(p,b);
+	   b+=(w+7)/8;
+   }
    const char *e = lwpng_encoded (&p, &len, &png);
    gfx_unlock ();
    if (e)
