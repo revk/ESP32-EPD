@@ -49,6 +49,8 @@ httpd_handle_t webserver = NULL;
 led_strip_handle_t strip = NULL;
 sdmmc_card_t *card = NULL;
 
+static SemaphoreHandle_t epd_mutex = NULL;
+
 const char *
 gfx_qr (const char *value, uint32_t max)
 {
@@ -541,11 +543,25 @@ web_root (httpd_req_t * req)
    return revk_web_foot (req, 0, 1, NULL);
 }
 
+void
+epd_lock (void)
+{
+   gfx_lock ();
+   xSemaphoreTake (epd_mutex, portMAX_DELAY);
+}
+
+void
+epd_unlock (void)
+{
+   xSemaphoreGive (epd_mutex);
+   gfx_unlock ();
+}
+
 #ifdef	CONFIG_LWPNG_ENCODE
 static esp_err_t
 web_frame (httpd_req_t * req)
 {
-   gfx_lock ();
+   epd_lock ();
    uint8_t *png = NULL;
    size_t len = 0;
    uint32_t w = gfx_raw_w ();
@@ -571,7 +587,7 @@ web_frame (httpd_req_t * req)
       httpd_resp_send (req, (char *) png, len);
    }
    free (png);
-   gfx_unlock ();
+   epd_unlock ();
    return ESP_OK;
 }
 #endif
@@ -582,6 +598,8 @@ app_main ()
    b.defcon = 7;
    revk_boot (&app_callback);
    revk_start ();
+   epd_mutex = xSemaphoreCreateMutex ();
+   xSemaphoreGive (epd_mutex);
    // Web interface
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.lru_purge_enable = true;
@@ -667,20 +685,20 @@ app_main ()
    }
    if (gfxflash)
    {
-      gfx_lock ();
+      epd_lock ();
       gfx_clear (0);
       for (int y = 0; y < gfx_height (); y++)
          for (int x = (y & 1); x < gfx_width (); x += 2)
             gfx_pixel (x, y, 255);
       gfx_refresh ();
-      gfx_unlock ();
-      gfx_lock ();
+      epd_unlock ();
+      epd_lock ();
       gfx_clear (0);
       for (int y = 0; y < gfx_height (); y++)
          for (int x = 1 - (y & 1); x < gfx_width (); x += 2)
             gfx_pixel (x, y, 255);
       gfx_refresh ();
-      gfx_unlock ();
+      epd_unlock ();
    }
    showlights ("");
    uint32_t fresh = 0;
@@ -772,7 +790,7 @@ app_main ()
                if (sdsize)
                   p += sprintf (p, "/ /[2]SD free %lluG of %lluG/ /", sdfree / 1000000000ULL, sdsize / 1000000000ULL);
                ESP_LOGE (TAG, "%s", msg);
-               gfx_lock ();
+               epd_lock ();
                gfx_message (msg);
                int max = gfx_height () - gfx_y ();
                if (max > 0)
@@ -790,7 +808,7 @@ app_main ()
                      gfx_qr (qr2, max);
                   }
                }
-               gfx_unlock ();
+               epd_unlock ();
             }
             free (qr1);
             free (qr2);
@@ -819,7 +837,7 @@ app_main ()
       }
       b.redraw = 0;
       // Image
-      gfx_lock ();
+      epd_lock ();
       if (refresh && now / refresh != fresh)
       {                         // Periodic refresh, e.g.once a day
          fresh = now / refresh;
@@ -1016,7 +1034,7 @@ app_main ()
          if (c != widgetc[w])
             free (c);
       }
-      gfx_unlock ();
+      epd_unlock ();
    }
 }
 
