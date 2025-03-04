@@ -44,6 +44,8 @@ static struct
 
 volatile uint32_t override = 0;
 
+httpd_handle_t webserver = NULL;
+
 led_strip_handle_t strip = NULL;
 sdmmc_card_t *card = NULL;
 
@@ -497,12 +499,82 @@ plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy)
 #error 	Clash with CONFIG_REVK_APCONFIG set
 #endif
 
+static void
+register_uri (const httpd_uri_t * uri_struct)
+{
+   esp_err_t res = httpd_register_uri_handler (webserver, uri_struct);
+   if (res != ESP_OK)
+   {
+      ESP_LOGE (TAG, "Failed to register %s, error code %d", uri_struct->uri, res);
+   }
+}
+
+static void
+register_get_uri (const char *uri, esp_err_t (*handler) (httpd_req_t * r))
+{
+   httpd_uri_t uri_struct = {
+      .uri = uri,
+      .method = HTTP_GET,
+      .handler = handler,
+   };
+   register_uri (&uri_struct);
+}
+
+static esp_err_t
+web_root (httpd_req_t * req)
+{
+   if (revk_link_down ())
+      return revk_web_settings (req);   // Direct to web set up
+   revk_web_head (req, *hostname ? hostname : appname);
+
+   // TODO
+   return revk_web_foot (req, 0, 1, NULL);
+}
+
+#ifdef	CONFIG_LWPNG_ENCODE
+static esp_err_t
+web_frame (httpd_req_t * req)
+{
+   uint8_t *png=NULL;
+   size_t len=0;
+   gfx_lock ();
+   lwpng_encode_t *p = lwpng_encode_1bit (gfx_width (), gfx_height (), &my_alloc, &my_free, NULL);
+
+   const char *e = lwpng_encoded (&p, &len, &png);
+   gfx_unlock ();
+   if (e)
+   {
+      revk_web_head (req, *hostname ? hostname : appname);
+      revk_web_send (req, e);
+      revk_web_foot (req, 0, 1, NULL);
+   } else
+   {
+      httpd_resp_set_type (req, "image/png");
+      httpd_resp_send (req, (char *) png, len);
+   }
+   free(png);
+   return ESP_OK;
+}
+#endif
+
 void
 app_main ()
 {
    b.defcon = 7;
    revk_boot (&app_callback);
    revk_start ();
+   // Web interface
+   httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
+   config.lru_purge_enable = true;
+   config.max_uri_handlers = 2 + revk_num_web_handlers ();
+   if (!httpd_start (&webserver, &config))
+   {
+      register_get_uri ("/", web_root);
+#ifdef	CONFIG_LWPNG_ENCODE
+      register_get_uri ("/frame.png", web_frame);
+#endif
+      revk_web_settings_add (webserver);
+   }
 
    if (leds && rgb.set)
    {
