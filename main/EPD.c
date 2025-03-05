@@ -886,16 +886,22 @@ app_main ()
          b.redraw = 1;
       }
       gfx_clear (0);
+      uint8_t h = 0,
+         v = 0;
       for (int w = 0; w < WIDGETS; w++)
       {
          gfx_align_t a = 0;
-         if (!widgetx[w] || widgeth[w] <= REVK_SETTINGS_WIDGETH_CENTRE || widgeth[w] == REVK_SETTINGS_WIDGETH_PREV)
+         if (widgeth[w] != REVK_SETTINGS_WIDGETH_PREV)
+            h = widgeth[w];
+         if (widgetv[w] != REVK_SETTINGS_WIDGETV_PREV)
+            v = widgetv[w];
+         if (!widgetx[w] || h <= REVK_SETTINGS_WIDGETH_CENTRE)
             a |= GFX_L;
-         if (widgetx[w] && widgeth[w] >= REVK_SETTINGS_WIDGETH_CENTRE && widgeth[w] < REVK_SETTINGS_WIDGETH_PREV)
+         if (widgetx[w] && h >= REVK_SETTINGS_WIDGETH_CENTRE)
             a |= GFX_R;
-         if (!widgety[w] || widgetv[w] <= REVK_SETTINGS_WIDGETV_MIDDLE || widgetv[w] == REVK_SETTINGS_WIDGETH_PREV)
+         if (!widgety[w] || v <= REVK_SETTINGS_WIDGETV_MIDDLE)
             a |= GFX_T;
-         if (widgety[w] && widgetv[w] >= REVK_SETTINGS_WIDGETV_MIDDLE && widgetv[w] < REVK_SETTINGS_WIDGETH_PREV)
+         if (widgety[w] && v >= REVK_SETTINGS_WIDGETV_MIDDLE)
             a |= GFX_B;
          if (w + 1 < WIDGETS && widgeth[w + 1] == REVK_SETTINGS_WIDGETH_PREV)
             a |= GFX_H;
@@ -904,9 +910,9 @@ app_main ()
          gfx_pos_t x = widgetx[w];
          gfx_pos_t y = widgety[w];
          if (widgeth[w] == REVK_SETTINGS_WIDGETH_PREV || widgetv[w] == REVK_SETTINGS_WIDGETV_PREV)
-            gfx_pos (gfx_x() + x, gfx_y() + y, a);        // Relative
-          else
-         {                      // Abolute
+            gfx_pos (gfx_x () + x, gfx_y () + y, a);    // Relative
+         else
+         {                      // Absolute
             if (x < 0)
                x += gfx_width ();
             if (y < 0)
