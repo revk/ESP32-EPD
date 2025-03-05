@@ -44,9 +44,9 @@ u32	cachetime	300 .live		// Default cache for https
 enum	widget.t		.hide .live .array=WIDGETS .enums="Text,Blocks,Digits,Image,QR,HLine,VLine,Bins"		// Widget type
 enum	widget.k		.hide .live .array=WIDGETS .enums="Normal,Invert,Mask,MaskInvert"	// Plot mode
 s16	widget.x		.hide .live .array=WIDGETS			// X position (from left, or -ve from right)
-enum	widget.h		.hide .live .array=WIDGETS .enums="Left,Centre,Right"		// Horizontal align
+enum	widget.h		.hide .live .array=WIDGETS .enums="Left,Centre,Right,Prev"		// Horizontal align
 s16	widget.y		.hide .live .array=WIDGETS			// Y position (from top, or -ve from bottom)
-enum	widget.v		.hide .live .array=WIDGETS .enums="Top,Middle,Bottom"		// Vertical align
+enum	widget.v		.hide .live .array=WIDGETS .enums="Top,Middle,Bottom,Prev"		// Vertical align
 s16	widget.s	-3	.hide .live .array=WIDGETS			// Widget size
 text	widget.c	"GO TO WEB PAGE SETTINGS\nTO CONFIGURE WIDGETS"	.hide .live .array=WIDGETS			// Widget content/reference
 

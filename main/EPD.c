@@ -889,21 +889,30 @@ app_main ()
       for (int w = 0; w < WIDGETS; w++)
       {
          gfx_align_t a = 0;
-         if (!widgetx[w] || widgeth[w] <= REVK_SETTINGS_WIDGETH_CENTRE)
+         if (!widgetx[w] || widgeth[w] <= REVK_SETTINGS_WIDGETH_CENTRE || widgeth[w] == REVK_SETTINGS_WIDGETH_PREV)
             a |= GFX_L;
-         if (widgetx[w] && widgeth[w] >= REVK_SETTINGS_WIDGETH_CENTRE)
+         if (widgetx[w] && widgeth[w] >= REVK_SETTINGS_WIDGETH_CENTRE && widgeth[w] < REVK_SETTINGS_WIDGETH_PREV)
             a |= GFX_R;
-         if (!widgety[w] || widgetv[w] <= REVK_SETTINGS_WIDGETV_MIDDLE)
+         if (!widgety[w] || widgetv[w] <= REVK_SETTINGS_WIDGETV_MIDDLE || widgetv[w] == REVK_SETTINGS_WIDGETH_PREV)
             a |= GFX_T;
-         if (widgety[w] && widgetv[w] >= REVK_SETTINGS_WIDGETV_MIDDLE)
+         if (widgety[w] && widgetv[w] >= REVK_SETTINGS_WIDGETV_MIDDLE && widgetv[w] < REVK_SETTINGS_WIDGETH_PREV)
             a |= GFX_B;
+         if (w + 1 < WIDGETS && widgeth[w + 1] == REVK_SETTINGS_WIDGETH_PREV)
+            a |= GFX_H;
+         if (w + 1 < WIDGETS && widgetv[w + 1] == REVK_SETTINGS_WIDGETV_PREV)
+            a |= GFX_V;
          gfx_pos_t x = widgetx[w];
-         if (x < 0)
-            x += gfx_width ();
          gfx_pos_t y = widgety[w];
-         if (y < 0)
-            y += gfx_height ();
-         gfx_pos (x, y, a);
+         if (widgeth[w] == REVK_SETTINGS_WIDGETH_PREV || widgetv[w] == REVK_SETTINGS_WIDGETV_PREV)
+            gfx_pos (gfx_x() + x, gfx_y() + y, a);        // Relative
+          else
+         {                      // Abolute
+            if (x < 0)
+               x += gfx_width ();
+            if (y < 0)
+               y += gfx_height ();
+            gfx_pos (x, y, a);
+         }
          gfx_colour (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 'K' : 'W');
          gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
          //if (widgett[w] || *widgetc[w]) ESP_LOGE (TAG, "Widget %2d X=%03d Y=%03d A=%02X F=%c B=%c", w + 1, gfx_x (), gfx_y (), gfx_a (), gfx_f (), gfx_b ());
