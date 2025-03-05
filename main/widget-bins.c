@@ -29,7 +29,7 @@ widget_bins (int8_t s, const char *c)
       s1 = -s1;
    int s2 = -s1 / 2;            // Text size for icons
    gfx_align_t a = gfx_a ();
-   file_t *bins = download ((char *) c);
+   file_t *bins = download ((char *) c, ".json");
    if (!bins || !bins->size || !bins->data)
       return;
    jo_t j = jo_parse_mem (bins->data, bins->size);
@@ -113,7 +113,7 @@ widget_bins (int8_t s, const char *c)
                         char *fn;
                         asprintf (&fn, "%s/%s", base ? : "", leaf);
                         free (leaf);
-                        i->file = download (fn);
+                        i->file = download (fn, ".json");
                         free (fn);
                         if (i->file && (!i->file->data || !i->file->size || !i->file->w))
                            i->file = NULL;

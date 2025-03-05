@@ -54,6 +54,8 @@ This can be `http://` URL serving a PNG image, or just the end appended to `base
 
 The image is typcially stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
 
+Note, if the image does not end `.`*something* (and has now `?`) a `.png` is appended. This is useful for things like `$WEATHER.current.condition.code` as an image name.
+
 ### QR
 
 The content is content of QR code, and size if the overall size (width and height) in pixels.
@@ -102,9 +104,14 @@ Example.
 }
 ```
 
+
 ### More
 
 More widgets planned
+
+## Weather
+
+You can set the weather api for https://www.weatherapi.com/ this then allows you to access `$WEATHER.` and a weather app field. e.g. `$WEATHER.current.feelslike_c` or `$WEATHER.current.condition.text`
 
 ## Align, mask, and invert
 

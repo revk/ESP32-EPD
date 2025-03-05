@@ -16,6 +16,6 @@ typedef struct file_s
 extern const char *const longday[];
 extern const char *const shortday[];
 
-file_t *download (char *url);
+file_t *download (char *url,const char *suffix);
 void plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy);
 void setlights(const char *rgb);

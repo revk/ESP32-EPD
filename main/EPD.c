@@ -44,6 +44,8 @@ static struct
 
 volatile uint32_t override = 0;
 
+jo_t weather = NULL;
+
 httpd_handle_t webserver = NULL;
 
 led_strip_handle_t strip = NULL;
@@ -275,19 +277,29 @@ check_file (file_t * i)
 }
 
 file_t *
-download (char *url)
+download (char *url, const char *suffix)
 {
    file_t *i = find_file (url);
    if (!i)
       return i;
+   if (!suffix || strchr (url, '?'))
+      suffix = "";
+   else
+   {
+      char *p = url + strlen (url);;
+      while (p > url && isalnum ((int) (uint8_t) p[-1]))
+         p--;
+      if (p > url && p[-1] == '.')
+         suffix = "";
+   }
    if (!*baseurl || !strncasecmp (i->url, "http://", 7) || !strncasecmp (i->url, "https://", 8))
-      url = strdup (i->url);    // Use as is
+      asprintf (&url, "%s%s", i->url, suffix);
    else
    {                            // Prefix URL
       int l = strlen (baseurl);
       if (baseurl[l - 1] == '/')
          l--;
-      asprintf (&url, "%.*s/%s", l, baseurl, i->url);
+      asprintf (&url, "%.*s/%s%s", l, baseurl, i->url, suffix);
    }
    ESP_LOGD (TAG, "Get %s", url);
    int32_t len = 0;
@@ -482,7 +494,7 @@ pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b,
 {
    plot_t *p = opaque;
    if (a & 0x8000)
-      gfx_pixel (p->ox + x, p->oy + y, (g & 0x8000) ? 255 : 0);
+      gfx_pixel (p->ox + x, p->oy + y, (r / 3 + g / 3 + b / 3) / 256);
    return NULL;
 }
 
@@ -838,6 +850,28 @@ app_main ()
          showlights (lighton == lightoff || (lighton < lightoff && lighton <= hhmm && lightoff > hhmm)
                      || (lightoff < lighton && (lighton <= hhmm || lightoff > hhmm)) ? lights : "");
       }
+      if ((poslat || !poslon) && *weatherapi)
+      {                         // Weather
+         char *url;
+         asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%f,%f", weatherapi, (float) poslat / 10000000,
+                   (float) poslon / 1000000);
+         ESP_LOGE (TAG, "%s", url);
+         file_t *w = download (url, NULL);
+         free (url);
+         if (w && w->data && w->json)
+         {
+            time_t now = time (0);
+            if (w->cache > now + 3600)
+               w->cache = now + 3600;
+            jo_t j = jo_parse_mem (w->data, w->size);
+            if (j)
+            {
+               if (weather)
+                  jo_free (&weather);
+               weather = j;
+            }
+         }
+      }
       b.redraw = 0;
       // Image
       epd_lock ();
@@ -847,7 +881,10 @@ app_main ()
          gfx_refresh ();
       }
       if (gfxnight && t.tm_hour >= 2 && t.tm_hour < 4)
+      {
          gfx_refresh ();        // Full update
+         b.redraw = 1;
+      }
       gfx_clear (0);
       for (int w = 0; w < WIDGETS; w++)
       {
@@ -881,11 +918,18 @@ app_main ()
             else if (!strcmp (c + 1, "DAY"))
                c = strdup (longday[t.tm_wday]);
             else if (!strcmp (c + 1, "SSID"))
-               c = strdup (wifissid);
+               c = strdup (*ssid ? ssid : wifissid);
             else if (!strcmp (c + 1, "PASS"))
-               c = strdup (wifipass);
+               c = strdup (*ssid ? pass : wifipass);
             else if (!strcmp (c + 1, "WIFI"))
             {
+               const char *ssid = ssid;
+               const char *pass = pass;
+               if (!*ssid)
+               {
+                  ssid = wifissid;
+                  pass = wifipass;
+               }
                if (*wifipass)
                   asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", wifissid, wifipass);
                else
@@ -943,6 +987,12 @@ app_main ()
                   c = strdup ("-");
                else
                   asprintf (&c, "%u", b.defcon);
+            } else if (weather && !strncmp (c + 1, "WEATHER.", 8))
+            {                   // Weather data
+               if (jo_find (weather, c + 9))
+                  c = jo_strdup (weather);
+               else
+                  ESP_LOGE (TAG, "Not found %s", c + 9);
             }
          }
          switch (widgett[w])
@@ -986,16 +1036,16 @@ app_main ()
                   if (season)
                   {
                      *s = season;
-                     i = download (url);
+                     i = download (url, ".png");
                   }
                   if (!i || !i->size)
                   {
                      strcpy (s, s + 1);
-                     i = download (url);
+                     i = download (url, ".png");
                   }
 
                } else
-                  i = download (c);
+                  i = download (c, ".png");
                if (i && i->size && i->w && i->h)
                {
                   gfx_pos_t ox,
@@ -1096,9 +1146,21 @@ revk_web_extra (httpd_req_t * req, int page)
       p = "QR code content";
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
       add (p, "widgetc");
+   if (!strncmp (widgetc[page - 1], "$WEATHER.", 9))
+      revk_web_setting (req, NULL, "weatherapi");
+   if (!strcmp (widgetc[page - 1], "$SUNRISE") || !strcmp (widgetc[page - 1], "$SUNSET")
+       || !strncmp (widgetc[page - 1], "$WEATHER.", 9))
+   {
+      revk_web_setting (req, NULL, "poslat");
+      revk_web_setting (req, NULL, "poslon");
+   }
+   if (!strcmp (widgetc[page - 1], "$WIFI") || !strcmp (widgetc[page - 1], "$SSID"))
+      revk_web_setting (req, NULL, "ssid");
+   if (!strcmp (widgetc[page - 1], "$WIFI") || !strcmp (widgetc[page - 1], "$PASS"))
+      revk_web_setting (req, NULL, "pass");
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
    else if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
-      revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $DATE, $DAY, $FULLMOON%s",
-                             (poslat || poslon) ? ", $SUNRISE, $SUNSET" : "");
+      revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $DATE, $DAY, $FULLMOON%s%s",
+                             (poslat || poslon) ? ", $SUNRISE, $SUNSET" : "", weather ? ", $WEATHER.field" : "");
 }

@@ -50,4 +50,8 @@ enum	widget.v		.hide .live .array=WIDGETS .enums="Top,Middle,Bottom"		// Vertica
 s16	widget.s	-3	.hide .live .array=WIDGETS			// Widget size
 text	widget.c	"GO TO WEB PAGE SETTINGS\nTO CONFIGURE WIDGETS"	.hide .live .array=WIDGETS			// Widget content/reference
 
+s	ssid			.live			// WiFi SSID for $WIFI
+s	pass			.live			// WiFi pass for $WIFI
+s	weatherapi		.live			// API key for weatherapi.com
+
 c1	seasoncode		.live					// Override season for testing
