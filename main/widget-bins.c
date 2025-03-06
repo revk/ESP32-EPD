@@ -52,7 +52,7 @@ widget_bins (int8_t s, const char *c)
    if (jo_find (j, "clear") == JO_STRING)
       clear = jo_read_datetime (j);
    if (!display && collect)
-      display = collect - 5 * 86400;
+      display = collect - 7 * 86400;
    if (!leds && collect)
       leds = collect - 12 * 3600;
    if (!clear && collect)

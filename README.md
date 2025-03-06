@@ -74,7 +74,7 @@ Top level JSON, specifies next bin collection day.
 |-----|-------|
 |`baseurl`|Base URL for icons, default is system wide base url|
 |`cache`|Datetime for caching this JSON, default is to `clear`, or 1 hour from last check|
-|`display`|Datetime when to display, default 5 days before `collect`|
+|`display`|Datetime when to display, default 7 days before `collect`|
 |`leds`|Datetime for LEDs show, default is 12 hours before `collect`|
 |`collect`|Datetime for collection, e.g. Monmouthshire is at `07:00:00` on collection day|
 |`clear`|Datetime to clear dispaly, default is 12 hours after `collect`|
