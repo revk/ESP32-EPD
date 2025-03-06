@@ -54,7 +54,7 @@ This can be `http://` URL serving a PNG image, or just the end appended to `base
 
 The image is typcially stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
 
-Note, if the image does not end `.`*something* (and has now `?`) a `.png` is appended. This is useful for things like `$WEATHER.current.condition.code` as an image name.
+Note, if the image does not end `.`*something* (and has now `?`) a `.png` is appended. This is useful for things like `$WEATHER.current.condition.code` as an image name like `1030.png` for *Mist*.
 
 ### QR
 

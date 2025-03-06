@@ -850,11 +850,14 @@ app_main ()
          showlights (lighton == lightoff || (lighton < lightoff && lighton <= hhmm && lightoff > hhmm)
                      || (lightoff < lighton && (lighton <= hhmm || lightoff > hhmm)) ? lights : "");
       }
-      if ((poslat || !poslon) && *weatherapi)
+      if ((poslat || poslon || *postown) && *weatherapi)
       {                         // Weather
          char *url;
-         asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%f,%f", weatherapi, (float) poslat / 10000000,
-                   (float) poslon / 1000000);
+         if (*postown)
+            asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%s", weatherapi, postown);
+         else
+            asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%f,%f", weatherapi, (float) poslat / 10000000,
+                      (float) poslon / 1000000);
          ESP_LOGE (TAG, "%s", url);
          file_t *w = download (url, NULL);
          free (url);
@@ -1162,7 +1165,10 @@ revk_web_extra (httpd_req_t * req, int page)
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
       add (p, "widgetc");
    if (!strncmp (widgetc[page - 1], "$WEATHER.", 9))
+   {
       revk_web_setting (req, NULL, "weatherapi");
+      revk_web_setting (req, NULL, "postown");
+   }
    if (!strcmp (widgetc[page - 1], "$SUNRISE") || !strcmp (widgetc[page - 1], "$SUNSET")
        || !strncmp (widgetc[page - 1], "$WEATHER.", 9))
    {
