@@ -941,17 +941,10 @@ app_main ()
                c = strdup (*ssid ? pass : wifipass);
             else if (!strcmp (c + 1, "WIFI"))
             {
-               const char *ssid = ssid;
-               const char *pass = pass;
-               if (!*ssid)
-               {
-                  ssid = wifissid;
-                  pass = wifipass;
-               }
-               if (*wifipass)
-                  asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", wifissid, wifipass);
+               if (*ssid ? *pass : *wifipass)
+                  asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", *ssid ? ssid : wifissid, *ssid ? pass : wifipass);
                else
-                  asprintf (&c, "WIFI:S:%s;;", wifissid);
+                  asprintf (&c, "WIFI:S:%s;;", *ssid ? ssid : wifissid);
             } else if (!strcmp (c + 1, "IPV4"))
             {
                esp_netif_ip_info_t ip;
