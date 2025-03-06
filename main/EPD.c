@@ -936,15 +936,15 @@ app_main ()
             else if (!strcmp (c + 1, "DAY"))
                c = strdup (longday[t.tm_wday]);
             else if (!strcmp (c + 1, "SSID"))
-               c = strdup (*ssid ? ssid : wifissid);
+               c = strdup (*qrssid ? qrssid : wifissid);
             else if (!strcmp (c + 1, "PASS"))
-               c = strdup (*ssid ? pass : wifipass);
+               c = strdup (*qrssid ? qrpass : wifipass);
             else if (!strcmp (c + 1, "WIFI"))
             {
-               if (*ssid ? *pass : *wifipass)
-                  asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", *ssid ? ssid : wifissid, *ssid ? pass : wifipass);
+               if (*qrssid ? *qrpass : *wifipass)
+                  asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", *qrssid ? qrssid : wifissid, *qrssid ? qrpass : wifipass);
                else
-                  asprintf (&c, "WIFI:S:%s;;", *ssid ? ssid : wifissid);
+                  asprintf (&c, "WIFI:S:%s;;", *qrssid ? qrssid : wifissid);
             } else if (!strcmp (c + 1, "IPV4"))
             {
                esp_netif_ip_info_t ip;
@@ -1169,9 +1169,9 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting (req, NULL, "poslon");
    }
    if (!strcmp (widgetc[page - 1], "$WIFI") || !strcmp (widgetc[page - 1], "$SSID"))
-      revk_web_setting (req, NULL, "ssid");
+      revk_web_setting (req, NULL, "qrssid");
    if (!strcmp (widgetc[page - 1], "$WIFI") || !strcmp (widgetc[page - 1], "$PASS"))
-      revk_web_setting (req, NULL, "pass");
+      revk_web_setting (req, NULL, "qrpass");
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
    else if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
