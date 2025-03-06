@@ -898,13 +898,13 @@ app_main ()
             h = widgeth[w];
          if (widgetv[w] != REVK_SETTINGS_WIDGETV_PREV)
             v = widgetv[w];
-         if (!widgetx[w] || h <= REVK_SETTINGS_WIDGETH_CENTRE)
+         if (h <= REVK_SETTINGS_WIDGETH_CENTRE)
             a |= GFX_L;
-         if (widgetx[w] && h >= REVK_SETTINGS_WIDGETH_CENTRE)
+         if (h >= REVK_SETTINGS_WIDGETH_CENTRE)
             a |= GFX_R;
-         if (!widgety[w] || v <= REVK_SETTINGS_WIDGETV_MIDDLE)
+         if (v <= REVK_SETTINGS_WIDGETV_MIDDLE)
             a |= GFX_T;
-         if (widgety[w] && v >= REVK_SETTINGS_WIDGETV_MIDDLE)
+         if (v >= REVK_SETTINGS_WIDGETV_MIDDLE)
             a |= GFX_B;
          if (w + 1 < WIDGETS && widgeth[w + 1] == REVK_SETTINGS_WIDGETH_PREV)
             a |= GFX_H;

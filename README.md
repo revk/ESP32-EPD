@@ -115,7 +115,7 @@ You can set the weather api for https://www.weatherapi.com/ this then allows you
 
 ## Align, mask, and invert
 
-For most widgets the *x*/*y* and *align* apply as expected. But there is also a mask/invert setting.
+For most widgets the *x*/*y* and *align* apply as expected. But there is also a mask/invert setting. It is also possible to set a widget relative to previous widget using a *prev* setting on the alignment.
 
 Invert simply swaps black/white.
 
