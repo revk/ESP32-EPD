@@ -120,7 +120,7 @@ showlights (const char *rgb)
    if (!strip)
       return;
    const char *c = rgb;
-   for (int i = 0; i < leds; i++)
+   for (int i = 1; i < leds; i++)
    {
       revk_led (strip, i, 255, revk_rgb (*c));
       if (*c)
@@ -128,7 +128,6 @@ showlights (const char *rgb)
       if (!*c)
          c = rgb;
    }
-   led_strip_refresh (strip);
 }
 
 void
@@ -545,20 +544,18 @@ web_root (httpd_req_t * req)
    int32_t w = gfx_width ();
    int32_t h = gfx_height ();
 #define	DIV 2
-   revk_web_send (req, "<div style='display:inline-block;width:%dpx;height:%dpx;margin:5px;border:10px solid %s;border-%s:20px solid %s;'><img width=%d height=%d src='frame.png' style='transform:",       //
+   revk_web_send (req, "<div style='display:inline-block;width:%dpx;height:%dpx;margin:5px;border:10px solid %s;border-%s:20px solid %s;'><img width=%d height=%d src='frame.png' style='transform:",   //
                   w / DIV, h / DIV,     //
                   gfxinvert ? "black" : "white",        //
                   gfxflip & 4 ? gfxflip & 2 ? "left" : "right" : gfxflip & 2 ? "top" : "bottom",        //
                   gfxinvert ? "black" : "white",        //
-                  gfx_raw_w () / DIV, gfx_raw_h () / DIV       //
+                  gfx_raw_w () / DIV, gfx_raw_h () / DIV        //
       );
    if (gfxflip & 4)
-      revk_web_send (req, "translate(%dpx,%dpx)rotate(90deg)scale(1,-1)",      //
-		      (w-h)/2/DIV,(h-w)/2/DIV
-		    );
-   revk_web_send (req, "scale(%d,%d);'></div>",
-                  gfxflip & 1 ? -1 : 1, gfxflip & 2 ? -1 : 1    //
-		 );
+      revk_web_send (req, "translate(%dpx,%dpx)rotate(90deg)scale(1,-1)",       //
+                     (w - h) / 2 / DIV, (h - w) / 2 / DIV);
+   revk_web_send (req, "scale(%d,%d);'></div>", gfxflip & 1 ? -1 : 1, gfxflip & 2 ? -1 : 1      //
+      );
 #undef DIV
    revk_web_send (req, "</p><p><a href=/>Reload</a></p>");
 #endif
@@ -616,6 +613,17 @@ web_frame (httpd_req_t * req)
 #endif
 
 void
+led_task (void *x)
+{
+   while (1)
+   {
+      usleep (100000);
+      revk_led (strip, 0, 255, revk_blinker ());
+      led_strip_refresh (strip);
+   }
+}
+
+void
 app_main ()
 {
    b.defcon = 7;
@@ -653,6 +661,7 @@ app_main ()
       };
       REVK_ERR_CHECK (led_strip_new_rmt_device (&strip_config, &rmt_config, &strip));
       showlights ("b");
+      revk_task ("blink", led_task, NULL, 4);
    }
    if (gfxena.set)
    {
