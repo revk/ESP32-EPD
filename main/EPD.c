@@ -45,7 +45,7 @@ static struct
 volatile uint32_t override = 0;
 
 jo_t weather = NULL;
-jo_t json=NULL;
+jo_t json = NULL;
 
 httpd_handle_t webserver = NULL;
 
@@ -196,7 +196,9 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    // Not for us or not a command from main MQTT
    if (!strcmp (suffix, "json"))
    {
-	   jo_free(&json);
+      jo_free (&json);
+      json = jo_dup (j);
+      b.setting = 1;
    }
    if (!strcmp (suffix, "setting"))
    {
@@ -736,8 +738,7 @@ dollar (char *c, time_t now)
    {                            // Weather data
       if (jo_find (weather, c + 9))
          c = jo_strdup (weather);
-   }
-   } else if (weather && !strncmp (c + 1, "JSON.", 5))
+   } else if (json && !strncmp (c + 1, "JSON.", 5))
    {                            // Weather data
       if (jo_find (json, c + 6))
          c = jo_strdup (json);
@@ -1243,6 +1244,5 @@ revk_web_extra (httpd_req_t * req, int page)
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
    else if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
-      revk_web_setting_info (req,
-                             "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $COUNTDOWN, $DATE, $DAY, $FULLMOON, $SUNSET, $SUNRISE, $WEATHER.fields");
+      revk_web_setting_info (req, "Content can also be <tt>$</tt> and various fields like <tt>$TIME</tt>. See manual for more details");
 }

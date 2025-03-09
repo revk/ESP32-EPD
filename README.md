@@ -34,8 +34,12 @@ The *content* for any widget can be one of a number of presets, as follows :-
 |`$SUNRISE`|Next sunrise (HH:MM), needs `poslat` and `poslon` set|
 |`$SUNSET`|Next sunset (HH:MM), needs `poslat` and `poslon` set|
 |`$FULLMOON`|Next full moon (YYYY-MM-DD HH:MM)|
+|`$WEATHER.field`|Extract a field from weather api response|
+|`$JSON.field`|Extract a field from last `json` command payload|
 
 More may be added over time. All of these are only for whole string replacing it.
+
+The system accepts a JSON payload to the `json` command, which can then be referenced with `$JSON.field`. This is typically set as *retained* on the MQTT server.
 
 ### Text
 
