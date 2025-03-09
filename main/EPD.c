@@ -46,6 +46,18 @@ volatile uint32_t override = 0;
 
 jo_t weather = NULL;
 jo_t json = NULL;
+struct
+{
+   int sock;                    // UDP socket
+   socklen_t addrlen;           // Address len
+   struct sockaddr addr;        // Address
+   uint32_t id;                 // SNMP ID field to check
+   time_t upfrom;               // Back tracked uptime start
+   time_t lasttx;               // Last packet tx time
+   time_t lastrx;               // Last packet rx time
+   char *host;                  // Hostname
+   char *desc;                  // Description
+} snmp = { 0 };
 
 httpd_handle_t webserver = NULL;
 
@@ -203,6 +215,7 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
+      snmp.lasttx = 0;          // Force re-lookup
       return "";
    }
    if (!strcmp (suffix, "connect"))
@@ -626,6 +639,204 @@ web_frame (httpd_req_t * req)
 #endif
 
 void
+snmp_tx (void)
+{                               // Send an SNMP if neede
+   if (!*snmphost)
+      return;
+   time_t now = time (0);
+   if (snmp.lasttx && snmp.lasttx + 60 > now)
+      return;
+   if (!snmp.lasttx || snmp.lastrx + 300 > now)
+   {                            // Re try socket
+      int sock = snmp.sock;
+      snmp.sock = -1;
+      if (sock >= 0)
+         close (sock);
+      snmp.lasttx = 0;
+   }
+   if (snmp.sock < 0)
+   {
+      const struct addrinfo hints = {
+         .ai_family = AF_UNSPEC,
+         .ai_socktype = SOCK_DGRAM,
+      };
+      struct addrinfo *a = 0,
+         *t;
+      if (!getaddrinfo (snmphost, "161", &hints, &a) && a)
+      {
+         for (t = a; t; t = t->ai_next)
+         {
+            int sock = socket (t->ai_family, t->ai_socktype, t->ai_protocol);
+            if (sock >= 0)
+            {
+               memcpy (&snmp.addr, t->ai_addr, snmp.addrlen = t->ai_addrlen);
+               snmp.id = ((esp_random () & 0x7FFFFF7F) | 0x40000040);   // bodge to ensure 4 bytes
+               snmp.sock = sock;
+               break;
+            }
+         }
+         freeaddrinfo (a);
+      }
+   }
+   if (snmp.sock < 0)
+   {
+      ESP_LOGE (TAG, "SNMP lookup fail %s", snmphost);
+      return;
+   }
+   // very crude IPv6 SNMP uptime .1.3.6.1.2.1.1.3.0
+   uint8_t payload[] = {        // iso.3.6.1.2.1.1.3.0 iso.3.6.1.2.1.1.5.0 iso.3.6.1.2.1.1.1.0
+      0x30, 0x45, 0x02, 0x01, 0x01, 0x04, 0x06, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0xa0, 0x38, 0x02,
+      0x04, 0x00, 0x00, 0x00, 0x0, 0x02, 0x01, 0x00, 0x02, 0x01, 0x00, 0x30, 0x2a, 0x30, 0x0c, 0x06,
+      0x08, 0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x03, 0x00, 0x05, 0x00, 0x30, 0x0c, 0x06, 0x08, 0x2b,
+      0x06, 0x01, 0x02, 0x01, 0x01, 0x05, 0x00, 0x05, 0x00, 0x30, 0x0c, 0x06, 0x08, 0x2b, 0x06, 0x01,
+      0x02, 0x01, 0x01, 0x01, 0x00, 0x05, 0x00
+   };
+   *(uint32_t *) (payload + 17) = snmp.id;
+   int err = sendto (snmp.sock, payload, sizeof (payload), 0, &snmp.addr, snmp.addrlen);
+   if (err < 0)
+   {
+      ESP_LOGE (TAG, "SNMP Tx fail (sock %d) %s", snmp.sock, esp_err_to_name (err));
+      return;
+   }
+   snmp.lastrx = now;
+   ESP_LOGD (TAG, "SNMP Tx");
+}
+
+void
+snmp_rx_task (void *x)
+{                               // Get SNMP responses
+   while (1)
+   {
+      if (snmp.sock < 0)
+      {
+         sleep (1);
+         continue;
+      }
+      struct timeval timeout;
+      timeout.tv_sec = 1;
+      timeout.tv_usec = 0;
+      setsockopt (snmp.sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout);
+      uint8_t rx[300];
+      struct sockaddr_storage source_addr;
+      socklen_t socklen = sizeof (source_addr);
+      int len = recvfrom (snmp.sock, rx, sizeof (rx), 0, (struct sockaddr *) &source_addr, &socklen);
+      if (len <= 0)
+         continue;
+      time_t now = time (0);
+      ESP_LOGD (TAG, "SNMP Rx %d", len);
+      uint8_t *oid = NULL,
+         oidlen = 0,
+         resp = 0;
+      uint8_t *scan (uint8_t * p, uint8_t * e)
+      {
+         if (p >= e)
+            return NULL;
+         uint8_t class = (*p >> 6);
+         uint8_t con = (*p & 0x20);
+         uint32_t tag = 0;
+         if ((*p & 0x1F) != 0x1F)
+            tag = (*p & 0x1F);
+         else
+         {
+            do
+            {
+               p++;
+               tag = (tag << 7) | (*p & 0x7F);
+            }
+            while (*p & 0x80);
+         }
+         p++;
+         if (p >= e)
+            return NULL;
+         uint32_t len = 0;
+         if (*p & 0x80)
+         {
+            uint8_t b = (*p++ & 0x7F);
+            while (b--)
+               len = (len << 8) + (*p++);
+         } else
+            len = (*p++ & 0x7F);
+         if (p + len > e)
+            return NULL;
+         if (con)
+         {
+            if (tag == 2)
+               resp = 1;
+            while (p && p < e)
+               p = scan (p, e);
+            oidlen = 0;
+         } else
+         {
+            int32_t n = 0;
+            uint8_t *d = p;
+            uint8_t *de = p + len;
+            if (!class && tag == 6)
+            {
+               oid = p;
+               oidlen = len;
+            }
+            if ((!class && tag == 2) || (class == 1 && tag == 3))
+            {                   // Int or timeticks
+               int s = 1;
+               if (*d & 0x80)
+                  s = -1;
+               n = (*d++ & 0x7F);
+               while (d < de)
+                  n = (n << 8) + *d++;
+               n *= s;
+            }
+            if (class == 2 && tag == 1 && resp)
+            {                   // Response ID (first number in con tag 2)
+               resp = 0;
+               if (n != snmp.id)
+               {
+                  ESP_LOGE (TAG, "SNMP Bad ID %08lX expecting %08lX", n, snmp.id);
+                  return NULL;
+               }
+            } else if (class == 1 && tag == 3 && oidlen == 8 && !memcmp (oid, (uint8_t[])
+                                                                         {
+                                                                         0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x03, 0x00}
+                                                                         , 8))
+               snmp.upfrom = now - n / 100;
+            else if (!class && tag == 4 && oidlen == 8 && !memcmp (oid, (uint8_t[])
+                                                                   {
+                                                                   0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x05, 0x00}
+                                                                   , 8))
+            {
+               char *new = mallocspi (len + 1);
+               if (new)
+               {
+                  char *was = snmp.host;
+                  memcpy (new, d, len);
+                  new[len] = 0;
+                  snmp.host = new;
+                  free (was);
+               }
+            } else if (!class && tag == 4 && oidlen == 8 && !memcmp (oid, (uint8_t[])
+                                                                     {
+                                                                     0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x01, 0x00}
+                                                                     , 8))
+            {
+               char *new = mallocspi (len + 1);
+               if (new)
+               {
+                  char *was = snmp.desc;
+                  memcpy (new, d, len);
+                  new[len] = 0;
+                  snmp.desc = new;
+                  free (was);
+               }
+            }
+            p = de;
+         }
+         return p;
+      }
+      scan (rx, rx + len);
+      snmp.lastrx = now;
+   }
+}
+
+void
 led_task (void *x)
 {
    while (1)
@@ -637,8 +848,33 @@ led_task (void *x)
 }
 
 char *
+dollar_diff (time_t ref, time_t now)
+{
+   char *c = NULL;
+   if (ref && now)
+      ref -= now;
+   if (ref < 0)
+      ref = 0 - ref;
+   if (!ref)
+      c = strdup ("--:--");
+   else if (ref < 86400)
+      asprintf (&c, "%02lld:%02lld", ref / 3600, ref / 60 % 60);
+   else if (ref < 864000)
+      asprintf (&c, "%lld.%03lld", ref / 86400, ref * 10 / 864 % 1000);
+   else if (ref < 8640000)
+      asprintf (&c, "%lld.%02lld", ref / 86400, ref / 864 % 100);
+   else if (ref < 86400000)
+      asprintf (&c, "%lld.%01lld", ref / 86400, ref / 8640 % 10);
+   else if (ref < 864000000)
+      asprintf (&c, "%lld", ref / 86400);
+   else
+      c = strdup ("----");
+   return c;
+}
+
+char *
 dollar (char *c, time_t now)
-{                               // Return c or a malloced expanded c
+{                               // Return c or a malloc'd expanded c
    if (*c != '$')
       return c;
    struct tm t;
@@ -650,28 +886,8 @@ dollar (char *c, time_t now)
    else if (!strcmp (c + 1, "DAY"))
       c = strdup (longday[t.tm_wday]);
    else if (!strcmp (c + 1, "COUNTDOWN"))
-   {
-      time_t ref = parse_time (refdate, t.tm_year + 1900);
-      if (ref && now)
-         ref -= now;
-      if (ref < 0)
-         ref = 0 - ref;
-      if (!ref)
-         c = strdup ("--:--");
-      else if (ref < 86400)
-         asprintf (&c, "%02lld:%02lld", ref / 3600, ref / 60 % 60);
-      else if (ref < 864000)
-         asprintf (&c, "%lld.%03lld", ref / 86400, ref * 10 / 864 % 1000);
-      else if (ref < 8640000)
-         asprintf (&c, "%lld.%02lld", ref / 86400, ref / 864 % 100);
-      else if (ref < 86400000)
-         asprintf (&c, "%lld.%01lld", ref / 86400, ref / 8640 % 10);
-      else if (ref < 864000000)
-         asprintf (&c, "%lld", ref / 86400);
-      else
-         c = strdup ("----");
-
-   } else if (!strcmp (c + 1, "SSID"))
+      c = dollar_diff (parse_time (refdate, t.tm_year + 1900), now);
+   else if (!strcmp (c + 1, "SSID"))
       c = strdup (*qrssid ? qrssid : wifissid);
    else if (!strcmp (c + 1, "PASS"))
       c = strdup (*qrssid ? qrpass : wifipass);
@@ -742,7 +958,12 @@ dollar (char *c, time_t now)
    {                            // Weather data
       if (jo_find (json, c + 6))
          c = jo_strdup (json);
-   }
+   } else if (!strcmp (c + 1, "SNMPHOST") && snmp.host)
+      c = strdup (snmp.host);
+   else if (!strcmp (c + 1, "SNMPDESC") && snmp.desc)
+      c = strdup (snmp.desc);
+   else if (!strcmp (c + 1, "SNMPUPTIME"))
+      c = dollar_diff (snmp.upfrom, now);
    return c;
 }
 
@@ -750,6 +971,7 @@ void
 app_main ()
 {
    b.defcon = 7;
+   snmp.sock = -1;
    revk_boot (&app_callback);
    revk_start ();
    epd_mutex = xSemaphoreCreateMutex ();
@@ -786,6 +1008,7 @@ app_main ()
       showlights ("b");
       revk_task ("blink", led_task, NULL, 4);
    }
+   revk_task ("snmp", snmp_rx_task, NULL, 4);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -875,6 +1098,7 @@ app_main ()
       uint32_t up = uptime ();
       if (b.wificonnect)
       {
+         snmp_tx ();
          gfx_refresh ();
          b.startup = 1;
          b.wificonnect = 0;
@@ -997,8 +1221,8 @@ app_main ()
          if (*postown)
             asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%s", weatherapi, postown);
          else
-            asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%f,%f", weatherapi, (float) poslat / 10000000,
-                      (float) poslon / 1000000);
+            asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%f,%f", weatherapi,
+                      (float) poslat / 10000000, (float) poslon / 1000000);
          ESP_LOGE (TAG, "%s", url);
          file_t *w = download (url, NULL);
          free (url);
@@ -1160,6 +1384,7 @@ app_main ()
             free (c);
       }
       epd_unlock ();
+      snmp_tx ();
    }
 }
 
@@ -1239,10 +1464,13 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting (req, NULL, "seasoncode");
    if (!strcmp (widgetc[page - 1], "$COUNTDOWN"))
       revk_web_setting (req, NULL, "refdate");
+   if (!strncmp (widgetc[page - 1], "$SNMP", 5))
+      revk_web_setting (req, NULL, "snmphost");
 
    // Notes
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
    else if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
-      revk_web_setting_info (req, "Content can also be <tt>$</tt> and various fields like <tt>$TIME</tt>. See manual for more details");
+      revk_web_setting_info (req,
+                             "Content can also be <tt>$</tt> and various fields like <tt>$TIME</tt>. See manual for more details");
 }

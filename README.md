@@ -34,6 +34,9 @@ The *content* for any widget can be one of a number of presets, as follows :-
 |`$SUNRISE`|Next sunrise (HH:MM), needs `poslat` and `poslon` set|
 |`$SUNSET`|Next sunset (HH:MM), needs `poslat` and `poslon` set|
 |`$FULLMOON`|Next full moon (YYYY-MM-DD HH:MM)|
+|`$SNMPHOST`|Hostname reported from SNMP poll|
+|`$SNMPDESC`|Description reported from SNMP poll|
+|`$SNMPUPTIME`|Uptime reported from SNMP poll|
 |`$WEATHER.field`|Extract a field from weather api response|
 |`$JSON.field`|Extract a field from last `json` command payload|
 
