@@ -890,8 +890,12 @@ dollar (char *c, time_t now)
    else if (!strcmp (c + 1, "DAY"))
       c = strdup (longday[t.tm_wday]);
    else if (!strcmp (c + 1, "COUNTDOWN"))
-      c = dollar_diff (parse_time (refdate, t.tm_year + 1900), now);
-   else if (!strcmp (c + 1, "SSID"))
+   {
+      time_t ref = parse_time (refdate, t.tm_year + 1900);
+      if (ref < 0)
+         ref = parse_time (refdate, t.tm_year + 1901);
+      c = dollar_diff (ref, now);
+   } else if (!strcmp (c + 1, "SSID"))
       c = strdup (*qrssid ? qrssid : wifissid);
    else if (!strcmp (c + 1, "PASS"))
       c = strdup (*qrssid ? qrpass : wifipass);

@@ -29,7 +29,7 @@ The *content* for any widget can be one of a number of presets, as follows :-
 |`$TIME`|Current time `HH:MM`|
 |`$DATE`|Current date `YYYY-MM-DD`|
 |`$DAY`|Current day, e.g. `WEDNESDAY`|
-|`$COUNTDOWN`|Countdown/up from `refdate`|
+|`$COUNTDOWN`|Countdown/up from `refdate`, not a `refdate` with year `0000` means countdown to date/time specified in current/next year|
 |`$SSID`|Current WiFi SSID|
 |`$PASS`|Current WiFi passphrase|
 |`$WIFI`|QR code formatted current WiFi details|
