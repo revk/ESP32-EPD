@@ -103,7 +103,8 @@ parse_time (const char *t)
       H = 0,
       M = 0,
       S = 0;
-   sscanf (t, "%d-%d-%d %d:%d:%d", &y, &m, &d, &H, &M, &S);
+   if (sscanf (t, "%d-%d-%d %d:%d:%d", &y, &m, &d, &H, &M, &S) < 3)
+      return 0;
    tm.tm_year = y - 1900;
    tm.tm_mon = m - 1;
    tm.tm_mday = d;
@@ -623,6 +624,114 @@ led_task (void *x)
    }
 }
 
+char *
+dollar (char *c, time_t now)
+{                               // Return c or a malloced expanded c
+   if (*c != '$')
+      return c;
+   struct tm t;
+   localtime_r (&now, &t);
+   if (!strcmp (c + 1, "TIME"))
+      asprintf (&c, "%02d:%02d", t.tm_hour, t.tm_min);
+   else if (!strcmp (c + 1, "DATE"))
+      asprintf (&c, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+   else if (!strcmp (c + 1, "DAY"))
+      c = strdup (longday[t.tm_wday]);
+   else if (!strcmp (c + 1, "COUNTDOWN"))
+   {
+      time_t ref = parse_time (refdate);
+      if (ref && now)
+         ref -= now;
+      if (ref < 0)
+         ref = 0 - ref;
+      if (!ref)
+         c = strdup ("--:--");
+      else if (ref < 86400)
+         asprintf (&c, "%02lld:%02lld", ref / 3600, ref / 60 % 60);
+      else if (ref < 864000)
+         asprintf (&c, "%lld.%03lld", ref / 86400, ref * 10 / 864 % 1000);
+      else if (ref < 8640000)
+         asprintf (&c, "%lld.%02lld", ref / 86400, ref / 864 % 100);
+      else if (ref < 86400000)
+         asprintf (&c, "%lld.%01lld", ref / 86400, ref / 8640 % 10);
+      else if (ref < 864000000)
+         asprintf (&c, "%lld", ref / 86400);
+      else
+         c = strdup ("----");
+
+   } else if (!strcmp (c + 1, "SSID"))
+      c = strdup (*qrssid ? qrssid : wifissid);
+   else if (!strcmp (c + 1, "PASS"))
+      c = strdup (*qrssid ? qrpass : wifipass);
+   else if (!strcmp (c + 1, "WIFI"))
+   {
+      if (*qrssid ? *qrpass : *wifipass)
+         asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", *qrssid ? qrssid : wifissid, *qrssid ? qrpass : wifipass);
+      else
+         asprintf (&c, "WIFI:S:%s;;", *qrssid ? qrssid : wifissid);
+   } else if (!strcmp (c + 1, "IPV4"))
+   {
+      esp_netif_ip_info_t ip;
+      if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
+         asprintf (&c, IPSTR, IP2STR (&ip.ip));
+   }
+#ifdef CONFIG_LWIP_IPV6
+   else if (!strcmp (c + 1, "IPV6") || !strcmp (c + 1, "IP"))
+   {
+      esp_ip6_addr_t ip[LWIP_IPV6_NUM_ADDRESSES];
+      int n = esp_netif_get_all_ip6 (sta_netif, ip);
+      if (n)
+      {
+         for (int i = 0; i < n && i < 4; i++)
+            if (n == 1 || ip[i].addr[0] != 0x000080FE)  // Yeh FE80 backwards
+            {
+               asprintf (&c, IPV6STR, IPV62STR (ip[i]));
+               for (char *q = c; *q; q++)
+                  *q = toupper (*q);
+               break;
+            }
+      }
+   }
+#endif
+#ifdef	CONFIG_REVK_SOLAR
+   else if (!strcmp (c + 1, "SUNSET") && now && (poslat || poslon))
+   {
+      time_t when = sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
+                             (double) poslon / poslon_scale, SUN_DEFAULT);
+      struct tm tm = { 0 };
+      localtime_r (&when, &tm);
+      asprintf (&c, "%02d:%02d", tm.tm_hour, tm.tm_min);
+   } else if (!strcmp (c + 1, "SUNRISE") && now && (poslat || poslon))
+   {
+      time_t when = sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
+                              (double) poslon / poslon_scale, SUN_DEFAULT);
+      struct tm tm = { 0 };
+      localtime_r (&when, &tm);
+      asprintf (&c, "%02d:%02d", tm.tm_hour, tm.tm_min);
+   }
+#endif
+   else if (!strcmp (c + 1, "FULLMOON"))
+   {
+      time_t when = revk_moon_full_next (now);
+      struct tm tm = { 0 };
+      localtime_r (&when, &tm);
+      asprintf (&c, "%04d-%02d-%02d %02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
+   } else if (!strcmp (c + 1, "DEFCON"))
+   {
+      if (b.defcon > 5)
+         c = strdup ("-");
+      else
+         asprintf (&c, "%u", b.defcon);
+   } else if (weather && !strncmp (c + 1, "WEATHER.", 8))
+   {                            // Weather data
+      if (jo_find (weather, c + 9))
+         c = jo_strdup (weather);
+      else
+         ESP_LOGE (TAG, "Not found %s", c + 9);
+   }
+   return c;
+}
+
 void
 app_main ()
 {
@@ -742,6 +851,8 @@ app_main ()
       time_t now = time (0);
       if (now < 1000000000)
          now = 0;
+      struct tm t;
+      localtime_r (&now, &t);
       if (b.setting)
       {
          b.setting = 0;
@@ -857,8 +968,6 @@ app_main ()
       if (!b.startup || (now / 60 == min && !b.redraw))
          continue;              // Check / update every minute
       min = now / 60;
-      struct tm t;
-      localtime_r (&now, &t);
       season = *revk_season (now);
       if (*seasoncode)
          season = *seasoncode;
@@ -881,7 +990,6 @@ app_main ()
          free (url);
          if (w && w->data && w->json)
          {
-            time_t now = time (0);
             if (w->cache > now + 3600)
                w->cache = now + 3600;
             jo_t j = jo_parse_mem (w->data, w->size);
@@ -944,86 +1052,7 @@ app_main ()
          gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
          //if (widgett[w] || *widgetc[w]) ESP_LOGE (TAG, "Widget %2d X=%03d Y=%03d A=%02X F=%c B=%c", w + 1, gfx_x (), gfx_y (), gfx_a (), gfx_f (), gfx_b ());
          // Content substitutions
-         char *c = widgetc[w];
-         if (*c == '$')
-         {
-            if (!strcmp (c + 1, "TIME"))
-               asprintf (&c, "%02d:%02d", t.tm_hour, t.tm_min);
-            else if (!strcmp (c + 1, "DATE"))
-               asprintf (&c, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
-            else if (!strcmp (c + 1, "DAY"))
-               c = strdup (longday[t.tm_wday]);
-            else if (!strcmp (c + 1, "SSID"))
-               c = strdup (*qrssid ? qrssid : wifissid);
-            else if (!strcmp (c + 1, "PASS"))
-               c = strdup (*qrssid ? qrpass : wifipass);
-            else if (!strcmp (c + 1, "WIFI"))
-            {
-               if (*qrssid ? *qrpass : *wifipass)
-                  asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", *qrssid ? qrssid : wifissid, *qrssid ? qrpass : wifipass);
-               else
-                  asprintf (&c, "WIFI:S:%s;;", *qrssid ? qrssid : wifissid);
-            } else if (!strcmp (c + 1, "IPV4"))
-            {
-               esp_netif_ip_info_t ip;
-               if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
-                  asprintf (&c, IPSTR, IP2STR (&ip.ip));
-            }
-#ifdef CONFIG_LWIP_IPV6
-            else if (!strcmp (c + 1, "IPV6") || !strcmp (c + 1, "IP"))
-            {
-               esp_ip6_addr_t ip[LWIP_IPV6_NUM_ADDRESSES];
-               int n = esp_netif_get_all_ip6 (sta_netif, ip);
-               if (n)
-               {
-                  for (int i = 0; i < n && i < 4; i++)
-                     if (n == 1 || ip[i].addr[0] != 0x000080FE) // Yeh FE80 backwards
-                     {
-                        asprintf (&c, IPV6STR, IPV62STR (ip[i]));
-                        for (char *q = c; *q; q++)
-                           *q = toupper (*q);
-                        break;
-                     }
-               }
-            }
-#endif
-#ifdef	CONFIG_REVK_SOLAR
-            else if (!strcmp (c + 1, "SUNSET") && now && (poslat || poslon))
-            {
-               time_t when = sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
-                                      (double) poslon / poslon_scale, SUN_DEFAULT);
-               struct tm tm = { 0 };
-               localtime_r (&when, &tm);
-               asprintf (&c, "%02d:%02d", tm.tm_hour, tm.tm_min);
-            } else if (!strcmp (c + 1, "SUNRISE") && now && (poslat || poslon))
-            {
-               time_t when = sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
-                                       (double) poslon / poslon_scale, SUN_DEFAULT);
-               struct tm tm = { 0 };
-               localtime_r (&when, &tm);
-               asprintf (&c, "%02d:%02d", tm.tm_hour, tm.tm_min);
-            }
-#endif
-            else if (!strcmp (c + 1, "FULLMOON"))
-            {
-               time_t when = revk_moon_full_next (now);
-               struct tm tm = { 0 };
-               localtime_r (&when, &tm);
-               asprintf (&c, "%04d-%02d-%02d %02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
-            } else if (!strcmp (c + 1, "DEFCON"))
-            {
-               if (b.defcon > 5)
-                  c = strdup ("-");
-               else
-                  asprintf (&c, "%u", b.defcon);
-            } else if (weather && !strncmp (c + 1, "WEATHER.", 8))
-            {                   // Weather data
-               if (jo_find (weather, c + 9))
-                  c = jo_strdup (weather);
-               else
-                  ESP_LOGE (TAG, "Not found %s", c + 9);
-            }
-         }
+         char *c = dollar (widgetc[w], now);
          switch (widgett[w])
          {
          case REVK_SETTINGS_WIDGETT_TEXT:
@@ -1175,6 +1204,8 @@ revk_web_extra (httpd_req_t * req, int page)
       p = "QR code content";
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
       add (p, "widgetc");
+
+   // Extra fields
    if (!strncmp (widgetc[page - 1], "$WEATHER.", 9))
    {
       revk_web_setting (req, NULL, "weatherapi");
@@ -1190,9 +1221,15 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting (req, NULL, "qrssid");
    if (!strcmp (widgetc[page - 1], "$WIFI") || !strcmp (widgetc[page - 1], "$PASS"))
       revk_web_setting (req, NULL, "qrpass");
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE && strchr (widgetc[page - 1], '*'))
+      revk_web_setting (req, NULL, "seasoncode");
+   if (!strcmp (widgetc[page - 1], "$COUNTDOWN"))
+      revk_web_setting (req, NULL, "refdate");
+
+   // Notes
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
    else if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
-      revk_web_setting_info (req, "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $DATE, $DAY, $FULLMOON%s%s",
-                             (poslat || poslon) ? ", $SUNRISE, $SUNSET" : "", weather ? ", $WEATHER.field" : "");
+      revk_web_setting_info (req,
+                             "Content can also be $IPV4, $IPV6, $SSID, $PASS, $WIFI, $TIME, $COUNTDOWN, $DATE, $DAY, $FULLMOON, $SUNSET, $SUNRISE, $WEATHER.fields");
 }

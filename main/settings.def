@@ -52,5 +52,5 @@ text	widget.c	"GO TO WEB PAGE SETTINGS\nTO CONFIGURE WIDGETS"	.hide .live .array
 s	qr.ssid			.live			// WiFi SSID for $WIFI
 s	qr.pass			.live			// WiFi pass for $WIFI
 s	weatherapi		.live			// API key for weatherapi.com
-
-c1	seasoncode		.live					// Override season for testing
+c1	seasoncode		.live			// Override season for testing
+s	refdate			.live			// Reference date/time (YYYY-MM-DD HH:MM:SS)

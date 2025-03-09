@@ -20,11 +20,12 @@ Each widget has basic settings with *type*, and position (*x*/*y*), and alignmen
 
 The *content* for any widget can be one of a number of presets, as follows :-
 
-|Preset|<eaning|
+|Preset|Meaning|
 |------|-------|
 |`$TIME`|Current time `HH:MM`|
 |`$DATE`|Current date `YYYY-MM-DD`|
 |`$DAY`|Current day, e.g. `WEDNESDAY`|
+|`$COUNTDOWN`|Countdown/up from `refdate`|
 |`$SSID`|Current WiFi SSID|
 |`$PASS`|Current WiFi passphrase|
 |`$WIFI`|QR code formatted current WiFi details|
