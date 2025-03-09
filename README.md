@@ -36,6 +36,7 @@ The *content* for any widget can be one of a number of presets, as follows :-
 |`$FULLMOON`|Next full moon (YYYY-MM-DD HH:MM)|
 |`$SNMPHOST`|Hostname reported from SNMP poll|
 |`$SNMPDESC`|Description reported from SNMP poll|
+|`$SNMPFBVER`|FireBrick version from description reported from SNMP poll|
 |`$SNMPUPTIME`|Uptime reported from SNMP poll|
 |`$WEATHER.field`|Extract a field from weather api response|
 |`$JSON.field`|Extract a field from last `json` command payload|

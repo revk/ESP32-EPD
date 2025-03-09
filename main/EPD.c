@@ -53,8 +53,8 @@ struct
    struct sockaddr addr;        // Address
    uint32_t id;                 // SNMP ID field to check
    time_t upfrom;               // Back tracked uptime start
-   time_t lasttx;               // Last packet tx time
-   time_t lastrx;               // Last packet rx time
+   uint32_t lasttx;             // Last packet tx time (uptime secs)
+   uint32_t lastrx;             // Last packet rx time (uptime secs)
    char *host;                  // Hostname
    char *desc;                  // Description
 } snmp = { 0 };
@@ -643,10 +643,10 @@ snmp_tx (void)
 {                               // Send an SNMP if neede
    if (!*snmphost)
       return;
-   time_t now = time (0);
-   if (snmp.lasttx && snmp.lasttx + 60 > now)
+   uint32_t up = uptime ();
+   if (snmp.lasttx && snmp.lasttx + 60 > up)
       return;
-   if (!snmp.lasttx || snmp.lastrx + 300 > now)
+   if (!snmp.lasttx || snmp.lastrx + 300 > up)
    {                            // Re try socket
       int sock = snmp.sock;
       snmp.sock = -1;
@@ -698,7 +698,7 @@ snmp_tx (void)
       ESP_LOGE (TAG, "SNMP Tx fail (sock %d) %s", snmp.sock, esp_err_to_name (err));
       return;
    }
-   snmp.lastrx = now;
+   snmp.lastrx = up;
    ESP_LOGD (TAG, "SNMP Tx");
 }
 
@@ -723,6 +723,8 @@ snmp_rx_task (void *x)
       if (len <= 0)
          continue;
       time_t now = time (0);
+      if (now < 1000000000)
+         now = 0;
       ESP_LOGD (TAG, "SNMP Rx %d", len);
       uint8_t *oid = NULL,
          oidlen = 0,
@@ -797,11 +799,13 @@ snmp_rx_task (void *x)
                                                                          {
                                                                          0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x03, 0x00}
                                                                          , 8))
-               snmp.upfrom = now - n / 100;
-            else if (!class && tag == 4 && oidlen == 8 && !memcmp (oid, (uint8_t[])
-                                                                   {
-                                                                   0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x05, 0x00}
-                                                                   , 8))
+            {
+               if (now)
+                  snmp.upfrom = now - n / 100;
+            } else if (!class && tag == 4 && oidlen == 8 && !memcmp (oid, (uint8_t[])
+                                                                     {
+                                                                     0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x05, 0x00}
+                                                                     , 8))
             {
                char *new = mallocspi (len + 1);
                if (new)
@@ -832,7 +836,7 @@ snmp_rx_task (void *x)
          return p;
       }
       scan (rx, rx + len);
-      snmp.lastrx = now;
+      snmp.lastrx = uptime ();
    }
 }
 
@@ -962,7 +966,20 @@ dollar (char *c, time_t now)
       c = strdup (snmp.host);
    else if (!strcmp (c + 1, "SNMPDESC") && snmp.desc)
       c = strdup (snmp.desc);
-   else if (!strcmp (c + 1, "SNMPUPTIME"))
+   else if (!strcmp (c + 1, "SNMPFBVER") && snmp.desc)
+   {
+      char *s = snmp.desc;
+      while (*s && *s != '(')
+         s++;
+      if (*s)
+      {
+         s++;
+         char *e = s;
+         while (*e && *e != ' ' && *e != ')')
+            e++;
+         c = strndup (s, e - s);
+      }
+   } else if (!strcmp (c + 1, "SNMPUPTIME"))
       c = dollar_diff (snmp.upfrom, now);
    return c;
 }
