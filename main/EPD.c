@@ -698,7 +698,7 @@ snmp_tx (void)
       ESP_LOGE (TAG, "SNMP Tx fail (sock %d) %s", snmp.sock, esp_err_to_name (err));
       return;
    }
-   snmp.lastrx = up;
+   snmp.lasttx = up;
    ESP_LOGD (TAG, "SNMP Tx");
 }
 
@@ -836,7 +836,8 @@ snmp_rx_task (void *x)
          return p;
       }
       scan (rx, rx + len);
-      snmp.lastrx = uptime ();
+      if (snmp.upfrom)
+         snmp.lastrx = uptime ();
    }
 }
 
