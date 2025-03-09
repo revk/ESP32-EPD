@@ -893,7 +893,7 @@ dollar (char *c, time_t now)
    else if (!strcmp (c + 1, "COUNTDOWN"))
    {
       time_t ref = parse_time (refdate, t.tm_year + 1900);
-      if (ref < 0)
+      if (ref > now)
          ref = parse_time (refdate, t.tm_year + 1901);
       c = dollar_diff (ref, now);
    } else if (!strcmp (c + 1, "SSID"))
