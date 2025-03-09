@@ -45,6 +45,7 @@ static struct
 volatile uint32_t override = 0;
 
 jo_t weather = NULL;
+jo_t json=NULL;
 
 httpd_handle_t webserver = NULL;
 
@@ -94,7 +95,7 @@ const char *const longday[] = { "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THU
 const char *const shortday[] = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
 
 time_t
-parse_time (const char *t)
+parse_time (const char *t, int thisyear)
 {
    struct tm tm = { 0 };
    int y = 0,
@@ -103,8 +104,10 @@ parse_time (const char *t)
       H = 0,
       M = 0,
       S = 0;
-   if (sscanf (t, "%d-%d-%d %d:%d:%d", &y, &m, &d, &H, &M, &S) < 3)
+   if (!t || sscanf (t, "%d-%d-%d %d:%d:%d", &y, &m, &d, &H, &M, &S) < 3)
       return 0;
+   if (!y)
+      y = thisyear;
    tm.tm_year = y - 1900;
    tm.tm_mon = m - 1;
    tm.tm_mday = d;
@@ -112,7 +115,10 @@ parse_time (const char *t)
    tm.tm_min = M;
    tm.tm_sec = S;
    tm.tm_isdst = -1;
-   return mktime (&tm);
+   time_t T = mktime (&tm);
+   if (T == -1)
+      T = 0;
+   return T;
 }
 
 void
@@ -188,6 +194,10 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    if (client || !prefix || target || strcmp (prefix, topiccommand) || !suffix)
       return NULL;
    // Not for us or not a command from main MQTT
+   if (!strcmp (suffix, "json"))
+   {
+	   jo_free(&json);
+   }
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -639,7 +649,7 @@ dollar (char *c, time_t now)
       c = strdup (longday[t.tm_wday]);
    else if (!strcmp (c + 1, "COUNTDOWN"))
    {
-      time_t ref = parse_time (refdate);
+      time_t ref = parse_time (refdate, t.tm_year + 1900);
       if (ref && now)
          ref -= now;
       if (ref < 0)
@@ -726,8 +736,11 @@ dollar (char *c, time_t now)
    {                            // Weather data
       if (jo_find (weather, c + 9))
          c = jo_strdup (weather);
-      else
-         ESP_LOGE (TAG, "Not found %s", c + 9);
+   }
+   } else if (weather && !strncmp (c + 1, "JSON.", 5))
+   {                            // Weather data
+      if (jo_find (json, c + 6))
+         c = jo_strdup (json);
    }
    return c;
 }
