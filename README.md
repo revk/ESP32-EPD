@@ -4,6 +4,10 @@
 
 This is an open source project, but bear in mind you cannot sell boards bearing the Andrews & Arnold Ltd name, the A&A logo, the registered trademark AJK logo, or the GS1 allocated EANs assigned to Andrews & Arnold Ltd.
 
+## Buy?
+
+This code works with many E-paper panels, but I have bought up some really nice 7.5" Waveshare ones on laminated glass with black border, and have them on Tindie with my controller (this code pre-loaded). [Tindie](https://www.tindie.com/products/revk/75-e-paper-controller-24-leds-sd-card-slot/)
+
 # ESP32-EPD
 
 This used the ESP32-GFX library and provides a general E-paper sign with a configurable selection of *widgets*.
