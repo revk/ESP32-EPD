@@ -67,7 +67,7 @@ sdmmc_card_t *card = NULL;
 static SemaphoreHandle_t epd_mutex = NULL;
 
 const char *
-gfx_qr (const char *value, uint32_t max)
+gfx_qr (const char *value, int32_t max)
 {
 #ifndef	CONFIG_GFX_NONE
    unsigned int width = 0;
@@ -75,7 +75,9 @@ gfx_qr (const char *value, uint32_t max)
    if (!qr)
       return "Failed to encode";
    if (!max)
-      max = width;
+      max = -1;
+   if (max < 0)
+      max = width * (-max);
    if (max < width)
    {
       free (qr);
@@ -1379,22 +1381,20 @@ app_main ()
             break;
          case REVK_SETTINGS_WIDGETT_HLINE:
             {
-               gfx_pos_t s = widgets[w] ? : gfx_width ();
-               if (widgeth[w] == REVK_SETTINGS_WIDGETH_CENTRE)
-                  x -= s / 2;
-               else if (widgeth[w] == REVK_SETTINGS_WIDGETH_RIGHT)
-                  x -= s;
-               gfx_line (x, y, x + s, y, 255);
+               gfx_pos_t ox,
+                 oy,
+                 s = widgets[w] ? : gfx_width ();;
+               gfx_draw (s, 1, 0, 0, &ox, &oy);
+               gfx_line (ox, oy, ox + s, oy, 255);
             }
             break;
          case REVK_SETTINGS_WIDGETT_VLINE:
             {
-               gfx_pos_t s = widgets[w] ? : gfx_height ();
-               if (widgetv[w] == REVK_SETTINGS_WIDGETV_MIDDLE)
-                  y -= s / 2;
-               else if (widgetv[w] == REVK_SETTINGS_WIDGETV_BOTTOM)
-                  y -= s;
-               gfx_line (x, y, x, y + s, 255);
+               gfx_pos_t ox,
+                 oy,
+                 s = widgets[w] ? : gfx_width ();;
+               gfx_draw (1, s, 0, 0, &ox, &oy);
+               gfx_line (ox, oy, ox, oy + s, 255);
             }
             break;
          case REVK_SETTINGS_WIDGETT_BINS:
@@ -1439,11 +1439,9 @@ revk_web_extra (httpd_req_t * req, int page)
    }
    add (NULL, "widgett");
    add (NULL, "widgetk");
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE)
-      add (NULL, "widgeth");
+   add (NULL, "widgeth");
    add (NULL, "widgetx");
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
-      add (NULL, "widgetv");
+   add (NULL, "widgetv");
    add (NULL, "widgety");
    const char *p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
@@ -1454,6 +1452,8 @@ revk_web_extra (httpd_req_t * req, int page)
       p = "Line width";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_VLINE)
       p = "Line height";
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
+      p = "Overall size, -ve for unit size";
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE)
       add (p, "widgets");
    p = NULL;
