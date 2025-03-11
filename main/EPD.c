@@ -1117,6 +1117,7 @@ app_main ()
       time_t now = time (0);
       if (now < 1000000000)
          now = 0;
+      uint32_t up = uptime ();
       struct tm t;
       localtime_r (&now, &t);
       if (b.setting)
@@ -1124,7 +1125,6 @@ app_main ()
          b.setting = 0;
          b.redraw = 1;
       }
-      uint32_t up = uptime ();
       if (b.wificonnect)
       {
          snmp_tx ();
@@ -1253,8 +1253,8 @@ app_main ()
          free (url);
          if (s && s->data && s->json)
          {
-            if (s->cache > now + 300)
-               s->cache = now + 300;
+            if (s->cache > up + 300)
+               s->cache = up + 300;
             jo_t j = jo_parse_mem (s->data, s->size);
             if (j)
             {
@@ -1277,8 +1277,8 @@ app_main ()
          free (url);
          if (w && w->data && w->json)
          {
-            if (w->cache > now + 3600)
-               w->cache = now + 3600;
+            if (w->cache > up + 3600)
+               w->cache = up + 3600;
             jo_t j = jo_parse_mem (w->data, w->size);
             if (j)
             {
