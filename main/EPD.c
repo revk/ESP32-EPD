@@ -45,6 +45,7 @@ static struct
 volatile uint32_t override = 0;
 
 jo_t weather = NULL;
+jo_t solar = NULL;
 jo_t json = NULL;
 struct
 {
@@ -965,6 +966,10 @@ dollar (char *c, time_t now)
    {                            // Weather data
       if (jo_find (weather, c + 9))
          c = jo_strdup (weather);
+   } else if (solar && !strncmp (c + 1, "SOLAR.", 6))
+   {                            // Solar data
+      if (jo_find (solar, c + 7))
+         c = jo_strdup (solar);
    } else if (json && !strncmp (c + 1, "JSON.", 5))
    {                            // Weather data
       if (jo_find (json, c + 6))
@@ -1238,6 +1243,26 @@ app_main ()
          int hhmm = t.tm_hour * 100 + t.tm_min;
          showlights (lighton == lightoff || (lighton < lightoff && lighton <= hhmm && lightoff > hhmm)
                      || (lightoff < lighton && (lighton <= hhmm || lightoff > hhmm)) ? lights : "");
+      }
+      if (solarsite && *solarapi)
+      {
+         char *url;
+         asprintf (&url, "https://monitoringapi.solaredge.com/site/%lu/currentPowerFlow?api_key=%s", solarsite, solarapi);
+         ESP_LOGE (TAG, "%s", url);
+         file_t *s = download (url, NULL);
+         free (url);
+         if (s && s->data && s->json)
+         {
+            if (s->cache > now + 300)
+               s->cache = now + 300;
+            jo_t j = jo_parse_mem (s->data, s->size);
+            if (j)
+            {
+               if (solar)
+                  jo_free (&solar);
+               solar = j;
+            }
+         }
       }
       if ((poslat || poslon || *postown) && *weatherapi)
       {                         // Weather

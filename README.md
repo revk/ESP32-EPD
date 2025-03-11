@@ -43,6 +43,7 @@ The *content* for any widget can be one of a number of presets, as follows :-
 |`$SNMPFBVER`|FireBrick version from description reported from SNMP poll|
 |`$SNMPUPTIME`|Uptime reported from SNMP poll|
 |`$WEATHER.field`|Extract a field from weather api response|
+|`$SOLAR.field`|Extract a field from solaredge api response|
 |`$JSON.field`|Extract a field from last `json` command payload|
 
 More may be added over time. All of these are only for whole string replacing it.
@@ -65,9 +66,11 @@ Same as `text` but using 7 seg format, allows quite large digits typicallty. Thi
 
 This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting). It can include *alpha* channel to control if plotted.
 
-The image is typcially stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
+The image is typically stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
 
 Note, if the image does not end `.`*something* (and has now `?`) a `.png` is appended. This is useful for things like `$WEATHER.current.condition.code` as an image name like `1030.png` for *Mist*.
+
+SolarEdge data can also be accessed, e.g. `$SOLAR.siteCurrentPowerFlow.GRID.currentPower`
 
 ### QR
 
