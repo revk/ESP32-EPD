@@ -24,7 +24,7 @@ se_task (void *x)
       struct addrinfo base = {.ai_family = PF_UNSPEC,.ai_socktype = SOCK_STREAM };
       struct addrinfo *a = 0,
          *t;
-      if (getaddrinfo (host, "502", &base, &a) || !a)
+      if (getaddrinfo (host, "1502", &base, &a) || !a)
       {
 #ifndef	CONFIG_IDF_TARGET       // Linux based test code
          errx (1, "Cannot look up %s", host);
@@ -60,7 +60,7 @@ se_task (void *x)
       }
 
       // TEST
-      uint8_t test[] = { 0x12, 0x34, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x9c, 0x40, 0x00, 0x01 };
+      uint8_t test[] = { 0x12, 0x34, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x9c, 0x40, 0x00, 0x10 };
       ssize_t l=write (s, test, sizeof (test));
       warnx("%ld bytes sent",l);
       while (1)
@@ -69,7 +69,7 @@ se_task (void *x)
          l= read (s, &b, 1);
          if (l<= 0)
             break;
-         warnx ("%02X", b);
+         warnx ("%02X %c", b,b>=' '&&b<127?b:' ');
       }
 
 

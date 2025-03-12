@@ -70,8 +70,6 @@ The image is typically stored in SD card if present as a backup. If the image is
 
 Note, if the image does not end `.`*something* (and has now `?`) a `.png` is appended. This is useful for things like `$WEATHER.current.condition.code` as an image name like `1030.png` for *Mist*.
 
-SolarEdge data can also be accessed, either siteCurrentPowerFlow or overview depending on `solarflow` setting, e.g. `$SOLAR.siteCurrentPowerFlow.GRID.currentPower`, `$SOLAR.overview.currentPower.power`, etc.
-
 ### QR
 
 The content is content of QR code, and size if the overall size (width and height) in pixels.
@@ -128,6 +126,12 @@ More widgets planned
 ## Weather
 
 You can set the weather api for https://www.weatherapi.com/ this then allows you to access `$WEATHER.` and a weather app field. e.g. `$WEATHER.current.feelslike_c` or `$WEATHER.current.condition.text`
+
+Sending the `command/EPD/weather` returns current weather JSON as an `info` response.
+
+## Solar
+
+Sending the `command/EPD/solar` returns current solar JSON as an `info` response.
 
 ## Align, mask, and invert
 

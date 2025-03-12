@@ -214,6 +214,19 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       jo_free (&json);
       json = jo_dup (j);
       b.setting = 1;
+      return "";
+   }
+   if (!strcmp (suffix, "weather"))
+   {
+      jo_t j = jo_copy (weather);
+      revk_info ("weather", &j);
+      return "";
+   }
+   if (!strcmp (suffix, "solar"))
+   {
+      jo_t j = jo_copy (solar);
+      revk_info ("solar", &j);
+      return "";
    }
    if (!strcmp (suffix, "setting"))
    {
