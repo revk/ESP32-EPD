@@ -1148,31 +1148,14 @@ app_main ()
                {
                   override = up + startup;
                   p += sprintf (p, "[3] /[6] WiFi/[-6]%.32s/[3] /Channel %d/RSSI %d/", (char *) ap.ssid, ap.primary, ap.rssi);
+                  char ip[40];
+                  if (revk_ipv4 (ip))
                   {
-                     esp_netif_ip_info_t ip;
-                     if (!esp_netif_get_ip_info (sta_netif, &ip) && ip.ip.addr)
-                        p += sprintf (p, "[6] /IPv4/" IPSTR "/", IP2STR (&ip.ip));
-                     asprintf (&qr2, "http://" IPSTR "/", IP2STR (&ip.ip));
+                     p += sprintf (p, "[6] /IPv4/%s/", ip);
+                     asprintf (&qr2, "http://%s/", ip);
                   }
-#ifdef CONFIG_LWIP_IPV6
-                  {
-                     esp_ip6_addr_t ip[LWIP_IPV6_NUM_ADDRESSES];
-                     int n = esp_netif_get_all_ip6 (sta_netif, ip);
-                     if (n)
-                     {
-                        p += sprintf (p, "[6] /IPv6/[2]");
-                        char *q = p;
-                        for (int i = 0; i < n && i < 4; i++)
-                           if (n == 1 || ip[i].addr[0] != 0x000080FE)   // Yeh FE80 backwards
-                              p += sprintf (p, IPV6STR "/", IPV62STR (ip[i]));
-                        while (*q)
-                        {
-                           *q = toupper (*q);
-                           q++;
-                        }
-                     }
-                  }
-#endif
+                  if (revk_ipv6 (ip))
+                     p += sprintf (p, "[6] /IPv6/%s/", ip);
                }
             }
             if (!override && ap_netif)
