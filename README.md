@@ -43,7 +43,7 @@ The *content* for any widget can be one of a number of presets, as follows :-
 |`$SNMPFBVER`|FireBrick version from description reported from SNMP poll|
 |`$SNMPUPTIME`|Uptime reported from SNMP poll|
 |`$WEATHER.field`|Extract a field from weather api response|
-|`$SOLAR.field`|Extract a field from solaredge api response|
+|`$SOLAR.field`|Extract a field from SolareEdge MODBUS collection|
 |`$JSON.field`|Extract a field from last `json` command payload|
 
 More may be added over time. All of these are only for whole string replacing it.
@@ -131,7 +131,9 @@ Sending the `command/EPD/weather` returns current weather JSON as an `info` resp
 
 ## Solar
 
-Sending the `command/EPD/solar` returns current solar JSON as an `info` response.
+You can set the IP address of your SolarEdge inverter. This uses MODBUS (TCP port 1502) to get key data such as `$SOLAR.power`, `$SOLAR.today`, etc.
+
+Sending the `command/EPD/solar` returns current solar JSON as an `info` response. You can set `solarlog` to log the data received over MODBUS.
 
 ## Align, mask, and invert
 

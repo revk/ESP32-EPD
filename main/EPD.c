@@ -868,6 +868,190 @@ led_task (void *x)
    }
 }
 
+void
+solar_task (void *x)
+{
+   while (1)
+   {
+      // Connect
+      struct addrinfo base = {.ai_family = PF_UNSPEC,.ai_socktype = SOCK_STREAM };
+      struct addrinfo *a = 0,
+         *t;
+      if (getaddrinfo (solarip, "1502", &base, &a) || !a)
+      {
+         ESP_LOGE (TAG, "Cannot look up %s", solarip);
+         sleep (10);
+         continue;
+      }
+      int s = -1;
+      for (t = a; t; t = t->ai_next)
+      {
+         s = socket (t->ai_family, t->ai_socktype, t->ai_protocol);
+         if (s >= 0 && connect (s, t->ai_addr, t->ai_addrlen))
+         {                      // failed to connect
+            perror (t->ai_canonname);
+            close (s);
+            s = -1;
+         }
+         if (s >= 0)
+            break;
+      }
+      freeaddrinfo (a);
+      if (s < 0)
+      {
+         ESP_LOGE (TAG, "Cannot connect %s", solarip);
+         sleep (10);
+         continue;
+      }
+
+      const char *er = NULL;
+      void modbus_get (uint16_t reg, uint8_t regs, void *buf)
+      {
+         if (er)
+            return;
+         static uint16_t tag;
+         tag++;
+         uint8_t req[12];
+         req[0] = tag >> 8;     // ID
+         req[1] = tag;
+         req[2] = req[3] = 0;   // Protocol 0
+         req[4] = 0;
+         req[5] = 6;            // Len
+         req[6] = 1;            // Slave address
+         req[7] = 3;            // read multiple holding registers
+         req[8] = reg >> 8;
+         req[9] = reg;
+         req[10] = regs >> 8;
+         req[11] = regs;
+         int l;
+         if (!er && (l = write (s, req, sizeof (req))) != sizeof (req))
+            er = "Bad tx - socket closed?";
+         if (!er && (l = read (s, req, 6)) != 6)
+            er = "Bad rx - socket closed?";
+         if (!er && (req[0] << 8) + req[1] != tag)
+            er = "Bad tag";
+         if (!er && (req[2] || req[3]))
+            er = "Bad protocol";
+         uint16_t len = (req[4] << 8) + req[5];
+         if (!er && len != regs * 2 + 3)
+            er = "Bad len";
+         else if (!er)
+         {
+            if ((l = read (s, req + 6, 3)) != 3)
+               er = "Bad rx - socket closed?";
+            else if ((l = read (s, buf, len - 3)) != len - 3)
+               er = "Bad rx - socket closed?";
+            else if (req[7] != 3)
+               er = "Bad function";
+         }
+      }
+      void modbus_string (uint16_t reg, uint8_t len, char *buf)
+      {                         // Buf must have len+1 bytes, +1 if len is odd
+         *buf = 0;
+         modbus_get (reg, (len + 1) / 2, buf);
+         buf[len] = 0;
+      }
+
+      int16_t modbus_16d (uint16_t reg)
+      {
+         uint8_t buf[2];
+         modbus_get (reg, 1, buf);
+         return (buf[0] << 8) + buf[1];
+      }
+
+      uint16_t modbus_16 (uint16_t reg)
+      {
+         uint8_t buf[2];
+         modbus_get (reg, 1, buf);
+         return (buf[0] << 8) + buf[1];
+      }
+
+      uint32_t modbus_32 (uint16_t reg)
+      {
+         uint8_t buf[4];
+         modbus_get (reg, 2, buf);
+         return (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
+      }
+
+      // Base data
+
+      char manufacturer[17];
+      modbus_string (0x9c44, sizeof (manufacturer) - 1, manufacturer);
+      char model[17];
+      modbus_string (0x9c54, sizeof (model) - 1, model);
+      char version[9];
+      modbus_string (0x9c6c, sizeof (version) - 1, version);
+      char serial[17];
+      modbus_string (0x9c74, sizeof (serial) - 1, serial);
+
+      while (!er)
+      {
+         jo_t j = jo_object_alloc ();
+         jo_string (j, "manufacturer", manufacturer);
+         jo_string (j, "model", model);
+         jo_string (j, "version", version);
+         jo_string (j, "serial", serial);
+
+         uint32_t addvalue (const char *tag, uint32_t val, int16_t scale)
+         {
+            if (scale >= 0)
+            {
+               uint32_t s = 1;
+               while (scale--)
+                  s *= 10;
+               jo_int (j, tag, val * s);
+               return val * s;
+            }
+            int d = -scale;
+            uint32_t s = 1;
+            while (scale++)
+               s *= 10;
+            jo_litf (j, tag, "%lu.%*0lu", val / s, d, val % s);
+            return val / s;
+         }
+         uint32_t add16 (const char *tag, uint16_t reg, uint16_t scale)
+         {
+            return addvalue (tag, modbus_16 (reg), modbus_16d (scale));
+         }
+         uint32_t add32 (const char *tag, uint16_t reg, uint16_t scale)
+         {
+            return addvalue (tag, modbus_32 (reg), modbus_16d (scale));
+         }
+
+         add16 ("voltage", 0x9c8c, 0x9c92);
+         add16 ("frequency", 0x9c95, 0x9c96);
+         add16 ("power", 0x9c93, 0x9c94);
+
+         uint32_t cum = add32 ("total", 0x9c9d, 0x9c9f);
+         time_t now = time (0);
+         struct tm t;
+         localtime_r (&now, &t);
+         uint32_t day = (t.tm_year + 1900) * 10000 + (t.tm_mon + 1) * 100 + t.tm_mday;
+         if (day != solarday)
+         {
+            jo_t s = jo_object_alloc ();
+            jo_int (s, "solarday", day);
+            jo_int (s, "solarsod", cum);
+            revk_setting (s);
+            jo_free (&s);
+         }
+         jo_int (j, "today", cum - solarsod);
+         jo_t was = solar;
+         solar = j;
+         jo_free (&was);
+         if (solarlog)
+         {
+            jo_t j = jo_copy (solar);
+            revk_info ("solar", &j);
+         }
+         sleep (1);
+      }
+      if (er)
+         ESP_LOGE (TAG, "Solar failed %s", er);
+      close (s);
+   }
+}
+
 char *
 dollar_diff (time_t ref, time_t now)
 {
@@ -1038,6 +1222,8 @@ app_main ()
       revk_task ("blink", led_task, NULL, 4);
    }
    revk_task ("snmp", snmp_rx_task, NULL, 4);
+   if (*solarip)
+      revk_task ("solar", solar_task, NULL, 10);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -1227,27 +1413,6 @@ app_main ()
          showlights (lighton == lightoff || (lighton < lightoff && lighton <= hhmm && lightoff > hhmm)
                      || (lightoff < lighton && (lighton <= hhmm || lightoff > hhmm)) ? lights : "");
       }
-      if (solarsite && *solarapi)
-      {
-         char *url;
-         asprintf (&url, "https://monitoringapi.solaredge.com/site/%lu/%s?api_key=%s", solarsite,
-                   solarflow ? "currentPowerFlow" : "overview", solarapi);
-         file_t *s = download (url, NULL);
-         ESP_LOGE (TAG, "%s (%ld)", url, s ? s->cache - up : 0);
-         free (url);
-         if (s && s->data && s->json)
-         {
-            if (s->cache > up + 300)
-               s->cache = up + 300;
-            jo_t j = jo_parse_mem (s->data, s->size);
-            if (j)
-            {
-               if (solar)
-                  jo_free (&solar);
-               solar = j;
-            }
-         }
-      }
       if ((poslat || poslon || *postown) && *weatherapi)
       {                         // Weather
          char *url;
@@ -1266,9 +1431,9 @@ app_main ()
             jo_t j = jo_parse_mem (w->data, w->size);
             if (j)
             {
-               if (weather)
-                  jo_free (&weather);
+               jo_t was = weather;
                weather = j;
+               jo_free (&was);
             }
          }
       }

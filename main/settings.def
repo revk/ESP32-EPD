@@ -51,10 +51,11 @@ text	widget.c	"GO TO WEB PAGE SETTINGS\nTO CONFIGURE WIDGETS"	.hide .live .array
 
 s	qr.ssid			.live			// WiFi SSID for $WIFI
 s	qr.pass			.live			// WiFi pass for $WIFI
-s	weatherapi		.live			// API key for weatherapi.com
-s	solarapi		.live			// API key for SolarEdge (v1)
-u32	solarsite		.live			// Site ID for SolarEdge (v1)
-bit	solarflow		.live			// Fetch siteCurrentPowerFlow instead of overview
+s	weather.api		.live			// API key for weatherapi.com
+s	solar.ip					// SolarEdge IP address
+u32	solar.sod		.live	.hide		// SolarEdge start of day kWh
+u32	solar.day		.live	.hide		// SolarEdge date for sod
+bit	solar.log		.live			// SolarEdge log to mqtt
 c1	seasoncode		.live			// Override season for testing
 s	refdate			.live			// Reference date/time (YYYY-MM-DD HH:MM:SS)
 s	snmphost		.live			// Hostname for SNMP poll
