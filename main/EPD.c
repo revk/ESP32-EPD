@@ -911,28 +911,15 @@ dollar (char *c, time_t now)
          asprintf (&c, "WIFI:S:%s;;", *qrssid ? qrssid : wifissid);
    } else if (!strcmp (c + 1, "IPV4"))
    {
-      esp_netif_ip_info_t ip;
-      if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
-         asprintf (&c, IPSTR, IP2STR (&ip.ip));
-   }
-#ifdef CONFIG_LWIP_IPV6
-   else if (!strcmp (c + 1, "IPV6") || !strcmp (c + 1, "IP"))
+      char ip[16];
+      revk_ipv4 (ip);
+      c = strdup (ip);
+   } else if (!strcmp (c + 1, "IPV6") || !strcmp (c + 1, "IP"))
    {
-      esp_ip6_addr_t ip[LWIP_IPV6_NUM_ADDRESSES];
-      int n = esp_netif_get_all_ip6 (sta_netif, ip);
-      if (n)
-      {
-         for (int i = 0; i < n && i < 4; i++)
-            if (n == 1 || ip[i].addr[0] != 0x000080FE)  // Yeh FE80 backwards
-            {
-               asprintf (&c, IPV6STR, IPV62STR (ip[i]));
-               for (char *q = c; *q; q++)
-                  *q = toupper (*q);
-               break;
-            }
-      }
+      char ip[40];
+      revk_ipv6 (ip);
+      c = strdup (ip);
    }
-#endif
 #ifdef	CONFIG_REVK_SOLAR
    else if (!strcmp (c + 1, "SUNSET") && now && (poslat || poslon))
    {
