@@ -70,7 +70,7 @@ The image is typically stored in SD card if present as a backup. If the image is
 
 Note, if the image does not end `.`*something* (and has now `?`) a `.png` is appended. This is useful for things like `$WEATHER.current.condition.code` as an image name like `1030.png` for *Mist*.
 
-SolarEdge data can also be accessed, e.g. `$SOLAR.siteCurrentPowerFlow.GRID.currentPower`
+SolarEdge data can also be accessed, either siteCurrentPowerFlow or overview depending on `solarflow` setting, e.g. `$SOLAR.siteCurrentPowerFlow.GRID.currentPower`, `$SOLAR.overview.currentPower.power`, etc.
 
 ### QR
 

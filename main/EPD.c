@@ -1247,7 +1247,8 @@ app_main ()
       if (solarsite && *solarapi)
       {
          char *url;
-         asprintf (&url, "https://monitoringapi.solaredge.com/site/%lu/currentPowerFlow?api_key=%s", solarsite, solarapi);
+         asprintf (&url, "https://monitoringapi.solaredge.com/site/%lu/%s?api_key=%s", solarsite,
+                   solarflow ? "currentPowerFlow" : "overview", solarapi);
          file_t *s = download (url, NULL);
          ESP_LOGE (TAG, "%s (%ld)", url, s ? s->cache - up : 0);
          free (url);
