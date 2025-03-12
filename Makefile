@@ -28,6 +28,9 @@ issue:
 	-git commit -a -m Release
 	-git push
 
+se:	se.c
+	cc -fPIC -O -g -o $@ $< -lpopt
+
 main/settings.h:     components/ESP32-RevK/revk_settings main/settings.def components/ESP32-RevK/settings.def
 	components/ESP32-RevK/revk_settings $^
 

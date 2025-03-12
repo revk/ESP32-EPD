@@ -1,5 +1,6 @@
 *.o
 *~
+se
 *.swp
 .DS_Store
 */*.bin
