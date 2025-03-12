@@ -59,6 +59,19 @@ se_task (void *x)
          continue;
       }
 
+      // TEST
+      uint8_t test[] = { 0x12, 0x34, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x9c, 0x40, 0x00, 0x01 };
+      ssize_t l=write (s, test, sizeof (test));
+      warnx("%ld bytes sent",l);
+      while (1)
+      {
+         uint8_t b;
+         l= read (s, &b, 1);
+         if (l<= 0)
+            break;
+         warnx ("%02X", b);
+      }
+
 
       close (s);
    }
