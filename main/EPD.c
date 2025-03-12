@@ -1248,8 +1248,8 @@ app_main ()
       {
          char *url;
          asprintf (&url, "https://monitoringapi.solaredge.com/site/%lu/currentPowerFlow?api_key=%s", solarsite, solarapi);
-         ESP_LOGE (TAG, "%s", url);
          file_t *s = download (url, NULL);
+         ESP_LOGE (TAG, "%s (%ld)", url, s ? s->cache - up : 0);
          free (url);
          if (s && s->data && s->json)
          {
@@ -1272,8 +1272,8 @@ app_main ()
          else
             asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%f,%f", weatherapi,
                       (float) poslat / 10000000, (float) poslon / 1000000);
-         ESP_LOGE (TAG, "%s", url);
          file_t *w = download (url, NULL);
+         ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
          free (url);
          if (w && w->data && w->json)
          {
