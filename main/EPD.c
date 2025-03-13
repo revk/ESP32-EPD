@@ -905,10 +905,10 @@ solar_task (void *x)
       }
 
       const char *er = NULL;
-      void modbus_get (uint16_t reg, uint8_t regs, void *buf)
+      const char *modbus_get (uint16_t reg, uint8_t regs, void *buf)
       {
          if (er)
-            return;
+            return er;
          static uint16_t tag;
          tag++;
          uint8_t req[12];
@@ -924,32 +924,30 @@ solar_task (void *x)
          req[10] = regs >> 8;
          req[11] = regs;
          int l;
-         if (!er && (l = write (s, req, sizeof (req))) != sizeof (req))
-            er = "Bad tx - socket closed?";
-         if (!er && (l = read (s, req, 6)) != 6)
-            er = "Bad rx - socket closed?";
-         if (!er && (req[0] << 8) + req[1] != tag)
-            er = "Bad tag";
+         if ((l = write (s, req, sizeof (req))) != sizeof (req))
+            return er = "Bad tx - socket closed?";
+         if ((l = read (s, req, 6)) != 6)
+            return er = "Bad rx - socket closed?";
+         if ((req[0] << 8) + req[1] != tag)
+            return er = "Bad tag";
          if (!er && (req[2] || req[3]))
-            er = "Bad protocol";
+            return er = "Bad protocol";
          uint16_t len = (req[4] << 8) + req[5];
-         if (!er && len != regs * 2 + 3)
-            er = "Bad len";
-         else if (!er)
-         {
-            if ((l = read (s, req + 6, 3)) != 3)
-               er = "Bad rx - socket closed?";
-            else if ((l = read (s, buf, len - 3)) != len - 3)
-               er = "Bad rx - socket closed?";
-            else if (req[7] != 3)
-               er = "Bad function";
-         }
+         if (len != regs * 2 + 3)
+            return er = "Bad len";
+         if ((l = read (s, req + 6, 3)) != 3)
+            return er = "Bad rx - socket closed?";
+         if ((l = read (s, buf, len - 3)) != len - 3)
+            return er = "Bad rx - socket closed?";
+         if (req[7] != 3)
+            return er = "Bad function";
+         return NULL;
       }
       void modbus_string (uint16_t reg, uint8_t len, char *buf)
-      {                         // Buf must have len+1 bytes, +1 if len is odd
+      {                         // Last byte will have null
          *buf = 0;
-         modbus_get (reg, (len + 1) / 2, buf);
-         buf[len] = 0;
+         modbus_get (reg, len / 2, buf);
+         buf[len - 1] = 0;
       }
 
       int16_t modbus_16d (uint16_t reg)
@@ -975,14 +973,14 @@ solar_task (void *x)
 
       // Base data
 
-      char manufacturer[17];
-      modbus_string (0x9c44, sizeof (manufacturer) - 1, manufacturer);
-      char model[17];
-      modbus_string (0x9c54, sizeof (model) - 1, model);
-      char version[9];
-      modbus_string (0x9c6c, sizeof (version) - 1, version);
-      char serial[17];
-      modbus_string (0x9c74, sizeof (serial) - 1, serial);
+      char manufacturer[32 + 1];
+      modbus_string (0x9c44, sizeof (manufacturer), manufacturer);
+      char model[32 + 1];
+      modbus_string (0x9c54, sizeof (model), model);
+      char version[16 + 1];
+      modbus_string (0x9c6c, sizeof (version), version);
+      char serial[32 + 1];
+      modbus_string (0x9c74, sizeof (serial), serial);
 
       while (!er)
       {
@@ -992,7 +990,7 @@ solar_task (void *x)
          jo_string (j, "version", version);
          jo_string (j, "serial", serial);
 
-         uint32_t addvalue (const char *tag, uint32_t val, int16_t scale)
+         void addvalue (const char *tag, int32_t val, int16_t scale)
          {
             if (scale >= 0)
             {
@@ -1000,29 +998,32 @@ solar_task (void *x)
                while (scale--)
                   s *= 10;
                jo_int (j, tag, val * s);
-               return val * s;
+               return;
+            }
+            const char *sign = "";
+            if (val < 0)
+            {
+               val = -val;
+               sign = "-";
             }
             int d = -scale;
             uint32_t s = 1;
             while (scale++)
                s *= 10;
-            jo_litf (j, tag, "%lu.%*0lu", val / s, d, val % s);
-            return val / s;
+            jo_litf (j, tag, "%s%lu.%0*lu", sign, val / s, d, val % s);
          }
-         uint32_t add16 (const char *tag, uint16_t reg, uint16_t scale)
+         void add16 (const char *tag, uint16_t reg, uint16_t scale)
          {
-            return addvalue (tag, modbus_16 (reg), modbus_16d (scale));
-         }
-         uint32_t add32 (const char *tag, uint16_t reg, uint16_t scale)
-         {
-            return addvalue (tag, modbus_32 (reg), modbus_16d (scale));
+            addvalue (tag, modbus_16 (reg), modbus_16d (scale));
          }
 
          add16 ("voltage", 0x9c8c, 0x9c92);
          add16 ("frequency", 0x9c95, 0x9c96);
          add16 ("power", 0x9c93, 0x9c94);
 
-         uint32_t cum = add32 ("total", 0x9c9d, 0x9c9f);
+         uint32_t cum = modbus_32 (0x9c9d);
+         int16_t cumscale = modbus_16d (0x9c9f);
+
          time_t now = time (0);
          struct tm t;
          localtime_r (&now, &t);
@@ -1035,7 +1036,8 @@ solar_task (void *x)
             revk_setting (s);
             jo_free (&s);
          }
-         jo_int (j, "today", cum - solarsod);
+         addvalue ("today", cum - solarsod, cumscale);
+
          jo_t was = solar;
          solar = j;
          jo_free (&was);
