@@ -22,7 +22,7 @@ Each widget has basic settings with *type*, and position (*x*/*y*), and alignmen
 
 ### Content
 
-The *content* for any widget can be one of a number of presets, as follows :-
+The *content* for any widget can contain `$` expanded fields, this can be `$field` or `${field}` if you need letters/etc directly after the expansion.
 
 |Preset|Meaning|
 |------|-------|

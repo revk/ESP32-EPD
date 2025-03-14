@@ -874,6 +874,7 @@ led_task (void *x)
 void
 solar_task (void *x)
 {
+   int backup = 1;
    while (!b.die)
    {
       // Connect
@@ -903,9 +904,12 @@ solar_task (void *x)
       if (s < 0)
       {
          ESP_LOGE (TAG, "Cannot connect %s", solarip);
-         sleep (10);
+         if (backup < 3600)
+            backup *= 2;
+         sleep (backup);
          continue;
       }
+      backup = 1;
 
       const char *er = NULL;
       const char *modbus_get (uint16_t reg, uint8_t regs, void *buf)
@@ -1084,91 +1088,109 @@ dollar_diff (time_t ref, time_t now)
 }
 
 char *
-dollar (char *c, time_t now)
-{                               // Return c or a malloc'd expanded c
-   if (*c != '$')
-      return c;
+dollar (const char *c, time_t now)
+{                               // Single dollar replace - c is the part after $. Return is NULL or malloc result
+   char *r = NULL;
    struct tm t;
    localtime_r (&now, &t);
-   if (!strcmp (c + 1, "TIME"))
-      asprintf (&c, "%02d:%02d", t.tm_hour, t.tm_min);
-   else if (!strcmp (c + 1, "DATE"))
-      asprintf (&c, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
-   else if (!strcmp (c + 1, "DAY"))
-      c = strdup (longday[t.tm_wday]);
-   else if (!strcmp (c + 1, "COUNTDOWN"))
+   if (!strcmp (c, "TIME"))
+   {
+      asprintf (&r, "%02d:%02d", t.tm_hour, t.tm_min);
+      return r;
+   }
+   if (!strcmp (c, "DATE"))
+   {
+      asprintf (&r, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+      return r;
+   }
+   if (!strcmp (c, "DAY"))
+      return strdup (longday[t.tm_wday]);
+   if (!strcmp (c, "COUNTDOWN"))
    {
       time_t ref = parse_time (refdate, t.tm_year + 1900);
       if (ref < now)
          ref = parse_time (refdate, t.tm_year + 1901);  // Counting up, allow for year being next year
-      c = dollar_diff (ref, now);
-   } else if (!strcmp (c + 1, "SSID"))
-      c = strdup (*qrssid ? qrssid : wifissid);
-   else if (!strcmp (c + 1, "PASS"))
-      c = strdup (*qrssid ? qrpass : wifipass);
-   else if (!strcmp (c + 1, "WIFI"))
+      return dollar_diff (ref, now);
+   }
+   if (!strcmp (c, "SSID"))
+      return strdup (*qrssid ? qrssid : wifissid);
+   if (!strcmp (c, "PASS"))
+      return strdup (*qrssid ? qrpass : wifipass);
+   if (!strcmp (c, "WIFI"))
    {
       if (*qrssid ? *qrpass : *wifipass)
-         asprintf (&c, "WIFI:S:%s;T:WPA2;P:%s;;", *qrssid ? qrssid : wifissid, *qrssid ? qrpass : wifipass);
+         asprintf (&r, "WIFI:S:%s;T:WPA2;P:%s;;", *qrssid ? qrssid : wifissid, *qrssid ? qrpass : wifipass);
       else
-         asprintf (&c, "WIFI:S:%s;;", *qrssid ? qrssid : wifissid);
-   } else if (!strcmp (c + 1, "IPV4"))
+         asprintf (&r, "WIFI:S:%s;;", *qrssid ? qrssid : wifissid);
+      return r;
+   }
+   if (!strcmp (c, "IPV4"))
    {
       char ip[16];
       revk_ipv4 (ip);
-      c = strdup (ip);
-   } else if (!strcmp (c + 1, "IPV6") || !strcmp (c + 1, "IP"))
+      return strdup (ip);
+   }
+   if (!strcmp (c, "IPV6") || !strcmp (c, "IP"))
    {
       char ip[40];
       revk_ipv6 (ip);
-      c = strdup (ip);
+      return strdup (ip);
    }
 #ifdef	CONFIG_REVK_SOLAR
-   else if (!strcmp (c + 1, "SUNSET") && now && (poslat || poslon))
+   if (!strcmp (c, "SUNSET") && now && (poslat || poslon))
    {
       time_t when = sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
                              (double) poslon / poslon_scale, SUN_DEFAULT);
       struct tm tm = { 0 };
       localtime_r (&when, &tm);
-      asprintf (&c, "%02d:%02d", tm.tm_hour, tm.tm_min);
-   } else if (!strcmp (c + 1, "SUNRISE") && now && (poslat || poslon))
+      asprintf (&r, "%02d:%02d", tm.tm_hour, tm.tm_min);
+      return r;
+   }
+   if (!strcmp (c, "SUNRISE") && now && (poslat || poslon))
    {
       time_t when = sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
                               (double) poslon / poslon_scale, SUN_DEFAULT);
       struct tm tm = { 0 };
       localtime_r (&when, &tm);
-      asprintf (&c, "%02d:%02d", tm.tm_hour, tm.tm_min);
+      asprintf (&r, "%02d:%02d", tm.tm_hour, tm.tm_min);
+      return r;
    }
 #endif
-   else if (!strcmp (c + 1, "FULLMOON"))
+   if (!strcmp (c, "FULLMOON"))
    {
       time_t when = revk_moon_full_next (now);
       struct tm tm = { 0 };
       localtime_r (&when, &tm);
-      asprintf (&c, "%04d-%02d-%02d %02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
-   } else if (!strcmp (c + 1, "DEFCON"))
+      asprintf (&r, "%04d-%02d-%02d %02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
+      return r;
+   }
+   if (!strcmp (c, "DEFCON"))
    {
       if (b.defcon > 5)
-         c = strdup ("-");
-      else
-         asprintf (&c, "%u", b.defcon);
-   } else if (weather && !strncmp (c + 1, "WEATHER.", 8))
+         return strdup ("-");
+      asprintf (&r, "%u", b.defcon);
+      return r;
+   }
+   if (weather && !strncmp (c, "WEATHER.", 8))
    {                            // Weather data
       if (jo_find (weather, c + 9))
-         c = jo_strdup (weather);
-   } else if (solar && !strncmp (c + 1, "SOLAR.", 6))
+         return jo_strdup (weather);
+   }
+   if (solar && !strncmp (c, "SOLAR.", 6))
    {                            // Solar data
       if (jo_find (solar, c + 7))
-         c = jo_strdup (solar);
-   } else if (json && !strncmp (c + 1, "JSON.", 5))
+         return jo_strdup (solar);
+   }
+   if (json && !strncmp (c, "JSON.", 5))
    {                            // Weather data
       if (jo_find (json, c + 6))
-         c = jo_strdup (json);
-   } else if (!strcmp (c + 1, "SNMPHOST") && snmp.host)
-      c = strdup (snmp.host);
-   else if (!strcmp (c + 1, "SNMPDESC") && snmp.desc)
-      c = strdup (snmp.desc);
-   else if (!strcmp (c + 1, "SNMPFBVER") && snmp.desc)
+         return jo_strdup (json);
+   }
+   if (!strcmp (c, "SNMPHOST") && snmp.host)
+      return strdup (snmp.host);
+   if (!strcmp (c, "SNMPDESC") && snmp.desc)
+      return strdup (snmp.desc);
+   if (!strcmp (c, "SNMPFBVER") && snmp.desc)
    {
       char *s = snmp.desc;
       while (*s && *s != '(')
@@ -1179,11 +1201,70 @@ dollar (char *c, time_t now)
          char *e = s;
          while (*e && *e != ' ' && *e != ')')
             e++;
-         c = strndup (s, e - s);
+         return strndup (s, e - s);
       }
-   } else if (!strcmp (c + 1, "SNMPUPTIME"))
-      c = dollar_diff (snmp.upfrom, now);
-   return c;
+   }
+   if (!strcmp (c, "SNMPUPTIME"))
+      return dollar_diff (snmp.upfrom, now);
+   return r;
+}
+
+char *
+dollars (char *c, time_t now)
+{                               // Check c for $ expansion, return c, or malloc'd replacement
+   if (!strchr (c, '$'))
+      return c;
+   char *new = NULL;
+   size_t len;
+   FILE *o = open_memstream (&new, &len);
+   while (*c)
+   {
+      char *d = strchr (c, '$');
+      if (d)
+      {                         // Expand
+         if (d > c)
+            fwrite (c, d - c, 1, o);
+         d++;
+         if (*d == '$')
+         {                      // $$ is $
+            fputc ('$', o);
+            c = d + 1;
+         } else
+         {
+            char *x = NULL;
+            if (*d == '{')
+            {
+               d++;
+               char *e = strchr (d, '}');
+               x = strndup (d, e - d);
+               c = d + 1;
+            } else
+            {
+               char *e = d;
+               while (*e && (isalnum ((int) (uint8_t) * e) || *e == '.' || *e == '-' || *c == '_'))
+                  e++;
+               x = strndup (d, e - d);
+               c = e;
+            }
+            if (x)
+            {
+               char *n = dollar (x, now);
+               ESP_LOGE (TAG, "Expand [%s] [%s]", x, n ? : "-");
+               free (x);
+               if (n)
+                  fprintf (o, "%s", n);
+               free (n);
+            }
+
+         }
+      } else
+      {                         // Copy
+         fprintf (o, "%s", c);
+         break;
+      }
+   }
+   fclose (o);
+   return new;
 }
 
 void
@@ -1494,7 +1575,7 @@ app_main ()
          gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
          //if (widgett[w] || *widgetc[w]) ESP_LOGE (TAG, "Widget %2d X=%03d Y=%03d A=%02X F=%c B=%c", w + 1, gfx_x (), gfx_y (), gfx_a (), gfx_f (), gfx_b ());
          // Content substitutions
-         char *c = dollar (widgetc[w], now);
+         char *c = dollars (widgetc[w], now);
          switch (widgett[w])
          {
          case REVK_SETTINGS_WIDGETT_TEXT:
@@ -1675,5 +1756,5 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
    else if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
       revk_web_setting_info (req,
-                             "Content can also be <tt>$</tt> and various fields like <tt>$TIME</tt>. See manual for more details");
+                             "Content can contain <tt>$</tt> expansion fields like <tt>$TIME</tt>, <tt>${DAY}</tt>. See manual for more details");
 }
