@@ -34,6 +34,7 @@ char season = 0;                // Current season
 
 static struct
 {                               // Flags
+   uint8_t die:1;
    uint8_t wificonnect:1;
    uint8_t redraw:1;
    uint8_t setting:1;
@@ -721,7 +722,7 @@ snmp_tx (void)
 void
 snmp_rx_task (void *x)
 {                               // Get SNMP responses
-   while (1)
+   while (!b.die)
    {
       if (snmp.sock < 0)
       {
@@ -855,23 +856,25 @@ snmp_rx_task (void *x)
       if (snmp.upfrom)
          snmp.lastrx = uptime ();
    }
+   vTaskDelete (NULL);
 }
 
 void
 led_task (void *x)
 {
-   while (1)
+   while (!b.die)
    {
       usleep (100000);
       revk_led (strip, 0, 255, revk_blinker ());
       led_strip_refresh (strip);
    }
+   vTaskDelete (NULL);
 }
 
 void
 solar_task (void *x)
 {
-   while (1)
+   while (!b.die)
    {
       // Connect
       struct addrinfo base = {.ai_family = PF_UNSPEC,.ai_socktype = SOCK_STREAM };
@@ -982,7 +985,13 @@ solar_task (void *x)
       char serial[32 + 1];
       modbus_string (0x9c74, sizeof (serial), serial);
 
-      while (!er)
+      int16_t voltage_scale = modbus_16d (0x9c92);
+      int16_t frequency_scale = modbus_16d (0x9c96);
+      int16_t power_scale = modbus_16d (0x9c94);
+      int16_t total_scale = modbus_16d (0x9c9f);
+
+
+      while (!er && !b.die)
       {
          jo_t j = jo_object_alloc ();
          jo_string (j, "manufacturer", manufacturer);
@@ -1012,17 +1021,11 @@ solar_task (void *x)
                s *= 10;
             jo_litf (j, tag, "%s%lu.%0*lu", sign, val / s, d, val % s);
          }
-         void add16 (const char *tag, uint16_t reg, uint16_t scale)
-         {
-            addvalue (tag, modbus_16 (reg), modbus_16d (scale));
-         }
 
-         add16 ("voltage", 0x9c8c, 0x9c92);
-         add16 ("frequency", 0x9c95, 0x9c96);
-         add16 ("power", 0x9c93, 0x9c94);
-
-         uint32_t cum = modbus_32 (0x9c9d);
-         int16_t cumscale = modbus_16d (0x9c9f);
+         addvalue ("voltage", modbus_16 (0x9c8c), voltage_scale);
+         addvalue ("frequency", modbus_16 (0x9c95), frequency_scale);
+         addvalue ("power", modbus_16 (0x9c93), power_scale);
+         uint32_t total = modbus_32 (0x9c9d);
 
          time_t now = time (0);
          struct tm t;
@@ -1032,11 +1035,11 @@ solar_task (void *x)
          {
             jo_t s = jo_object_alloc ();
             jo_int (s, "solarday", day);
-            jo_int (s, "solarsod", cum);
+            jo_int (s, "solarsod", total);
             revk_setting (s);
             jo_free (&s);
          }
-         addvalue ("today", cum - solarsod, cumscale);
+         addvalue ("today", total - solarsod, total_scale);
 
          jo_t was = solar;
          solar = j;
@@ -1046,12 +1049,13 @@ solar_task (void *x)
             jo_t j = jo_copy (solar);
             revk_info ("solar", &j);
          }
-         sleep (1);
+         sleep (10);
       }
       if (er)
          ESP_LOGE (TAG, "Solar failed %s", er);
       close (s);
    }
+   vTaskDelete (NULL);
 }
 
 char *
@@ -1299,7 +1303,7 @@ app_main ()
    showlights ("");
    uint32_t fresh = 0;
    uint32_t min = 0;
-   while (1)
+   while (!revk_shutting_down (NULL))
    {
       usleep (100000);
       time_t now = time (0);
@@ -1584,6 +1588,7 @@ app_main ()
       epd_unlock ();
       snmp_tx ();
    }
+   b.die = 1;
 }
 
 void
