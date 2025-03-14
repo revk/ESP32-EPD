@@ -883,7 +883,7 @@ solar_task (void *x)
          *t;
       if (getaddrinfo (solarip, "1502", &base, &a) || !a)
       {
-         ESP_LOGE (TAG, "Cannot look up %s", solarip);
+         ESP_LOGE ("Solar", "Cannot look up %s", solarip);
          sleep (10);
          continue;
       }
@@ -903,7 +903,7 @@ solar_task (void *x)
       freeaddrinfo (a);
       if (s < 0)
       {
-         ESP_LOGE (TAG, "Cannot connect %s", solarip);
+         ESP_LOGE ("Solar", "Cannot connect %s", solarip);
          if (backup < 3600)
             backup *= 2;
          sleep (backup);
@@ -1056,7 +1056,7 @@ solar_task (void *x)
          sleep (10);
       }
       if (er)
-         ESP_LOGE (TAG, "Solar failed %s", er);
+         ESP_LOGE ("Solar", "Solar failed %s", er);
       close (s);
    }
    vTaskDelete (NULL);
@@ -1173,17 +1173,17 @@ dollar (const char *c, time_t now)
    }
    if (weather && !strncmp (c, "WEATHER.", 8))
    {                            // Weather data
-      if (jo_find (weather, c + 9))
+      if (jo_find (weather, c + 8))
          return jo_strdup (weather);
    }
    if (solar && !strncmp (c, "SOLAR.", 6))
    {                            // Solar data
-      if (jo_find (solar, c + 7))
+      if (jo_find (solar, c + 6))
          return jo_strdup (solar);
    }
    if (json && !strncmp (c, "JSON.", 5))
    {                            // Weather data
-      if (jo_find (json, c + 6))
+      if (jo_find (json, c + 5))
          return jo_strdup (json);
    }
    if (!strcmp (c, "SNMPHOST") && snmp.host)
@@ -1236,12 +1236,14 @@ dollars (char *c, time_t now)
             {
                d++;
                char *e = strchr (d, '}');
+               if (!e)
+                  break;
                x = strndup (d, e - d);
-               c = d + 1;
+               c = e + 1;
             } else
             {
                char *e = d;
-               while (*e && (isalnum ((int) (uint8_t) * e) || *e == '.' || *e == '-' || *c == '_'))
+               while (*e && (isalnum ((int) (uint8_t) * e) || *e == '.' || *e == '-' || *e == '_'))
                   e++;
                x = strndup (d, e - d);
                c = e;
@@ -1278,6 +1280,7 @@ app_main ()
    xSemaphoreGive (epd_mutex);
    // Web interface
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
+   config.stack_size += 1024 * 4;
    config.lru_purge_enable = true;
    config.max_uri_handlers = 2 + revk_num_web_handlers ();
    if (!httpd_start (&webserver, &config))
