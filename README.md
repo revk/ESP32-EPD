@@ -125,7 +125,7 @@ More widgets planned
 
 ## Weather
 
-You can set the weather api for https://www.weatherapi.com/ this then allows you to access `$WEATHER.` and a weather app field. e.g. `$WEATHER.current.feelslike_c` or `$WEATHER.current.condition.text`
+You can set the weather api for https://www.weatherapi.com/ this then allows you to access `$WEATHER.` and a weather app field. e.g. `${WEATHER.current.feelslike_c}C` or `$WEATHER.current.condition.text`
 
 Sending the `command/EPD/weather` returns current weather JSON as an `info` response.
 
