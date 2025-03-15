@@ -1587,11 +1587,7 @@ app_main ()
                gfx_pos_t s = widgets[w];
                if (!s)
                   s = 5;
-#ifdef	CONFIG_GFX_VECTOR
-               gfx_vector (s, "%s", c);
-#else
                gfx_text (s, "%s", c);
-#endif
             }
             break;
          case REVK_SETTINGS_WIDGETT_BLOCKS:
