@@ -739,7 +739,7 @@ snmp_rx_task (void *x)
       int len = recvfrom (snmp.sock, rx, sizeof (rx), 0, (struct sockaddr *) &source_addr, &socklen);
       if (len <= 0)
          continue;
-      time_t now = time (0);
+      time_t now = time (0) + 2;        // Allow time for EPD startup
       if (now < 1000000000)
          now = 0;
       ESP_LOGD (TAG, "SNMP Rx %d", len);
