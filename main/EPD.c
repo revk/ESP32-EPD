@@ -1251,7 +1251,7 @@ dollars (char *c, time_t now)
             if (x)
             {
                char *n = dollar (x, now);
-               ESP_LOGE (TAG, "Expand [%s] [%s]", x, n ? : "-");
+               ESP_LOGD (TAG, "Expand [%s] [%s]", x, n ? : "-");
                free (x);
                if (n)
                   fprintf (o, "%s", n);
