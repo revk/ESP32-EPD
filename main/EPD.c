@@ -1094,6 +1094,10 @@ dollar (const char *c, time_t now)
    char *r = NULL;
    struct tm t;
    localtime_r (&now, &t);
+   if (!strcmp (c, "SEASON"))
+      return strndup (revk_season (time (0)), 1);
+   if (!strcmp (c, "SEASONS"))
+      return strdup (revk_season (time (0)));
    if (!strcmp (c, "TIME"))
    {
       asprintf (&r, "%02d:%02d", t.tm_hour, t.tm_min);
@@ -1230,6 +1234,10 @@ dollars (char *c, time_t now)
          {                      // $$ is $
             fputc ('$', o);
             c = d + 1;
+         } else if (*d != '{' && !isalnum ((int) (uint8_t) * d))
+         {                      // not sensible escape
+            fputc ('$', o);
+            c = d;
          } else
          {
             char *x = NULL;

@@ -29,6 +29,8 @@ The *content* for any widget can contain `$` expanded fields, this can be `$fiel
 |`$TIME`|Current time `HH:MM`|
 |`$DATE`|Current date `YYYY-MM-DD`|
 |`$DAY`|Current day, e.g. `WEDNESDAY`|
+|`$SEASON`|Seasonal character code, e.g. `E` for Easter|
+|`$SEASONS`|Seasonal character codes|
 |`$COUNTDOWN`|Countdown/up from `refdate`, not a `refdate` with year `0000` means countdown to date/time specified in current/next year|
 |`$SSID`|Current WiFi SSID|
 |`$PASS`|Current WiFi passphrase|
