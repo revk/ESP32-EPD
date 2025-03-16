@@ -1432,7 +1432,7 @@ app_main ()
                if (*ap.ssid)
                {
                   override = up + startup;
-                  p += sprintf (p, "[3] /[6] WiFi/[_6|]%.32s/[3] /Channel %d/RSSI %d/", (char *) ap.ssid, ap.primary, ap.rssi);
+                  p += sprintf (p, "[3] /[6]WiFi/[_6|]%.32s/[3] /Channel %d/RSSI %d/", (char *) ap.ssid, ap.primary, ap.rssi);
                   char ip[40];
                   if (revk_ipv4 (ip))
                   {
