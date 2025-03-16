@@ -19,7 +19,6 @@ typedef struct icon_s
 void
 widget_bins (uint16_t s, const char *c)
 {
-	ESP_LOGE(TAG,"Bins size %04X",s);
    time_t now = time (0);
    if (!c || !*c || now < 1000000000)
       return;
@@ -36,7 +35,6 @@ widget_bins (uint16_t s, const char *c)
    uint8_t s2 = s1 / 2;         // Text size for icons
    if (!s2)
       s2 = 1;
-   ESP_LOGE(TAG,"s=%d s1=%d s2=%d",s,s1,s2);
    gfx_align_t a = gfx_a ();
    file_t *bins = download ((char *) c, ".json");
    if (!bins || !bins->size || !bins->data)
