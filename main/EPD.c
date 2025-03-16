@@ -1440,7 +1440,7 @@ app_main ()
                      asprintf (&qr2, "http://%s/", ip);
                   }
                   if (revk_ipv6 (ip))
-                     p += sprintf (p, "[6] /IPv6/[2]%s/", ip);
+                     p += sprintf (p, "[6] /IPv6/[2|]%s/", ip);
                }
             }
             if (!override && ap_netif)
