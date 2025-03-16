@@ -1415,7 +1415,7 @@ app_main ()
             char temp[32];
             char *qr1 = NULL,
                *qr2 = NULL;
-            p += sprintf (p, "[-6]%.16s/%.16s/[3]%s %s/", appname, hostname, revk_version, revk_build_date (temp) ? : "?");
+            p += sprintf (p, "[_6]%.16s/%.16s/[3]%s %s/", appname, hostname, revk_version, revk_build_date (temp) ? : "?");
             if (sta_netif)
             {
                wifi_ap_record_t ap = {
@@ -1424,7 +1424,7 @@ app_main ()
                if (*ap.ssid)
                {
                   override = up + startup;
-                  p += sprintf (p, "[3] /[6] WiFi/[-6L]%.32s/[3] /Channel %d/RSSI %d/", (char *) ap.ssid, ap.primary, ap.rssi);
+                  p += sprintf (p, "[3] /[6] WiFi/[_6|]%.32s/[3] /Channel %d/RSSI %d/", (char *) ap.ssid, ap.primary, ap.rssi);
                   char ip[40];
                   if (revk_ipv4 (ip))
                   {
@@ -1441,7 +1441,7 @@ app_main ()
                if (len)
                {
                   override = up + (aptime ? : 600);
-                  p += sprintf (p, "[3] /[6]WiFi[-3]%.*s/", len, temp);
+                  p += sprintf (p, "[3] /[6]WiFi[_3|]%.*s/", len, temp);
                   if (*appass)
                      asprintf (&qr1, "WIFI:S:%.*s;T:WPA2;P:%s;;", len, temp, appass);
                   else
