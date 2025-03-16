@@ -1601,7 +1601,7 @@ app_main ()
             if (*c)
             {
                uint16_t s = widgets[w];
-               uint8_t flags = 0;
+               uint8_t flags = GFX_TEXT_BLOCKY;
                if (s & 0x8000)
                   flags |= GFX_TEXT_DESCENDERS;
                if (s & 0x4000)
