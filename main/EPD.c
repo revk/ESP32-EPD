@@ -73,7 +73,7 @@ gfx_qr (const char *value, uint16_t max)
 {
 #ifndef	CONFIG_GFX_NONE
    unsigned int width = 0;
- uint8_t *qr = qr_encode (strlen (value), value, widthp:&width);
+   uint8_t *qr = qr_encode (strlen (value), value,.widthp = &width,.noquiet = (max & 0x4000 ? 1 : 0));
    if (!qr)
       return "Failed to encode";
    if (max & 0x8000)
@@ -1471,12 +1471,12 @@ app_main ()
                   if (qr1)
                   {
                      gfx_pos (0, gfx_height () - 1, GFX_L | GFX_B);
-                     gfx_qr (qr1, max);
+                     gfx_qr (qr1, max | 0x4000);
                   }
                   if (qr2)
                   {
                      gfx_pos (gfx_width () - 1, gfx_height () - 1, GFX_R | GFX_B);
-                     gfx_qr (qr2, max);
+                     gfx_qr (qr2, max | 0x4000);
                   }
                }
                epd_unlock ();
@@ -1723,7 +1723,7 @@ revk_web_extra (httpd_req_t * req, int page)
    add (NULL, "widgety");
    const char *p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
-      p = "Font size<br>(-ve for descenders)";
+      p = "Font size<br>(_ prefix for descenders, | for light)";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
       p = "Font size";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_HLINE)
@@ -1731,7 +1731,7 @@ revk_web_extra (httpd_req_t * req, int page)
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_VLINE)
       p = "Line height";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
-      p = "Overall size, -ve for unit size";
+      p = "Overall size<br>(_ prefix for unit size, | for no border)";
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE)
       add (p, "widgets");
    p = NULL;
