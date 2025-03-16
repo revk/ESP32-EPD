@@ -1376,23 +1376,26 @@ app_main ()
          ESP_LOGE (TAG, "SD Mounted %llu/%llu", sdfree, sdsize);
       }
    }
-   if (gfxflash)
-   {
-      epd_lock ();
-      gfx_clear (0);
-      for (int y = 0; y < gfx_height (); y++)
-         for (int x = (y & 1); x < gfx_width (); x += 2)
-            gfx_pixel (x, y, 255);
-      gfx_refresh ();
-      epd_unlock ();
-      epd_lock ();
-      gfx_clear (0);
-      for (int y = 0; y < gfx_height (); y++)
-         for (int x = 1 - (y & 1); x < gfx_width (); x += 2)
-            gfx_pixel (x, y, 255);
-      gfx_refresh ();
-      epd_unlock ();
+   void flash (void)
+   {                            // Random data
+      for (int i = 0; i < 2; i++)
+      {
+         uint32_t r = 0;
+         epd_lock ();
+         for (int y = 0; y < gfx_height (); y++)
+            for (int x = 0; x < gfx_width (); x++)
+            {
+               if (!(x & 31))
+                  r = esp_random ();
+               gfx_pixel (x, y, (r & 1) ? 255 : 0);
+               r >>= 1;
+            }
+         gfx_refresh ();
+         epd_unlock ();
+      }
    }
+   if (gfxflash)
+      flash ();
    showlights ("");
    uint32_t fresh = 0;
    uint32_t min = 0;
@@ -1546,6 +1549,7 @@ app_main ()
       }
       if (gfxnight && t.tm_hour >= 2 && t.tm_hour < 4)
       {
+         flash ();
          gfx_refresh ();        // Full update
          b.redraw = 1;
       }
