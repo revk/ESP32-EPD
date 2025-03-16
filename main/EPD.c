@@ -69,17 +69,18 @@ sdmmc_card_t *card = NULL;
 static SemaphoreHandle_t epd_mutex = NULL;
 
 const char *
-gfx_qr (const char *value, int32_t max)
+gfx_qr (const char *value, uint16_t max)
 {
 #ifndef	CONFIG_GFX_NONE
    unsigned int width = 0;
  uint8_t *qr = qr_encode (strlen (value), value, widthp:&width);
    if (!qr)
       return "Failed to encode";
+   if (max & 0x8000)
+      max = width * (max & 0xFFF);
+   max &= 0xFFF;
    if (!max)
-      max = -1;
-   if (max < 0)
-      max = width * (-max);
+      max = width;
    if (max < width)
    {
       free (qr);
@@ -1423,11 +1424,11 @@ app_main ()
                if (*ap.ssid)
                {
                   override = up + startup;
-                  p += sprintf (p, "[3] /[6] WiFi/[-6]%.32s/[3] /Channel %d/RSSI %d/", (char *) ap.ssid, ap.primary, ap.rssi);
+                  p += sprintf (p, "[3] /[6] WiFi/[-6L]%.32s/[3] /Channel %d/RSSI %d/", (char *) ap.ssid, ap.primary, ap.rssi);
                   char ip[40];
                   if (revk_ipv4 (ip))
                   {
-                     p += sprintf (p, "[6] /IPv4/%s/", ip);
+                     p += sprintf (p, "[6] /IPv4/[L]%s/", ip);
                      asprintf (&qr2, "http://%s/", ip);
                   }
                   if (revk_ipv6 (ip))
@@ -1449,7 +1450,7 @@ app_main ()
                      esp_netif_ip_info_t ip;
                      if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
                      {
-                        p += sprintf (p, "[6] /IPv4/" IPSTR "/ /", IP2STR (&ip.ip));
+                        p += sprintf (p, "[6] /IPv4/[L]" IPSTR "/ /", IP2STR (&ip.ip));
                         asprintf (&qr2, "http://" IPSTR "/", IP2STR (&ip.ip));
                      }
                   }
@@ -1584,25 +1585,37 @@ app_main ()
          case REVK_SETTINGS_WIDGETT_TEXT:
             if (*c)
             {
-               gfx_pos_t s = widgets[w];
+               uint16_t s = widgets[w];
+               uint8_t flags = 0;
+               if (s & 0x8000)
+                  flags |= GFX_TEXT_DESCENDERS;
+               if (s & 0x4000)
+                  flags |= GFX_TEXT_LIGHT;
+               s &= 0xFFF;
                if (!s)
                   s = 5;
-               gfx_text (s, "%s", c);
+               gfx_text (flags, s, "%s", c);
             }
             break;
          case REVK_SETTINGS_WIDGETT_BLOCKS:
             if (*c)
             {
-               gfx_pos_t s = widgets[w];
+               uint16_t s = widgets[w];
+               uint8_t flags = 0;
+               if (s & 0x8000)
+                  flags |= GFX_TEXT_DESCENDERS;
+               if (s & 0x4000)
+                  flags |= GFX_TEXT_LIGHT;
+               s &= 0xFFF;
                if (!s)
                   s = 4;
-               gfx_blocky (s, "%s", c);
+               gfx_text (flags, s, "%s", c);
             }
             break;
          case REVK_SETTINGS_WIDGETT_DIGITS:
             if (*c)
             {
-               gfx_pos_t s = widgets[w];
+               gfx_pos_t s = widgets[w] & 0xFFF;
                if (!s)
                   s = 4;
                gfx_7seg (s, "%s", c);
@@ -1647,7 +1660,7 @@ app_main ()
             {
                gfx_pos_t ox,
                  oy,
-                 s = widgets[w] ? : gfx_width ();;
+                 s = (widgets[w] & 0xFFF) ? : gfx_width ();;
                gfx_draw (s, 1, 0, 0, &ox, &oy);
                gfx_line (ox, oy, ox + s, oy, 255);
             }
@@ -1656,13 +1669,13 @@ app_main ()
             {
                gfx_pos_t ox,
                  oy,
-                 s = widgets[w] ? : gfx_width ();;
+                 s = (widgets[w] & 0xFFF) ? : gfx_width ();;
                gfx_draw (1, s, 0, 0, &ox, &oy);
                gfx_line (ox, oy, ox, oy + s, 255);
             }
             break;
          case REVK_SETTINGS_WIDGETT_BINS:
-            extern void widget_bins (int8_t, const char *);
+            extern void widget_bins (uint16_t, const char *);
             widget_bins (widgets[w], c);
             break;
          }

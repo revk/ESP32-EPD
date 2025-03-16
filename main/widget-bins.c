@@ -17,17 +17,24 @@ typedef struct icon_s
 } icon_t;
 
 void
-widget_bins (int8_t s, const char *c)
+widget_bins (uint16_t s, const char *c)
 {
    time_t now = time (0);
    if (!c || !*c || now < 1000000000)
       return;
+   uint8_t flags = 0,
+      bottom = 0;
+   if (s & 0x8000)
+      bottom = 1;
+   if (s & 0x4000)
+      flags |= GFX_TEXT_LIGHT;
+   s &= 0xFFF;
    if (!s)
       s = 9;                    // Text size for day
-   int s1 = s;
-   if (s1 < 0)
-      s1 = -s1;
-   int s2 = -s1 / 2;            // Text size for icons
+   uint8_t s1 = s;
+   uint8_t s2 = s1 / 2;         // Text size for icons
+   if (!s2)
+      s2 = 1;
    gfx_align_t a = gfx_a ();
    file_t *bins = download ((char *) c, ".json");
    if (!bins || !bins->size || !bins->data)
@@ -123,7 +130,7 @@ widget_bins (int8_t s, const char *c)
             }
          }
          if (!hasdesc)
-            s2 = -s2;           // no descenders
+            flags |= GFX_TEXT_DESCENDERS;
       }
       fclose (ledf);
       if (icons)
@@ -137,7 +144,7 @@ widget_bins (int8_t s, const char *c)
                i->w = i->file->w;
                i->h = i->file->h;
             } else
-               gfx_text_size (s2, i->name, &i->w, &i->h);
+               gfx_text_size (flags, s2, i->name, &i->w, &i->h);
          }
          // Position
          gfx_pos_t space = 0;
@@ -157,9 +164,9 @@ widget_bins (int8_t s, const char *c)
          gfx_pos_t dayw,
            dayh;
          const char *day;
-         gfx_text_size (s1, day = longday[tm.tm_wday], &dayw, &dayh);
+         gfx_text_size (flags & ~GFX_TEXT_DESCENDERS, s1, day = longday[tm.tm_wday], &dayw, &dayh);
          if (dayw > space)
-            gfx_text_size (s1, day = shortday[tm.tm_wday], &dayw, &dayh);
+            gfx_text_size (flags & ~GFX_TEXT_DESCENDERS, s1, day = shortday[tm.tm_wday], &dayw, &dayh);
          if (dayw > space)
             space = dayw;
          gfx_pos_t width = dayw,
@@ -211,10 +218,10 @@ widget_bins (int8_t s, const char *c)
                gfx_pos (ox + width, oy, GFX_R | GFX_T);
             else
                gfx_pos (ox + width / 2, oy, GFX_C | GFX_T);
-            gfx_text (s1, day);
+            gfx_text (flags & ~GFX_TEXT_DESCENDERS, s1, day);
             oy += dayh;
          }
-         if (s > 0)
+         if (!bottom)
             showday ();
          {
             gfx_pos_t x = ox;
@@ -232,7 +239,7 @@ widget_bins (int8_t s, const char *c)
                else
                {                // Name
                   gfx_pos (x, oy + i->dy, GFX_L | GFX_T);
-                  gfx_text (s2, i->name);
+                  gfx_text (flags, s2, i->name);
                }
                x += i->w;
                if (i->end)
@@ -242,7 +249,7 @@ widget_bins (int8_t s, const char *c)
                }
             }
          }
-         if (s < 0)
+         if (bottom)
             showday ();
          setlights (leds < now ? led : NULL);
       }
