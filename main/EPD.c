@@ -1428,7 +1428,7 @@ app_main ()
                   char ip[40];
                   if (revk_ipv4 (ip))
                   {
-                     p += sprintf (p, "[6] /IPv4/[L]%s/", ip);
+                     p += sprintf (p, "[6] /IPv4/[|]%s/", ip);
                      asprintf (&qr2, "http://%s/", ip);
                   }
                   if (revk_ipv6 (ip))
@@ -1450,7 +1450,7 @@ app_main ()
                      esp_netif_ip_info_t ip;
                      if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
                      {
-                        p += sprintf (p, "[6] /IPv4/[L]" IPSTR "/ /", IP2STR (&ip.ip));
+                        p += sprintf (p, "[6] /IPv4/[|]" IPSTR "/ /", IP2STR (&ip.ip));
                         asprintf (&qr2, "http://" IPSTR "/", IP2STR (&ip.ip));
                      }
                   }
