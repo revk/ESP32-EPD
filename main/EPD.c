@@ -189,11 +189,14 @@ defcon_cb (void *arg, const char *topic, jo_t j)
          state &= ~(1 << level);
       int l;
       for (l = 0; l < 7 && !(state & (1 << l)); l++);
-      b.defcon = l;
-   } else
+      level = l;
+   }
+   if (b.defcon != level)
+   {
       b.defcon = level;
+      b.redraw = 1;
+   }
    free (value);
-   b.redraw = 1;
 }
 
 const char *
@@ -1288,8 +1291,17 @@ mqttjson_cb (void *arg, const char *topic, jo_t j)
    if (i >= sizeof (mqttsub) / sizeof (*mqttsub))
       return;
    jo_t was = mqttjson[i];
+   if (!was && !j)
+      return;
+   if (was && j && !strcmp (jo_debug (was), jo_debug (j)))
+      return;
    mqttjson[i] = (j ? jo_dup (j) : NULL);
    jo_free (&was);
+   static uint32_t last = 0;
+   uint32_t up = uptime ();
+   if (last && last + 60 < up)
+      return;
+   last = up;
    b.redraw = 1;
 }
 
