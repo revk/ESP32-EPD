@@ -1445,6 +1445,7 @@ app_main ()
       {
          snmp_tx ();
          gfx_refresh ();
+         b.redraw = 1;
          b.startup = 1;
          b.wificonnect = 0;
          if (startup)
@@ -1579,6 +1580,7 @@ app_main ()
       {                         // Periodic refresh, e.g.once a day
          fresh = now / refresh;
          gfx_refresh ();
+         b.redraw = 1;
       }
       epd_lock ();
       gfx_clear (0);
