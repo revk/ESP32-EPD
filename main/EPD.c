@@ -1299,7 +1299,7 @@ mqttjson_cb (void *arg, const char *topic, jo_t j)
    jo_free (&was);
    static uint32_t last = 0;
    uint32_t up = uptime ();
-   if (last && last + 60 < up)
+   if (last && last + 60 > up)
       return;
    last = up;
    b.redraw = 1;
