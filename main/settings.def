@@ -46,7 +46,7 @@ s16	widget.x		.hide .live .array=WIDGETS			// X position (from left, or -ve from
 enum	widget.h		.hide .live .array=WIDGETS .enums="Left,Centre,Right,Prev"		// Horizontal align
 s16	widget.y		.hide .live .array=WIDGETS			// Y position (from top, or -ve from bottom)
 enum	widget.v		.hide .live .array=WIDGETS .enums="Top,Middle,Bottom,Prev"		// Vertical align
-u16	widget.s	-3	.flags="_ |" .hide .live .array=WIDGETS			// Widget size
+u16	widget.s	"_3"	.flags="_ |" .hide .live .array=WIDGETS			// Widget size
 text	widget.c	"GO TO WEB PAGE SETTINGS\nTO CONFIGURE WIDGETS"	.hide .live .array=WIDGETS			// Widget content/reference
 
 s	qr.ssid			.live			// WiFi SSID for $WIFI
