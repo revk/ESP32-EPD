@@ -168,9 +168,15 @@ setlights (const char *rgb)
    }
 }
 
-char *
-setdefcon (int level, char *value)
+void
+defcon_cb (void *arg, const char *topic, jo_t j)
 {                               // DEFCON state
+   char *value = jo_strdup (j);
+   if (!value)
+      return;
+   int level = 0;
+   if (!strncmp (topic, "DEFCON/", 7) && isdigit ((int) (uint8_t) topic[7]))
+      level = topic[7] - '0';
    // With value it is used to turn on/off a defcon state, the lowest set dictates the defcon level
    // With no value, this sets the DEFCON state directly instead of using lowest of state set
    static uint8_t state = 0;    // DEFCON state
@@ -185,7 +191,8 @@ setdefcon (int level, char *value)
       b.defcon = l;
    } else
       b.defcon = level;
-   return "";
+   free (value);
+   b.redraw = 1;
 }
 
 const char *
@@ -201,12 +208,6 @@ app_callback (int client, const char *prefix, const char *target, const char *su
          return "Expecting JSON string";
       if (len > sizeof (value))
          return "Too long";
-   }
-   if (prefix && !strcmp (prefix, "DEFCON") && target && isdigit ((int) *target) && !target[1])
-   {
-      const char *err = setdefcon (*target - '0', value);
-      b.redraw = 1;
-      return err;
    }
    if (client || !prefix || target || strcmp (prefix, topiccommand) || !suffix)
       return NULL;
@@ -238,7 +239,6 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    }
    if (!strcmp (suffix, "connect"))
    {
-      lwmqtt_subscribe (revk_mqtt (0), "DEFCON/#");
       return "";
    }
    if (!strcmp (suffix, "shutdown"))
@@ -1287,6 +1287,7 @@ app_main ()
    revk_start ();
    epd_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (epd_mutex);
+   revk_mqtt_sub (0, "DEFCON/#", defcon_cb, NULL);
    // Web interface
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.stack_size += 1024 * 4;
