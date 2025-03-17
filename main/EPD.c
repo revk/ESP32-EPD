@@ -1575,12 +1575,12 @@ app_main ()
          gfx_refresh ();        // Full update
          b.redraw = 1;
       }
-      epd_lock ();
       if (refresh && now / refresh != fresh)
       {                         // Periodic refresh, e.g.once a day
          fresh = now / refresh;
          gfx_refresh ();
       }
+      epd_lock ();
       gfx_clear (0);
       uint8_t h = 0,
          v = 0;
