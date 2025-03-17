@@ -47,7 +47,8 @@ volatile uint32_t override = 0;
 
 jo_t weather = NULL;
 jo_t solar = NULL;
-jo_t json = NULL;
+jo_t mqttjson[sizeof (mqttsub) / sizeof (*mqttsub)] = { 0 };
+
 struct
 {
    int sock;                    // UDP socket
@@ -212,13 +213,6 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    if (client || !prefix || target || strcmp (prefix, topiccommand) || !suffix)
       return NULL;
    // Not for us or not a command from main MQTT
-   if (!strcmp (suffix, "json"))
-   {
-      jo_free (&json);
-      json = jo_dup (j);
-      b.setting = 1;
-      return "";
-   }
    if (!strcmp (suffix, "weather"))
    {
       jo_t j = jo_copy (weather);
@@ -1186,10 +1180,19 @@ dollar (const char *c, time_t now)
       if (jo_find (solar, c + 6))
          return jo_strdup (solar);
    }
-   if (json && !strncmp (c, "JSON.", 5))
+   if (!strncmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && (!c[5] || c[5] == '.'))
    {                            // Weather data
-      if (jo_find (json, c + 5))
-         return jo_strdup (json);
+      int i = c[4] - '0';
+      if (i && i <= sizeof (mqttjson) / sizeof (*mqttjson) && mqttjson[--i])
+      {
+         jo_t j = mqttjson[i];
+         if (c[5] == '.')
+         {
+            if (jo_find (j, c + 6))
+               return jo_strdup (j);
+         } else
+            return strdup (jo_debug (j));
+      }
    }
    if (!strcmp (c, "SNMPHOST") && snmp.host)
       return strdup (snmp.host);
@@ -1279,6 +1282,18 @@ dollars (char *c, time_t now)
 }
 
 void
+mqttjson_cb (void *arg, const char *topic, jo_t j)
+{
+   uint32_t i = (int) arg;
+   if (i >= sizeof (mqttsub) / sizeof (*mqttsub))
+      return;
+   jo_t was = mqttjson[i];
+   mqttjson[i] = (j ? jo_dup (j) : NULL);
+   jo_free (&was);
+   b.redraw = 1;
+}
+
+void
 app_main ()
 {
    b.defcon = 7;
@@ -1288,6 +1303,9 @@ app_main ()
    epd_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (epd_mutex);
    revk_mqtt_sub (0, "DEFCON/#", defcon_cb, NULL);
+   for (int i = 0; i < sizeof (mqttsub) / sizeof (*mqttsub); i++)
+      if (*mqttsub[i])
+         revk_mqtt_sub (0, mqttsub[i], mqttjson_cb, (void *) i);
    // Web interface
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.stack_size += 1024 * 4;
@@ -1379,21 +1397,18 @@ app_main ()
    }
    void flash (void)
    {                            // Random data
-      for (int i = 0; i < 2; i++)
-      {
-         uint32_t r = 0;
-         epd_lock ();
-         for (int y = 0; y < gfx_height (); y++)
-            for (int x = 0; x < gfx_width (); x++)
-            {
-               if (!(x & 31))
-                  r = esp_random ();
-               gfx_pixel (x, y, (r & 1) ? 255 : 0);
-               r >>= 1;
-            }
-         gfx_refresh ();
-         epd_unlock ();
-      }
+      uint32_t r = 0;
+      epd_lock ();
+      for (int y = 0; y < gfx_height (); y++)
+         for (int x = 0; x < gfx_width (); x++)
+         {
+            if (!(x & 31))
+               r = esp_random ();
+            gfx_pixel (x, y, (r & 1) ? 255 : 0);
+            r >>= 1;
+         }
+      gfx_refresh ();
+      epd_unlock ();
    }
    if (gfxflash)
       flash ();
@@ -1542,17 +1557,17 @@ app_main ()
       }
       b.redraw = 0;
       // Image
-      epd_lock ();
-      if (refresh && now / refresh != fresh)
-      {                         // Periodic refresh, e.g.once a day
-         fresh = now / refresh;
-         gfx_refresh ();
-      }
       if (gfxnight && t.tm_hour >= 2 && t.tm_hour < 4)
       {
          flash ();
          gfx_refresh ();        // Full update
          b.redraw = 1;
+      }
+      epd_lock ();
+      if (refresh && now / refresh != fresh)
+      {                         // Periodic refresh, e.g.once a day
+         fresh = now / refresh;
+         gfx_refresh ();
       }
       gfx_clear (0);
       uint8_t h = 0,

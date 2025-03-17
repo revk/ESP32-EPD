@@ -46,7 +46,7 @@ The *content* for any widget can contain `$` expanded fields, this can be `$fiel
 |`$SNMPUPTIME`|Uptime reported from SNMP poll|
 |`$WEATHER.field`|Extract a field from weather api response|
 |`$SOLAR.field`|Extract a field from SolareEdge MODBUS collection|
-|`$JSON.field`|Extract a field from last `json` command payload|
+|`$MQTTn.field`|Extract a field from JSON payload payload on subscribed MQTT (`mqttsub`)|
 
 More may be added over time. All of these are only for whole string replacing it.
 

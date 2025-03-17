@@ -59,3 +59,4 @@ bit	solar.log		.live			// SolarEdge log to mqtt
 c1	seasoncode		.live			// Override season for testing
 s	refdate			.live			// Reference date/time (YYYY-MM-DD HH:MM:SS)
 s	snmphost		.live			// Hostname for SNMP poll
+s	mqtt.sub		.array=5		// Subscriptions for JSON payload $MQTTn
