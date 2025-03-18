@@ -156,20 +156,6 @@ showlights (const char *rgb)
 }
 
 void
-setlights (const char *rgb)
-{
-   if (rgb)
-   {
-      showlights (rgb);
-      b.lightoverride = 1;
-   } else
-   {
-      showlights ("");
-      b.lightoverride = 0;
-   }
-}
-
-void
 defcon_cb (void *arg, const char *topic, jo_t j)
 {                               // DEFCON state
    char *value = jo_strdup (j);
