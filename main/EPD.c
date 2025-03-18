@@ -1424,7 +1424,13 @@ app_main ()
    while (!revk_shutting_down (NULL))
    {
       usleep (100000);
-      time_t now = time (0) + 2;        // Ahead for EPD
+      time_t now = time (0)
+#ifdef CONFIG_GFX_USE_DEEP_SLEEP
+         + 4
+#else
+         + 1
+#endif
+         ;                      // Ahead for EPD
       if (now < 1000000000)
          now = 0;
       uint32_t up = uptime ();
