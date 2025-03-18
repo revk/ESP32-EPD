@@ -989,9 +989,8 @@ solar_task (void *x)
 
       int16_t voltage_scale = modbus_16d (0x9c92);
       int16_t frequency_scale = modbus_16d (0x9c96);
-      int16_t power_scale = modbus_16d (0x9c94);
+      int16_t power_scale = modbus_16d (0x9c94) - 3;    // kW instead of W
       int16_t total_scale = modbus_16d (0x9c9f);
-
 
       while (!er && !b.die)
       {
@@ -1499,7 +1498,8 @@ app_main ()
             if (override)
             {
                if (sdsize)
-                  p += sprintf (p, "/ /[2]SD free %lluG of %lluG/ /", sdfree / 1000000000ULL, sdsize / 1000000000ULL);
+                  p += sprintf (p, "/ /[2]SD free %lluG of %lluG/", sdfree / 1000000000ULL, sdsize / 1000000000ULL);
+               p += sprintf (p, "[3] /");
                ESP_LOGE (TAG, "%s", msg);
                epd_lock ();
                gfx_message (msg);

@@ -82,7 +82,7 @@ Draws a horizontal or virtial line based on size and alignment.
 
 ### Bins
 
-This allows display of bin collection. This is based on a JSON file, the content is the URL tyo fetch the JSON. A script `monmouthire.cgi` is defined for now. The *size* is font side for the bin collection DAY which is shown along with icons.
+This allows display of bin collection. This is based on a JSON file, the content is the URL to fetch the JSON. A script `monmouthire.cgi` is defined for now. The *size* is font side for the bin collection day or week (or `TODAY`/`TOMORROW`) which is shown along with icons.
 
 Top level JSON, specifies next bin collection day.
 

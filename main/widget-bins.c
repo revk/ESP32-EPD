@@ -22,6 +22,8 @@ widget_bins (uint16_t s, const char *c)
    time_t now = time (0);
    if (!c || !*c || now < 1000000000)
       return;
+   struct tm today;
+   localtime_r (&now, &today);
    uint8_t flags = 0,
       bottom = 0;
    if (s & 0x8000)
@@ -164,7 +166,10 @@ widget_bins (uint16_t s, const char *c)
          gfx_pos_t dayw,
            dayh;
          const char *day;
-         gfx_text_size (flags & ~GFX_TEXT_DESCENDERS, s1, day = longday[tm.tm_wday], &dayw, &dayh);
+         gfx_text_size (flags & ~GFX_TEXT_DESCENDERS, s1, day =
+                        ((today.tm_yday ==
+                          tm.tm_yday) ? "*TODAY*" : (today.tm_yday + 1 == tm.tm_yday) ? "TOMORROW" : longday[tm.tm_wday]),
+                        &dayw, &dayh);
          if (dayw > space)
             gfx_text_size (flags & ~GFX_TEXT_DESCENDERS, s1, day = shortday[tm.tm_wday], &dayw, &dayh);
          if (dayw > space)
