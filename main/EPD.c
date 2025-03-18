@@ -1502,6 +1502,7 @@ app_main ()
                   p += sprintf (p, "/ /[2]SD free %lluG of %lluG/ /", sdfree / 1000000000ULL, sdsize / 1000000000ULL);
                ESP_LOGE (TAG, "%s", msg);
                epd_lock ();
+               gfx_clear (0);
                gfx_message (msg);
                int max = gfx_height () - gfx_y ();
                if (max > 0)
