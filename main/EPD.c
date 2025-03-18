@@ -1297,12 +1297,6 @@ mqttjson_cb (void *arg, const char *topic, jo_t j)
       return;
    mqttjson[i] = (j ? jo_dup (j) : NULL);
    jo_free (&was);
-   static uint32_t last = 0;
-   uint32_t up = uptime ();
-   if (last && last + 60 > up)
-      return;
-   last = up;
-   b.redraw = 1;
 }
 
 void
@@ -1576,8 +1570,8 @@ app_main ()
          gfx_refresh ();        // Full update
          b.redraw = 1;
       }
-      if (refresh && now / refresh != fresh)
-      {                         // Periodic refresh, e.g.once a day
+      if (refresh && (!gfxnight || refresh < 86400) && now / refresh != fresh)
+      {                         // Or, periodic refresh, e.g. once a day or more
          fresh = now / refresh;
          gfx_refresh ();
          b.redraw = 1;
