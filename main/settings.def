@@ -47,7 +47,7 @@ enum	widget.h	1	.hide .live .array=WIDGETS .enums="Left,Centre,Right,Prev"		// H
 s16	widget.y	400	.hide .live .array=WIDGETS			// Y position (from top, or -ve from bottom)
 enum	widget.v	1	.hide .live .array=WIDGETS .enums="Top,Middle,Bottom,Prev"		// Vertical align
 u16	widget.s	"_3"	.flags="_ |" .hide .live .array=WIDGETS			// Widget size
-text	widget.c	"GO TO WEB PAGE SETTINGS\nTO CONFIGURE WIDGETS\n\nhttp://$IPV4/\n\nSee https://epd.revk.uk/"	.hide .live .array=WIDGETS			// Widget content/reference
+text	widget.c	"$DATE $TIME\n\nGO TO WEB PAGE SETTINGS\nTO CONFIGURE WIDGETS\n\nhttp://$IPV4/\n\nSee https://epd.revk.uk/"	.hide .live .array=WIDGETS			// Widget content/reference
 
 s	qr.ssid			.live			// WiFi SSID for $WIFI
 s	qr.pass			.live			// WiFi pass for $WIFI
