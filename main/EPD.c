@@ -1085,39 +1085,59 @@ dollar_diff (time_t ref, time_t now)
 }
 
 char *
-dollar (const char *c, time_t now)
-{                               // Single dollar replace - c is the part after $. Return is NULL or malloc result
-   char *r = NULL;
+dollar_time (time_t now, const char *fmt)
+{
    struct tm t;
    localtime_r (&now, &t);
-   if (!strcmp (c, "SEASON"))
+   char temp[100];
+   *temp = 0;
+   strftime (temp, sizeof (temp), fmt, &t);
+   return strdup (temp);
+}
+
+char *
+dollar_json (jo_t j, const char *dot, const char *colon)
+{
+   if (!j || !dot)
+      return NULL;
+   jo_type_t t = jo_find (j, dot);
+   if (!t)
+      return NULL;
+   if (colon && t == JO_NUMBER)
+   {                            // TODO formatting
+   }
+   return jo_strdup (j);
+}
+
+char *
+dollar (const char *c, const char *dot, const char *colon, time_t now)
+{                               // Single dollar replace - c is the part after $. Return is NULL or malloc result
+   struct tm t;
+   localtime_r (&now, &t);
+   char *r = NULL;
+   if (!strcasecmp (c, "SEASON"))
       return strndup (revk_season (time (0)), 1);
-   if (!strcmp (c, "SEASONS"))
+   if (!strcasecmp (c, "SEASONS"))
       return strdup (revk_season (time (0)));
-   if (!strcmp (c, "TIME"))
-   {
-      asprintf (&r, "%02d:%02d", t.tm_hour, t.tm_min);
-      return r;
-   }
-   if (!strcmp (c, "DATE"))
-   {
-      asprintf (&r, "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
-      return r;
-   }
-   if (!strcmp (c, "DAY"))
+   if (!strcasecmp (c, "TIME"))
+      return dollar_time (now, colon ? : "%H:%M");
+   if (!strcasecmp (c, "DATE"))
+      if (!strcasecmp (c, "TIME"))
+         return dollar_time (now, colon ? : "%F");
+   if (!strcasecmp (c, "DAY"))
       return strdup (longday[t.tm_wday]);
-   if (!strcmp (c, "COUNTDOWN"))
+   if (!strcasecmp (c, "COUNTDOWN"))
    {
       time_t ref = parse_time (refdate, t.tm_year + 1900);
       if (ref < now)
          ref = parse_time (refdate, t.tm_year + 1901);  // Counting up, allow for year being next year
       return dollar_diff (ref, now);
    }
-   if (!strcmp (c, "SSID"))
+   if (!strcasecmp (c, "SSID"))
       return strdup (*qrssid ? qrssid : wifissid);
-   if (!strcmp (c, "PASS"))
+   if (!strcasecmp (c, "PASS"))
       return strdup (*qrssid ? qrpass : wifipass);
-   if (!strcmp (c, "WIFI"))
+   if (!strcasecmp (c, "WIFI"))
    {
       if (*qrssid ? *qrpass : *wifipass)
          asprintf (&r, "WIFI:S:%s;T:WPA2;P:%s;;", *qrssid ? qrssid : wifissid, *qrssid ? qrpass : wifipass);
@@ -1125,82 +1145,49 @@ dollar (const char *c, time_t now)
          asprintf (&r, "WIFI:S:%s;;", *qrssid ? qrssid : wifissid);
       return r;
    }
-   if (!strcmp (c, "IPV4"))
+   if (!strcasecmp (c, "IPV4"))
    {
       char ip[16];
       revk_ipv4 (ip);
       return strdup (ip);
    }
-   if (!strcmp (c, "IPV6") || !strcmp (c, "IP"))
+   if (!strcasecmp (c, "IPV6") || !strcasecmp (c, "IP"))
    {
       char ip[40];
       revk_ipv6 (ip);
       return strdup (ip);
    }
 #ifdef	CONFIG_REVK_SOLAR
-   if (!strcmp (c, "SUNSET") && now && (poslat || poslon))
-   {
-      time_t when = sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
-                             (double) poslon / poslon_scale, SUN_DEFAULT);
-      struct tm tm = { 0 };
-      localtime_r (&when, &tm);
-      asprintf (&r, "%02d:%02d", tm.tm_hour, tm.tm_min);
-      return r;
-   }
-   if (!strcmp (c, "SUNRISE") && now && (poslat || poslon))
-   {
-      time_t when = sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
-                              (double) poslon / poslon_scale, SUN_DEFAULT);
-      struct tm tm = { 0 };
-      localtime_r (&when, &tm);
-      asprintf (&r, "%02d:%02d", tm.tm_hour, tm.tm_min);
-      return r;
-   }
+   if (!strcasecmp (c, "SUNSET") && now && (poslat || poslon))
+      return dollar_time (sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
+                                   (double) poslon / poslon_scale, SUN_DEFAULT), colon ? : "%H:%M");
+   if (!strcasecmp (c, "SUNRISE") && now && (poslat || poslon))
+      return dollar_time (sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
+                                    (double) poslon / poslon_scale, SUN_DEFAULT), colon ? : "%H:%M");
 #endif
-   if (!strcmp (c, "FULLMOON"))
-   {
-      time_t when = revk_moon_full_next (now);
-      struct tm tm = { 0 };
-      localtime_r (&when, &tm);
-      asprintf (&r, "%04d-%02d-%02d %02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
-      return r;
-   }
-   if (!strcmp (c, "DEFCON"))
+   if (!strcasecmp (c, "FULLMOON"))
+      return dollar_time (revk_moon_full_next (now), colon ? : "%F %H:%M");
+   if (!strcasecmp (c, "NEWMOON"))
+      return dollar_time (revk_moon_new (now), colon ? : "%F %H:%M");
+   if (!strcasecmp (c, "DEFCON"))
    {
       if (b.defcon > 5)
          return strdup ("-");
       asprintf (&r, "%u", b.defcon);
       return r;
    }
-   if (weather && !strncmp (c, "WEATHER.", 8))
-   {                            // Weather data
-      if (jo_find (weather, c + 8))
-         return jo_strdup (weather);
-   }
-   if (solar && !strncmp (c, "SOLAR.", 6))
-   {                            // Solar data
-      if (jo_find (solar, c + 6))
-         return jo_strdup (solar);
-   }
-   if (!strncmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && (!c[5] || c[5] == '.'))
-   {                            // Weather data
-      int i = c[4] - '0';
-      if (i && i <= sizeof (mqttjson) / sizeof (*mqttjson) && mqttjson[--i])
-      {
-         jo_t j = mqttjson[i];
-         if (c[5] == '.')
-         {
-            if (jo_find (j, c + 6))
-               return jo_strdup (j);
-         } else
-            return strdup (jo_debug (j));
-      }
-   }
-   if (!strcmp (c, "SNMPHOST") && snmp.host)
+   if (!strcasecmp (c, "WEATHER"))
+      return dollar_json (weather, dot, colon);
+   if (!strcasecmp (c, "SOLAR"))
+      return dollar_json (solar, dot, colon);
+   if (!strncasecmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && !c[5] && c[4] > '0'
+       && c[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
+      return dollar_json (mqttjson[c[4] - '0'], dot, colon);
+   if (!strcasecmp (c, "SNMPHOST") && snmp.host)
       return strdup (snmp.host);
-   if (!strcmp (c, "SNMPDESC") && snmp.desc)
+   if (!strcasecmp (c, "SNMPDESC") && snmp.desc)
       return strdup (snmp.desc);
-   if (!strcmp (c, "SNMPFBVER") && snmp.desc)
+   if (!strcasecmp (c, "SNMPFBVER") && snmp.desc)
    {
       char *s = snmp.desc;
       while (*s && *s != '(')
@@ -1214,7 +1201,7 @@ dollar (const char *c, time_t now)
          return strndup (s, e - s);
       }
    }
-   if (!strcmp (c, "SNMPUPTIME"))
+   if (!strcasecmp (c, "SNMPUPTIME"))
       return dollar_diff (snmp.upfrom, now);
    return r;
 }
@@ -1239,7 +1226,7 @@ dollars (char *c, time_t now)
          {                      // $$ is $
             fputc ('$', o);
             c = d + 1;
-         } else if (*d != '{' && !isalnum ((int) (uint8_t) * d))
+         } else if (*d != '{' && !isalpha ((int) (uint8_t) * d))
          {                      // not sensible escape
             fputc ('$', o);
             c = d;
@@ -1257,15 +1244,36 @@ dollars (char *c, time_t now)
             } else
             {
                char *e = d;
-               while (*e && (isalnum ((int) (uint8_t) * e) || *e == '.' || *e == '-' || *e == '_'))
+               while (*e && (isalnum ((int) (uint8_t) * e) || *e == '_'))
                   e++;
                x = strndup (d, e - d);
                c = e;
             }
             if (x)
             {
-               char *n = dollar (x, now);
-               ESP_LOGD (TAG, "Expand [%s] [%s]", x, n ? : "-");
+               char *dot = x,
+                  *colon = NULL;
+               while (*dot && isalnum ((int) (uint8_t) * dot))
+                  dot++;
+               if (*dot == ':')
+               {
+                  colon = dot;
+                  *colon++ = 0;
+                  dot = NULL;
+               } else if (*dot == '.')
+               {
+                  *dot++ = 0;
+                  colon = dot;
+                  while (*colon && *colon != ':')
+                     colon++;
+                  if (*colon)
+                     *colon++ = 0;
+                  else
+                     colon = NULL;
+               } else
+                  dot = NULL;
+               char *n = dollar (x, dot, colon, now);
+               ESP_LOGD (TAG, "Expand [%s.%s:%s] [%s]", x, dot ? : "", colon ? : "", n ? : "-");
                free (x);
                if (n)
                   fprintf (o, "%s", n);
@@ -1763,6 +1771,7 @@ revk_web_extra (httpd_req_t * req, int page)
    add (NULL, "widgetx");
    add (NULL, "widgetv");
    add (NULL, "widgety");
+   const char *c = widgetc[page - 1];
    const char *p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
       p = "Font size<br>(_ prefix for descenders, | for light)";
@@ -1787,26 +1796,26 @@ revk_web_extra (httpd_req_t * req, int page)
       add (p, "widgetc");
 
    // Extra fields
-   if (!strncmp (widgetc[page - 1], "$WEATHER.", 9))
+   if (strcasestr (c, "${WEATHER"))
    {
       revk_web_setting (req, NULL, "weatherapi");
       revk_web_setting (req, NULL, "postown");
    }
-   if (!strcmp (widgetc[page - 1], "$SUNRISE") || !strcmp (widgetc[page - 1], "$SUNSET")
-       || !strncmp (widgetc[page - 1], "$WEATHER.", 9))
+   if (strcasestr (c, "${WEATHER") || strcasestr (c, "$SUNSET") || strcasestr (c, "${SUNSET") || strcasestr (c, "$SUNRISE")
+       || strcasestr (c, "${SUNRISE"))
    {
       revk_web_setting (req, NULL, "poslat");
       revk_web_setting (req, NULL, "poslon");
    }
-   if (!strcmp (widgetc[page - 1], "$WIFI") || !strcmp (widgetc[page - 1], "$SSID"))
+   if (strcasestr (c, "$WIFI") || strcasestr (c, "$SSID"))
       revk_web_setting (req, NULL, "qrssid");
-   if (!strcmp (widgetc[page - 1], "$WIFI") || !strcmp (widgetc[page - 1], "$PASS"))
+   if (strcasestr (c, "$WIFI") || strcasestr (c, "$PASS"))
       revk_web_setting (req, NULL, "qrpass");
-   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE && strchr (widgetc[page - 1], '*'))
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE && strchr (c, '*'))
       revk_web_setting (req, NULL, "seasoncode");
-   if (!strcmp (widgetc[page - 1], "$COUNTDOWN"))
+   if (strcasestr (c, "$COUNTDOWN"))
       revk_web_setting (req, NULL, "refdate");
-   if (!strncmp (widgetc[page - 1], "$SNMP", 5))
+   if (strcasestr (c, "$SNMP"))
       revk_web_setting (req, NULL, "snmphost");
 
    // Notes

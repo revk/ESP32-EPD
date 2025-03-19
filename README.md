@@ -22,31 +22,37 @@ Each widget has basic settings with *type*, and position (*x*/*y*), and alignmen
 
 ### Content
 
-The *content* for any widget can contain `$` expanded fields, this can be `$field` or `${field}` if you need letters/etc directly after the expansion.
+The *content* for any widget can contain `$` expanded fields, this can be `$variable` or `${variable}` if you need letters/etc directly after the expansion, or need to add extra formatting. The *variable* is a letter and then letters or digits.
 
-|Preset|Meaning|
+Using `${variable}` you can append the variable name with.
+
+- `:format` for any time based variables, for `strftime` formatting, e.g. `${TIME:%a %:%M}` may show `Wed 10:15`
+- `.fields` for any JSON based variables, allows the JSON field, e.g. `${WEATHER.current.condition.code}`
+- `.field:format` will alow some formatting of fields from JSON based variables. TBA
+
+|Variable|Meaning|
 |------|-------|
-|`$TIME`|Current time `HH:MM`|
-|`$DATE`|Current date `YYYY-MM-DD`|
-|`$DAY`|Current day, e.g. `WEDNESDAY`|
-|`$SEASON`|Seasonal character code, e.g. `E` for Easter|
-|`$SEASONS`|Seasonal character codes|
-|`$COUNTDOWN`|Countdown/up from `refdate`, not a `refdate` with year `0000` means countdown to date/time specified in current/next year|
-|`$SSID`|Current WiFi SSID|
-|`$PASS`|Current WiFi passphrase|
-|`$WIFI`|QR code formatted current WiFi details|
-|`$IPV6`|Current main IPv6 (also `$IP`)|
-|`$IPV4`|Current IPv4|
-|`$SUNRISE`|Next sunrise (HH:MM), needs `poslat` and `poslon` set|
-|`$SUNSET`|Next sunset (HH:MM), needs `poslat` and `poslon` set|
-|`$FULLMOON`|Next full moon (YYYY-MM-DD HH:MM)|
-|`$SNMPHOST`|Hostname reported from SNMP poll|
-|`$SNMPDESC`|Description reported from SNMP poll|
-|`$SNMPFBVER`|FireBrick version from description reported from SNMP poll|
-|`$SNMPUPTIME`|Uptime reported from SNMP poll|
-|`$WEATHER.field`|Extract a field from weather api response|
-|`$SOLAR.field`|Extract a field from SolareEdge MODBUS collection|
-|`$MQTTn.field`|Extract a field from JSON payload payload on subscribed MQTT (`mqttsub`)|
+|`TIME`|Current time `HH:MM`|
+|`DATE`|Current date `YYYY-MM-DD`|
+|`DAY`|Current day, e.g. `WEDNESDAY`|
+|`SEASON`|Seasonal character code, e.g. `E` for Easter|
+|`SEASONS`|Seasonal character codes|
+|`COUNTDOWN`|Countdown/up from `refdate`, not a `refdate` with year `0000` means countdown to date/time specified in current/next year|
+|`SSID`|Current WiFi SSID|
+|`PASS`|Current WiFi passphrase|
+|`WIFI`|QR code formatted current WiFi details|
+|`IPV6`|Current main IPv6 (also `$IP`)|
+|`IPV4`|Current IPv4|
+|`SUNRISE`|Next sunrise (HH:MM), needs `poslat` and `poslon` set|
+|`SUNSET`|Next sunset (HH:MM), needs `poslat` and `poslon` set|
+|`FULLMOON`|Next full moon (YYYY-MM-DD HH:MM)|
+|`SNMPHOST`|Hostname reported from SNMP poll|
+|`SNMPDESC`|Description reported from SNMP poll|
+|`SNMPFBVER`|FireBrick version from description reported from SNMP poll|
+|`SNMPUPTIME`|Uptime reported from SNMP poll|
+|`WEATHER`|Extract a field from weather api response|
+|`SOLAR`|Extract a field from SolareEdge MODBUS collection|
+|`MQTTn`|Extract a field from JSON payload payload on subscribed MQTT (`mqttsub`)|
 
 More may be added over time. All of these are only for whole string replacing it.
 
@@ -70,7 +76,7 @@ This can be `http://` URL serving a PNG image, or just the end appended to `base
 
 The image is typically stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
 
-Note, if the image does not end `.`*something* (and has now `?`) a `.png` is appended. This is useful for things like `$WEATHER.current.condition.code` as an image name like `1030.png` for *Mist*.
+Note, if the image does not end `.`*something* (and has now `?`) a `.png` is appended. This is useful for things like `${WEATHER.current.condition.code}` as an image name like `1030.png` for *Mist*.
 
 ### QR
 
@@ -127,7 +133,7 @@ More widgets planned
 
 ## Weather
 
-You can set the weather api for https://www.weatherapi.com/ this then allows you to access `$WEATHER.` and a weather app field. e.g. `${WEATHER.current.feelslike_c}C` or `$WEATHER.current.condition.text`
+You can set the weather api for https://www.weatherapi.com/ this then allows you to access `$WEATHER` and a weather app field. e.g. `${WEATHER.current.feelslike_c}C` or `${WEATHER.current.condition.text}`
 
 Sending the `command/EPD/weather` returns current weather JSON as an `info` response.
 
