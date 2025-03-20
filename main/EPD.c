@@ -1184,7 +1184,7 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       return dollar_json (solar, dot, colon);
    if (!strncasecmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && !c[5] && c[4] > '0'
        && c[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
-      return dollar_json (mqttjson[c[4] - '0'], dot, colon);
+      return dollar_json (mqttjson[c[4] - '1'], dot, colon);
    if (!strcasecmp (c, "SNMPHOST") && snmp.host)
       return strdup (snmp.host);
    if (!strcasecmp (c, "SNMPDESC") && snmp.desc)
