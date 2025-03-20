@@ -12,7 +12,7 @@ This code works with many E-paper panels, but I have bought up some really nice 
 
 This used the ESP32-GFX library and provides a general E-paper sign with a configurable selection of *widgets*.
 
-This is the nmew version of my `EPDSign` code which had a few options (clock, date, day, wifi and QR, backgroudn images, etc).
+This is the new version of my `EPDSign` code which had a few options (clock, date, day, wifi and QR, background images, etc).
 
 This new version is much more generic, allowing a number of *widgets* to be applied to the displayed images one after the other, this allowing the overall image to be constructed to suit any need.
 

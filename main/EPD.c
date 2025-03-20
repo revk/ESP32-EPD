@@ -989,7 +989,6 @@ solar_task (void *x)
 
       int16_t voltage_scale = modbus_16d (0x9c92);
       int16_t frequency_scale = modbus_16d (0x9c96);
-      int16_t power_scale = modbus_16d (0x9c94) - 3;    // kW instead of W
       int16_t total_scale = modbus_16d (0x9c9f);
 
       while (!er && !b.die)
@@ -1023,6 +1022,9 @@ solar_task (void *x)
             jo_litf (j, tag, "%s%lu.%0*lu", sign, val / s, d, val % s);
          }
 
+         // We assumed scale is fixed, it is not.
+         int16_t power_scale = modbus_16d (0x9c94) - 3; // kW instead of W
+
          addvalue ("voltage", modbus_16 (0x9c8c), voltage_scale);
          addvalue ("frequency", modbus_16 (0x9c95), frequency_scale);
          addvalue ("power", modbus_16 (0x9c93), power_scale);
@@ -1040,7 +1042,7 @@ solar_task (void *x)
             revk_setting (s);
             jo_free (&s);
          }
-         addvalue ("today", total - solarsod, total_scale);
+         addvalue ("today", total - solarsod, total_scale - 3); // kWh
 
          jo_t was = solar;
          solar = j;
