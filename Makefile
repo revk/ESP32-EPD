@@ -28,7 +28,7 @@ issue:
 	-git commit -a -m Release
 	-git push
 
-main/settings.h:     components/ESP32-RevK/revk_settings main/settings.def components/ESP32-RevK/settings.def
+main/settings.h:     components/ESP32-RevK/revk_settings main/settings.def components/*/settings.def
 	components/ESP32-RevK/revk_settings $^
 
 components/ESP32-RevK/revk_settings: components/ESP32-RevK/revk_settings.c
