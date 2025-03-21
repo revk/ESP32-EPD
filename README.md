@@ -52,7 +52,7 @@ Using `${variable}` you can append the variable name with.
 |`SNMPUPTIME`|Uptime reported from SNMP poll|
 |`WEATHER`|Extract a field from weather api response|
 |`SOLAR`|Extract a field from SolareEdge MODBUS collection|
-|`MQTTn`|Extract a field from JSON payload payload on subscribed MQTT (`mqttsub`)|
+|`MQTTn`|Extract a field from JSON payload payload on subscribed MQTT (`jsonsub`)|
 
 More may be added over time. All of these are only for whole string replacing it.
 

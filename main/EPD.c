@@ -47,7 +47,7 @@ volatile uint32_t override = 0;
 
 jo_t weather = NULL;
 jo_t solar = NULL;
-jo_t mqttjson[sizeof (mqttsub) / sizeof (*mqttsub)] = { 0 };
+jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
 
 struct
 {
@@ -1297,7 +1297,7 @@ void
 mqttjson_cb (void *arg, const char *topic, jo_t j)
 {
    uint32_t i = (int) arg;
-   if (i >= sizeof (mqttsub) / sizeof (*mqttsub))
+   if (i >= sizeof (jsonsub) / sizeof (*jsonsub))
       return;
    jo_t was = mqttjson[i];
    if (!was && !j)
@@ -1318,9 +1318,9 @@ app_main ()
    epd_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (epd_mutex);
    revk_mqtt_sub (0, "DEFCON/#", defcon_cb, NULL);
-   for (int i = 0; i < sizeof (mqttsub) / sizeof (*mqttsub); i++)
-      if (*mqttsub[i])
-         revk_mqtt_sub (0, mqttsub[i], mqttjson_cb, (void *) i);
+   for (int i = 0; i < sizeof (jsonsub) / sizeof (*jsonsub); i++)
+      if (*jsonsub[i])
+         revk_mqtt_sub (0, jsonsub[i], mqttjson_cb, (void *) i);
    // Web interface
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.stack_size += 1024 * 4;
