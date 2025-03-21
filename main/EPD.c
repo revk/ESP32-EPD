@@ -216,16 +216,23 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    if (client || !prefix || target || strcmp (prefix, topiccommand) || !suffix)
       return NULL;
    // Not for us or not a command from main MQTT
-   if (!strcmp (suffix, "weather"))
+   if (!strcasecmp (suffix, "weather"))
    {
       jo_t j = jo_copy (weather);
-      revk_info ("weather", &j);
+      revk_info (suffix, &j);
       return "";
    }
-   if (!strcmp (suffix, "solar"))
+   if (!strncasecmp (suffix, "mqtt", 4) && isdigit ((int) (uint8_t) suffix[4]) && !suffix[5] && suffix[4] > '0'
+       && suffix[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
+   {
+      jo_t j = jo_copy (mqttjson[suffix[4] - '1']);
+      revk_info (suffix, &j);
+      return "";
+   }
+   if (!strcasecmp (suffix, "solar"))
    {
       jo_t j = jo_copy (solar);
-      revk_info ("solar", &j);
+      revk_info (suffix, &j);
       return "";
    }
    if (!strcmp (suffix, "setting"))
