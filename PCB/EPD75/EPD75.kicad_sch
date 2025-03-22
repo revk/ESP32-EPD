@@ -6394,12 +6394,6 @@
 		(uuid "6a85204f-812d-4a05-b6c1-9fe601f1a0ee")
 	)
 	(junction
-		(at 179.705 144.145)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6d84083a-5206-4cf5-9d41-1014201b20be")
-	)
-	(junction
 		(at 27.94 121.92)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6560,6 +6554,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "aa557def-1bc4-48e8-abd9-393affd72bd8")
+	)
+	(junction
+		(at 127 150.495)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "aab89a43-4e9f-4a14-9417-fbf1c25e1876")
 	)
 	(junction
 		(at 20.32 166.37)
@@ -6976,6 +6976,10 @@
 	(no_connect
 		(at 99.06 59.69)
 		(uuid "9dc79f89-aa8c-48f6-93e9-eb4e80be44df")
+	)
+	(no_connect
+		(at 99.06 62.23)
+		(uuid "9e355b92-ab34-402f-b0f1-f62610fbd391")
 	)
 	(no_connect
 		(at 123.19 130.81)
@@ -7407,7 +7411,7 @@
 	)
 	(wire
 		(pts
-			(xy 140.97 114.935) (xy 144.145 114.935)
+			(xy 140.97 114.935) (xy 151.13 114.935)
 		)
 		(stroke
 			(width 0)
@@ -7627,6 +7631,16 @@
 	)
 	(wire
 		(pts
+			(xy 229.235 90.805) (xy 229.235 98.425)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "45c019ba-8051-4b43-8679-e2a0313232bb")
+	)
+	(wire
+		(pts
 			(xy 245.745 99.695) (xy 267.97 99.695)
 		)
 		(stroke
@@ -7704,6 +7718,16 @@
 			(type default)
 		)
 		(uuid "51661ee3-90db-45d2-9a10-a1247ce70266")
+	)
+	(wire
+		(pts
+			(xy 229.235 98.425) (xy 220.345 98.425)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5288f0d7-c9b1-41f1-a297-d5ac82203eb1")
 	)
 	(wire
 		(pts
@@ -9657,16 +9681,6 @@
 	)
 	(wire
 		(pts
-			(xy 220.345 98.425) (xy 229.87 98.425)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fcb37e0e-59de-489b-8afd-1509218e23f2")
-	)
-	(wire
-		(pts
 			(xy 20.32 109.22) (xy 20.32 115.57)
 		)
 		(stroke
@@ -9713,50 +9727,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "EPWR"
-		(shape output)
-		(at 99.06 62.23 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "06bb5074-2db3-4fa6-a243-66f922cc1931")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 106.5314 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "EPWR"
-		(shape input)
-		(at 147.955 54.61 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "087ed5e2-db9b-4818-99a2-ccf442e0ca69")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 140.4836 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
 				(hide yes)
 			)
 		)
@@ -10223,28 +10193,6 @@
 			)
 		)
 	)
-	(global_label "EPOWER"
-		(shape input)
-		(at 229.87 98.425 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "6b82de7b-9fde-458b-81d6-873c3f8959ea")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 239.8209 98.425 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "SDDAT3"
 		(shape bidirectional)
 		(at 69.215 168.91 180)
@@ -10421,28 +10369,6 @@
 			)
 		)
 	)
-	(global_label "EPOWER"
-		(shape output)
-		(at 147.955 49.53 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a194fe19-1bf1-4449-8197-d8b3fd005aac")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 138.0041 49.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "SDDAT2"
 		(shape bidirectional)
 		(at 69.215 166.37 180)
@@ -10500,28 +10426,6 @@
 		(uuid "a73de1c5-876c-4cc4-8d68-13c15c7aef92")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 62.439 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "PWR"
-		(shape input)
-		(at 147.955 43.815 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "aa07df69-7ef5-4ef2-a3f1-3964e0979e45")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 141.6326 43.815 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10632,28 +10536,6 @@
 		(uuid "c51bdc47-7502-4ffa-b199-4c61030206ac")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 104.9591 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "EPOWER"
-		(shape input)
-		(at 144.145 114.935 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "c82aaaae-5499-4a7b-ad07-4d21e7d24dd1")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.0959 114.935 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11044,77 +10926,6 @@
 			(project "Generic"
 				(path "/babeabf2-f3b0-4ed5-8d9e-0215947e6cf3"
 					(reference "C7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "RevK:Hidden")
-		(at 180.34 48.895 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "04da7f63-9639-4382-9b1e-4102dd718c6b")
-		(property "Reference" "R15"
-			(at 182.88 48.895 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "124k"
-			(at 186.69 48.895 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "RevK:R_0402_"
-			(at 180.34 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 180.34 48.895 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 180.34 48.895 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "C138062"
-			(at 180.34 48.895 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "R15")
 					(unit 1)
 				)
 			)
@@ -11659,7 +11470,7 @@
 		(dnp no)
 		(uuid "161591ef-ea40-4ebe-8f62-7a04116fe3f4")
 		(property "Reference" "J10"
-			(at 120.015 151.4307 0)
+			(at 123.952 169.926 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12409,26 +12220,17 @@
 		)
 	)
 	(symbol
-		(lib_id "Jumper:SolderJumper_3_Bridged12")
-		(at 183.515 144.145 270)
-		(mirror x)
+		(lib_id "power:+3.3V")
+		(at 151.13 114.935 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "24a805b5-512e-45a2-8146-4e3e46eb7bc9")
-		(property "Reference" "JP2"
-			(at 185.1659 144.145 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "SolderJumper_3_Bridged12"
-			(at 186.1241 144.145 0)
+		(fields_autoplaced yes)
+		(uuid "2744016b-fbda-48fb-9cc9-d2696a485b4a")
+		(property "Reference" "#PWR043"
+			(at 151.13 118.745 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12436,8 +12238,16 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SolderJumper3"
-			(at 183.515 144.145 0)
+		(property "Value" "+3.3V"
+			(at 151.13 111.3592 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 151.13 114.935 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12445,8 +12255,8 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "~"
-			(at 183.515 144.145 0)
+		(property "Datasheet" ""
+			(at 151.13 114.935 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12454,8 +12264,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
-			(at 183.515 144.145 0)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 151.13 114.935 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12464,18 +12274,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "03c99a62-907e-456d-91ab-abba80150863")
-		)
-		(pin "2"
-			(uuid "1f2270d8-83a6-48a8-bcc7-6630f98b18fc")
-		)
-		(pin "3"
-			(uuid "77daa353-0fd8-441f-963e-74c6a1ac7481")
+			(uuid "85e400a8-e84b-47d0-a5a1-4ce038e6f15c")
 		)
 		(instances
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "JP2")
+					(reference "#PWR043")
 					(unit 1)
 				)
 			)
@@ -13045,96 +12849,6 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:Hidden")
-		(at 180.34 43.18 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "3a72c3f9-084c-4275-956b-357340efbd64")
-		(property "Reference" "C21"
-			(at 181.61 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10uF 35V"
-			(at 186.69 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "RevK:C_0603_"
-			(at 180.34 41.275 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 180.34 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 180.34 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "C194427"
-			(at 180.34 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part No" ""
-			(at 180.34 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Note" ""
-			(at 180.34 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "C21")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 245.745 92.075 180)
 		(unit 1)
@@ -13372,78 +13086,6 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "#PWR011")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 183.515 131.445 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "3f6cfcc3-d461-452a-9d2f-2b024c54ff2d")
-		(property "Reference" "#PWR07"
-			(at 183.515 125.095 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 183.515 127.3119 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 183.515 131.445 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 183.515 131.445 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 183.515 131.445 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "bb3764a7-c88d-46bb-9717-0169d1829de6")
-		)
-		(instances
-			(project "USBA"
-				(path "/2d210a96-f81f-42a9-8bf4-1b43c11086f3"
-					(reference "#PWR0105")
-					(unit 1)
-				)
-			)
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -14023,96 +13665,6 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "D3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "RevK:Hidden")
-		(at 180.34 45.085 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "4c2dfec9-210f-4e95-a880-b5e465fb74a6")
-		(property "Reference" "C49"
-			(at 181.61 45.085 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10uF 6.3V"
-			(at 186.69 45.085 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "RevK:C_0603_"
-			(at 180.34 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 180.34 45.085 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 180.34 45.085 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "C1691"
-			(at 180.34 45.085 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part No" ""
-			(at 180.34 45.085 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Note" ""
-			(at 180.34 45.085 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "C49")
 					(unit 1)
 				)
 			)
@@ -14965,7 +14517,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 183.515 156.845 0)
+		(at 119.38 150.495 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14974,7 +14526,7 @@
 		(fields_autoplaced yes)
 		(uuid "59d6dd3a-9615-4ae9-beb1-a76443975181")
 		(property "Reference" "#PWR03"
-			(at 183.515 163.195 0)
+			(at 113.03 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14983,7 +14535,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 183.515 160.9781 0)
+			(at 115.2469 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14991,7 +14543,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 183.515 156.845 0)
+			(at 119.38 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15000,7 +14552,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 183.515 156.845 0)
+			(at 119.38 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15009,7 +14561,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 183.515 156.845 0)
+			(at 119.38 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15191,87 +14743,6 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "D12")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "RevK:Hidden")
-		(at 180.34 52.705 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "6101fc8b-cc15-4f91-adef-8a74281f9da1")
-		(property "Reference" "R17"
-			(at 181.61 52.705 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "1M"
-			(at 186.69 52.705 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "RevK:R_0402_"
-			(at 180.34 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 180.34 52.705 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 180.34 52.705 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part No" ""
-			(at 180.34 52.705 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Note" ""
-			(at 180.34 52.705 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "R17")
 					(unit 1)
 				)
 			)
@@ -15803,85 +15274,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 183.515 135.255 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "675570f4-3a64-45f1-a78e-c0464f07a012")
-		(property "Reference" "R2"
-			(at 185.42 135.255 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "3R"
-			(at 183.515 135.255 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "RevK:R_0402"
-			(at 181.737 135.255 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 183.515 135.255 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 183.515 135.255 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "b9ecfd6e-8ae3-4367-8901-a2cbf9c9ba2a")
-		)
-		(pin "2"
-			(uuid "e977dd8c-0326-43cd-acba-ebfd86b18e10")
-		)
-		(instances
-			(project "USBA"
-				(path "/2d210a96-f81f-42a9-8bf4-1b43c11086f3"
-					(reference "R1")
-					(unit 1)
-				)
-			)
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "R2")
-					(unit 1)
-				)
-			)
-			(project "Reference"
-				(path "/825c70b0-4860-42b7-97dc-86bfa46e06fd"
-					(reference "R7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Connector_Generic:Conn_01x26")
 		(at 118.11 115.57 180)
 		(unit 1)
@@ -16292,15 +15684,15 @@
 				)
 			)
 		)
-		(property "Value" "4.7uF"
-			(at 191.135 107.95 0)
+		(property "Value" "4.7uF 50V"
+			(at 193.04 108.966 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "RevK:C_0402"
+		(property "Footprint" "RevK:C_0805"
 			(at 186.9948 101.6 0)
 			(effects
 				(font
@@ -17644,100 +17036,6 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:MD89420-RegBlock")
-		(at 159.385 49.53 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "88c69b0e-4db8-4d8a-96ad-e5d70b5fe05a")
-		(property "Reference" "U5"
-			(at 159.385 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "MD8942"
-			(at 159.385 45.228 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "RevK:SOT-23-6-MD8942"
-			(at 159.385 73.66 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2101111937_Shanghai-Mingda-Microelectronics-MD8942_C2684786.pdf"
-			(at 159.385 70.485 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 159.385 49.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "C2684786"
-			(at 159.385 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "08852b0e-1052-4051-96b7-b63feee7d94d")
-		)
-		(pin "2"
-			(uuid "3cbb04bc-906d-4d60-b273-3706e1c3e700")
-		)
-		(pin "3"
-			(uuid "8e9851dd-16b0-4e86-a7c5-1f076bba52f2")
-		)
-		(pin "4"
-			(uuid "025fbba5-d647-4dc2-bf1a-7ade99b7e8c0")
-		)
-		(pin "5"
-			(uuid "3b91b6f1-03db-403a-baa6-799b28ce58ed")
-		)
-		(pin "6"
-			(uuid "cc35d91a-8171-4999-92ca-e69d3d213de4")
-		)
-		(pin "7"
-			(uuid "2f5e4fa4-b374-47f9-917c-8e4a912f8f55")
-		)
-		(pin "8"
-			(uuid "59135e17-71db-4d40-bdac-9f59f4d8a64b")
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "U5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C")
 		(at 41.275 64.77 270)
 		(unit 1)
@@ -18118,6 +17416,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
 			)
 		)
 		(property "Footprint" ""
@@ -19460,15 +18759,15 @@
 				)
 			)
 		)
-		(property "Value" "4.7uF"
-			(at 191.135 81.915 0)
+		(property "Value" "4.7uF 50V"
+			(at 195.326 79.756 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "RevK:C_0402"
+		(property "Footprint" "RevK:C_0805"
 			(at 186.9948 75.565 0)
 			(effects
 				(font
@@ -19787,86 +19086,6 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:Hidden")
-		(at 180.34 50.8 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "a50dcf4d-02c2-4284-a8c9-0d2de1563262")
-		(property "Reference" "R16"
-			(at 183.515 50.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "39k2"
-			(at 186.69 50.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "RevK:R_0402_"
-			(at 182.245 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 180.34 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 180.34 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part No" ""
-			(at 180.34 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Note" ""
-			(at 180.34 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "R16")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 205.74 68.58 270)
 		(unit 1)
@@ -19933,87 +19152,6 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "#PWR030")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "RevK:Hidden")
-		(at 180.34 46.99 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "a7859ae4-3e13-4515-b01a-2b90ffbd92ae")
-		(property "Reference" "C50"
-			(at 185.42 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "100nF"
-			(at 186.69 46.99 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "RevK:C_0603_"
-			(at 178.435 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 180.34 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 180.34 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part No" ""
-			(at 180.34 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Note" ""
-			(at 180.34 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "C50")
 					(unit 1)
 				)
 			)
@@ -20091,71 +19229,6 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "#PWR038")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 159.385 59.055 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "aada8837-63d5-4448-b83f-558020f56af2")
-		(property "Reference" "#PWR043"
-			(at 159.385 65.405 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 159.512 63.4492 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 159.385 59.055 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 159.385 59.055 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 159.385 59.055 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "64611a67-f821-4e4b-b949-9fa29c3664ff")
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "#PWR043")
 					(unit 1)
 				)
 			)
@@ -20618,7 +19691,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 183.515 153.035 0)
+		(at 123.19 150.495 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -20626,7 +19699,7 @@
 		(dnp no)
 		(uuid "b485b9af-6be0-4570-a766-43410c8da6ba")
 		(property "Reference" "R1"
-			(at 185.42 153.035 90)
+			(at 123.19 152.4 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20634,7 +19707,7 @@
 			)
 		)
 		(property "Value" "0.47R"
-			(at 183.515 153.035 90)
+			(at 123.19 150.495 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20642,7 +19715,7 @@
 			)
 		)
 		(property "Footprint" "RevK:R_0402"
-			(at 181.737 153.035 90)
+			(at 123.19 148.717 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20651,7 +19724,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 183.515 153.035 0)
+			(at 123.19 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20660,7 +19733,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 183.515 153.035 0)
+			(at 123.19 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20669,7 +19742,7 @@
 			)
 		)
 		(property "MPN" "C2771738"
-			(at 183.515 153.035 90)
+			(at 123.19 150.495 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20699,87 +19772,6 @@
 			(project "Reference"
 				(path "/825c70b0-4860-42b7-97dc-86bfa46e06fd"
 					(reference "R7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "RevK:Hidden")
-		(at 180.34 54.61 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "b5d39377-1f85-4b13-aa70-120687a4b495")
-		(property "Reference" "L3"
-			(at 181.61 54.61 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "10uH"
-			(at 186.69 54.61 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "RevK:L_4x4_"
-			(at 178.435 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 180.34 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 180.34 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part No" ""
-			(at 180.34 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Note" ""
-			(at 180.34 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "L3")
 					(unit 1)
 				)
 			)
@@ -22147,6 +21139,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+3.3V")
+		(at 229.235 90.805 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "cb39b406-768f-4e1a-bab8-1d2190a8ecbc")
+		(property "Reference" "#PWR020"
+			(at 229.235 94.615 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 229.235 87.2292 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 229.235 90.805 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 229.235 90.805 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 229.235 90.805 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d1036a84-cf3e-41f2-a69b-c5fa49ec153a")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR020")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 24.13 140.97 270)
 		(unit 1)
@@ -22938,7 +21996,7 @@
 		(fields_autoplaced yes)
 		(uuid "df129cb7-1085-44d2-815c-a089b39b6b17")
 		(property "Reference" "L1"
-			(at 189.2273 90.8629 0)
+			(at 189.2272 90.8628 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -22946,8 +22004,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10uH"
-			(at 189.2273 93.2871 0)
+		(property "Value" "470uH"
+			(at 189.2272 93.2871 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -22955,7 +22013,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "RevK:L_4x4"
+		(property "Footprint" "Inductor_SMD:L_Ferrocore_DLG-0705"
 			(at 187.96 92.075 0)
 			(effects
 				(font
