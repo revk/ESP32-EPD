@@ -10,3 +10,6 @@
 [submodule "components/ESP32-LWPNG"]
 	path = components/ESP32-LWPNG
 	url = https://github.com/revk/ESP32-LWPNG
+[submodule "PCB/PCBCase"]
+	path = PCB/PCBCase
+	url = https://github.com/revk/PCBCase
