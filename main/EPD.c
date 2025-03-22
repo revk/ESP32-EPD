@@ -222,7 +222,7 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       revk_info (suffix, &j);
       return "";
    }
-   if (!strncasecmp (suffix, "json", 4) && isdigit ((int) (uint8_t) suffix[4]) && !suffix[5] && suffix[4] > '0'
+   if (!strncasecmp (suffix, "mqtt", 4) && isdigit ((int) (uint8_t) suffix[4]) && !suffix[5] && suffix[4] > '0'
        && suffix[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
    {
       jo_t j = jo_copy (mqttjson[suffix[4] - '1']);
@@ -1440,7 +1440,7 @@ app_main ()
    while (!revk_shutting_down (NULL))
    {
       usleep (100000);
-      time_t now = time (0) + 2 ;                      // Ahead for EPD
+      time_t now = time (0) + 2;        // Ahead for EPD
       if (now < 1000000000)
          now = 0;
       uint32_t up = uptime ();
