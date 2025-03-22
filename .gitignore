@@ -18,3 +18,7 @@ images/*.mono
 settings.h
 settings.c
 *.pem
+*.zip
+*/*-backups
+*/*/*-backups
+*/*/fp-info-cache
