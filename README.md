@@ -10,85 +10,99 @@ This code works with many E-paper panels, but I have bought up some really nice 
 
 # ESP32-EPD
 
-This used the ESP32-GFX library and provides a general E-paper sign with a configurable selection of *widgets*.
+This used the ESP32-GFX library and provides a general E-paper (and some OLED) sign with a configurable selection of *widgets*.
 
 This is the new version of my `EPDSign` code which had a few options (clock, date, day, wifi and QR, background images, etc).
 
 This new version is much more generic, allowing a number of *widgets* to be applied to the displayed images one after the other, this allowing the overall image to be constructed to suit any need.
 
+## PCBs
+
+A number of PCBs designs are included. The most work on this code as been done using the `EPD75` (mono) display. It will need more work for colour OLED displays and black/white/red e-paper.
+
 ## Widgets
 
-Each widget has basic settings with *type*, and position (*x*/*y*), and alignment (*left*/*centre*/*right* and *top*/*middle*/*bottom*) and the *size* of the widget, and, of course a *content* setting.
+Each widget has basic settings with *type*, and position (*x*/*y*), and alignment (*left*/*centre*/*right* and *top*/*middle*/*bottom*) and the *size* of the widget, and, of course a *content* setting. Some widgets may reference other settings as well in the way they work.
 
 ### Content
 
-The *content* for any widget can contain `$` expanded fields, this can be `$variable` or `${variable}` if you need letters/etc directly after the expansion, or need to add extra formatting. The *variable* is a letter and then letters or digits.
+The *content* for any widget can contain `$` expanded fields, this can be `$variable` or `${variable}` if you need letters/etc directly after the expansion, or need to add extra formatting. The *variable* is a letter and then letters or digits. Use `$$` if you want an actual `$`.
 
 Using `${variable}` you can append the variable name with.
 
 - `:format` for any time based variables, for `strftime` formatting, e.g. `${TIME:%a %:%M}` may show `Wed 10:15`
 - `.fields` for any JSON based variables, allows the JSON field, e.g. `${WEATHER.current.condition.code}`
-- `.field:format` will alow some formatting of fields from JSON based variables. TBA
+- `.field:format` will alow some formatting of fields from JSON based variables. TBA but probably decimal places on numeric fields.
 
 |Variable|Meaning|
 |------|-------|
 |`TIME`|Current time `HH:MM`|
 |`DATE`|Current date `YYYY-MM-DD`|
-|`DAY`|Current day, e.g. `WEDNESDAY`|
-|`SEASON`|Seasonal character code, e.g. `E` for Easter|
-|`SEASONS`|Seasonal character codes|
+|`DAY`|Current day, e.g. `WEDNESDAY` (this is not strftime based)|
+|`SEASON`|Seasonal character code, e.g. `E` for Easter - is the primary season code at current time|
+|`SEASONS`|Seasonal character codes, as occasionally there may be more than one active|
 |`COUNTDOWN`|Countdown/up from `refdate`, not a `refdate` with year `0000` means countdown to date/time specified in current/next year|
-|`SSID`|Current WiFi SSID|
-|`PASS`|Current WiFi passphrase|
-|`WIFI`|QR code formatted current WiFi details|
-|`IPV6`|Current main IPv6 (also `$IP`)|
+|`SSID`|Current WiFi SSID (can be configured or use the WiFi settings)|
+|`PASS`|Current WiFi passphrase (can be configured or use the WiFi settings)|
+|`WIFI`|QR code formatted current WiFi details `$SSID` and `$PASS` info|
+|`IPV6`|Current main public IPv6 (also `$IP`)|
 |`IPV4`|Current IPv4|
-|`SUNRISE`|Next sunrise (HH:MM), needs `poslat` and `poslon` set|
-|`SUNSET`|Next sunset (HH:MM), needs `poslat` and `poslon` set|
+|`SUNRISE`|Next sunrise (HH:MM), needs `poslat` and `poslon` set.|
+|`SUNSET`|Next sunset (HH:MM), needs `poslat` and `poslon` set.|
 |`FULLMOON`|Next full moon (YYYY-MM-DD HH:MM)|
+|`NEWMOON`|Current moon (YYYY-MM-DD HH:MM), before or after now, changes on next full moon|
 |`SNMPHOST`|Hostname reported from SNMP poll|
 |`SNMPDESC`|Description reported from SNMP poll|
 |`SNMPFBVER`|FireBrick version from description reported from SNMP poll|
 |`SNMPUPTIME`|Uptime reported from SNMP poll|
-|`WEATHER`|Extract a field from weather api response|
-|`SOLAR`|Extract a field from SolareEdge MODBUS collection|
+|`WEATHER`|Extract a field from weather api response JSON|
+|`SOLAR`|Extract a field from SolareEdge MODBUS TCP collection generated JSON|
 |`MQTTn`|Extract a field from JSON payload payload on subscribed MQTT (`jsonsub`)|
-
-More may be added over time. All of these are only for whole string replacing it.
-
-The system accepts a JSON payload to the `json` command, which can then be referenced with `$JSON.field`. This is typically set as *retained* on the MQTT server.
 
 ### Text
 
-This is one of the simplest widgets, and allows simple mulkti line text to be displayed. The font size defines the text size (-ve value means allow for descenders).
+This is one of the simplest widgets, and allows simple multi line text to be displayed. The font size defines the text size, with `1` being one pixel per 5x9 matrix image. The system uses a vector based font, and the *size* has modifers for allowing space below for decenders, and light weight vector lines.
+
+Note that text is normally fixed space font with a small number of exceptions (`.`, `:`, `|`, `!`). Options may be added to force fixed space and maybe allow more proportional spaced characters at some point.
+
+A wide range of accented characters are supported based on Mullard SAA5050 teletext controller fonts with some additional characters. Notably this includes `°` to use with `°C` or `°F`.
 
 ### Blocks
 
-Same as `text` but blocky characters, so can allow larger size than defined fonts in build.
+Same as `text` but blocky (pixel based) characters.
 
 ### Digits
 
-Same as `text` but using 7 seg format, allows quite large digits typicallty. This is ideal for `$DATE` and `$TIME`. It plots only the segments as black or white (see *mask* below). Only handles digits, `-`, `.`, `:`, `_`. Does not handle multiple lines.
+Display content using classic 7 segment display format.
+
+This is ideal for `$DATE` and `$TIME`. It plots only the segments as black or white (see *mask* below), no overall background. The design allows 7 segment character parts to go on and off like a traditional LCD display. This helps reduce changes and unseamly *shadows* on an e-paper display and make for a clean transitions.
+
+Only a single line is handled, and a limited character set:
+
+- `0` to `9` as you would expect as normal 7 segment digits.
+- Simple symbols like `-` and `_`.
+- Some letters, notably for hex `A`-`F` as `A`, `b`, `C`, `d`, `E`, `F`. This also helps with temp using `C` and `F`.
+- Use of `.` or `:` after a displayed character causes the previous character to be wider to allow `.` and `:` after it. This can follow a space if you needed. This may be tweaked in future.
 
 ### Image
 
-This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting). It can include *alpha* channel to control if plotted.
+This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting) cutting for e-paper at 50% brightness (does not dither, etc). It can include *alpha* channel to control if plotted.
 
 The image is typically stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
 
-Note, if the image does not end `.`*something* (and has now `?`) a `.png` is appended. This is useful for things like `${WEATHER.current.condition.code}` as an image name like `1030.png` for *Mist*.
+Note, if the image does not end `.`*something* (and has no `?`) a `.png` is appended.
 
 ### QR
 
-The content is content of QR code, and size if the overall size (width and height) in pixels.
+The content is content of QR code. The size is normally the overall size in pixels, with the QR scaled to fit within that. There is also a tag to say size is pixel size (pixels per QR unit block). There is an option to not have the standard 4 unit border.
 
 ### HLine/VLine
 
-Draws a horizontal or virtial line based on size and alignment.
+Draws a single pixel horizontal or virtial line based on size and alignment.
 
 ### Bins
 
-This allows display of bin collection. This is based on a JSON file, the content is the URL to fetch the JSON. A script `monmouthire.cgi` is defined for now. The *size* is font side for the bin collection day or week (or `TODAY`/`TOMORROW`) which is shown along with icons.
+This allows display of bin collection. This is based on a JSON file, the content is the URL to fetch the JSON. A script `monmouthire.cgi` is defined for now. The *size* is font size for the bin collection day or week (or `TODAY`/`TOMORROW`) which is shown along with icons.
 
 Top level JSON, specifies next bin collection day.
 
@@ -126,22 +140,21 @@ Example.
 }
 ```
 
-
 ### More
 
-More widgets planned
+More widgets planned, and more `$variable` planned.
 
 ## Weather
 
-You can set the weather api for https://www.weatherapi.com/ this then allows you to access `$WEATHER` and a weather app field. e.g. `${WEATHER.current.feelslike_c}C` or `${WEATHER.current.condition.text}`
+You can set the weather api for use with [https://www.weatherapi.com/](https://www.weatherapi.com/) this then allows you to access `$WEATHER` and a weather app field. e.g. `${WEATHER.current.feelslike_c}C` or `${WEATHER.current.condition.text}`
 
-Sending the `command/EPD/weather` returns current weather JSON as an `info` response.
+Sending the `command/EPD/weather` returns current weather JSON as an `info` response to help you understand the response fields you can use.
 
 ## Solar
 
-You can set the IP address of your SolarEdge inverter. This uses MODBUS (TCP port 1502) to get key data such as `$SOLAR.power`, `$SOLAR.today`, etc.
+You can set the IP address of your SolarEdge inverter. This uses MODBUS (TCP port 1502) to get key data which is constructed in to a JSON object, with fields such as `$SOLAR.power`, `$SOLAR.today`, etc.
 
-Sending the `command/EPD/solar` returns current solar JSON as an `info` response. You can set `solarlog` to log the data received over MODBUS.
+Sending the `command/EPD/solar` returns current solar JSON as an `info` response to help you understand the response fields you can use. You can set `solarlog` to log the data received over MODBUS to MQTT.
 
 ## Align, mask, and invert
 
