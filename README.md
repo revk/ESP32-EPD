@@ -6,15 +6,15 @@ This is an open source project, but bear in mind you cannot sell boards bearing 
 
 ## Buy?
 
-This code works with many E-paper panels, but I have bought up some really nice 7.5" Waveshare ones on laminated glass with black border, and have them on Tindie with my controller (this code pre-loaded). [Tindie](https://www.tindie.com/products/revk/75-e-paper-controller-24-leds-sd-card-slot/) but you can also order firect if you have an A&A account, and even collect if in south wales!
+This code works with many E-paper panels, but I have bought up some really nice 7.5" Waveshare ones on laminated glass with black border, and have them on Tindie with my controller (this code pre-loaded). [Tindie](https://www.tindie.com/products/revk/75-e-paper-controller-24-leds-sd-card-slot/) but you can also order firect if you have an A&A account, and even collect if in South Wales!
 
 # ESP32-EPD
 
-This used the ESP32-GFX library and provides a general E-paper (and some OLED) sign with a configurable selection of *widgets*.
+This uses me [ESP32-GFX](https://github.com/revk/ESP32-GFX) library and provides a general E-paper (and some OLED) sign with a configurable selection of *widgets*.
 
-This is the new version of my `EPDSign` code which had a few options (clock, date, day, wifi and QR, background images, etc).
+*This is the new version of my `EPDSign` code which had a few options (clock, date, day, wifi and QR, background images, etc). Please upgrade to this as EPD-SIGN is no longer maintained.*
 
-This new version is much more generic, allowing a number of *widgets* to be applied to the displayed images one after the other, this allowing the overall image to be constructed to suit any need.
+This code is much more generic, allowing a number of *widgets* to be applied to the displayed images one after the other, this allowing the overall image to be constructed to suit any need.
 
 ## PCBs
 
@@ -67,6 +67,8 @@ Note that text is normally fixed space font with a small number of exceptions (`
 
 A wide range of accented characters are supported based on Mullard SAA5050 teletext controller fonts with some additional characters. Notably this includes `°` to use with `°C` or `°F`.
 
+In future I may add red text as an option for KWR displays.
+
 ### Blocks
 
 Same as `text` but blocky (pixel based) characters.
@@ -91,6 +93,8 @@ This can be `http://` URL serving a PNG image, or just the end appended to `base
 The image is typically stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
 
 Note, if the image does not end `.`*something* (and has no `?`) a `.png` is appended.
+
+In future I hope to isolate black, white, and red for KWR displays.
 
 ### QR
 
