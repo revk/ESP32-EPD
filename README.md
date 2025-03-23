@@ -69,7 +69,7 @@ A wide range of accented characters are supported based on Mullard SAA5050 telet
 
 In future I may add red text as an option for KWR displays.
 
-### Blocks
+### Blocky
 
 Same as `text` but blocky (pixel based) characters.
 
