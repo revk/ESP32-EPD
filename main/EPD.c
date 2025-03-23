@@ -1131,8 +1131,7 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    if (!strcasecmp (c, "TIME"))
       return dollar_time (now, colon ? : "%H:%M");
    if (!strcasecmp (c, "DATE"))
-      if (!strcasecmp (c, "TIME"))
-         return dollar_time (now, colon ? : "%F");
+      return dollar_time (now, colon ? : "%F");
    if (!strcasecmp (c, "DAY"))
       return strdup (longday[t.tm_wday]);
    if (!strcasecmp (c, "COUNTDOWN"))
