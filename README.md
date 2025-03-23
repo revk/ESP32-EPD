@@ -50,7 +50,7 @@ Using `${variable}` you can append the variable name with.
 |`SUNRISE`|Next sunrise (HH:MM), needs `poslat` and `poslon` set.|
 |`SUNSET`|Next sunset (HH:MM), needs `poslat` and `poslon` set.|
 |`FULLMOON`|Next full moon (YYYY-MM-DD HH:MM)|
-|`NEWMOON`|Current moon (YYYY-MM-DD HH:MM), before or after now, changes on next full moon|
+|`NEWMOON`|Current moon (YYYY-MM-DD HH:MM), before or after now, changes on next full moon - may be changed some time|
 |`SNMPHOST`|Hostname reported from SNMP poll|
 |`SNMPDESC`|Description reported from SNMP poll|
 |`SNMPFBVER`|FireBrick version from description reported from SNMP poll|
