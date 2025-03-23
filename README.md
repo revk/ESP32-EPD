@@ -86,6 +86,8 @@ Only a single line is handled, and a limited character set:
 - Some letters, notably for hex `A`-`F` as `A`, `b`, `C`, `d`, `E`, `F`. This also helps with temp using `C` and `F`.
 - Use of `.` or `:` after a displayed character causes the previous character to be wider to allow `.` and `:` after it. This can follow a space if you needed. This may be tweaked in future.
 
+Whilst vector based text allows any size, the 7 segment logic currently allows sizes up to 20, which allows 2 digits, colon, and 2 digits to just fit within 480 pixels width on a 7.5" e-paper panel in portrait. 
+
 ### Image
 
 This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting) cutting for e-paper at 50% brightness (does not dither, etc). It can include *alpha* channel to control if plotted.
