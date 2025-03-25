@@ -3739,7 +3739,7 @@
 						(justify right top)
 					)
 				)
-				(text "10uF\n10uF\n100nF\n124k\n39k2\n1M\n10uH"
+				(text "10uF\n10uF\n100nF\n124k\n39k2\n1M\n10uH+"
 					(at 13.335 6.985 0)
 					(effects
 						(font
@@ -16267,7 +16267,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Regulator and associated components."
 			(at 159.385 26.035 0)
 			(effects
 				(font
@@ -16652,7 +16652,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "10uH"
+		(property "Value" "47uH 1.3A"
 			(at 186.69 31.115 90)
 			(effects
 				(font
@@ -16688,17 +16688,8 @@
 				(hide yes)
 			)
 		)
-		(property "Part No" ""
-			(at 180.34 31.115 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Note" ""
-			(at 180.34 31.115 0)
+		(property "MPN" "C602032"
+			(at 180.34 31.115 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -22013,7 +22004,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Inductor_SMD:L_Ferrocore_DLG-0705"
+		(property "Footprint" "RevK:L_4x4"
 			(at 187.96 92.075 0)
 			(effects
 				(font
@@ -22032,6 +22023,15 @@
 			)
 		)
 		(property "Description" ""
+			(at 187.96 92.075 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C42429207"
 			(at 187.96 92.075 0)
 			(effects
 				(font

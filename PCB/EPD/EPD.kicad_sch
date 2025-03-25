@@ -1,5 +1,5 @@
 (kicad_sch
-	(version 20241209)
+	(version 20250114)
 	(generator "eeschema")
 	(generator_version "9.0")
 	(uuid "46c350bb-7de4-4e81-aafd-4af55e37aab0")
@@ -1727,7 +1727,7 @@
 						(type default)
 					)
 					(fill
-						(type outline)
+						(type none)
 					)
 				)
 				(arc
@@ -1739,7 +1739,7 @@
 						(type default)
 					)
 					(fill
-						(type none)
+						(type outline)
 					)
 				)
 				(polyline
@@ -3466,7 +3466,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" ""
+			(property "Description" "Regulator and associated components."
 				(at 0 0 0)
 				(effects
 					(font
@@ -3476,7 +3476,7 @@
 				)
 			)
 			(property "MPN" "C2684786"
-				(at 0 -26.67 0)
+				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -3546,7 +3546,7 @@
 						(justify right top)
 					)
 				)
-				(text "10uF\n10uF\n100nF\n124k\n39k2\n1M\n10uH"
+				(text "10uF\n10uF\n100nF\n124k\n39k2\n1M\n10uH+"
 					(at 13.335 6.985 0)
 					(effects
 						(font
@@ -4215,7 +4215,7 @@
 						(type default)
 					)
 					(fill
-						(type outline)
+						(type none)
 					)
 				)
 				(arc
@@ -4227,7 +4227,7 @@
 						(type default)
 					)
 					(fill
-						(type none)
+						(type outline)
 					)
 				)
 				(arc
@@ -5832,6 +5832,12 @@
 		(uuid "116838af-73ff-4ed6-90cb-671d65b213c7")
 	)
 	(junction
+		(at 187.96 77.47)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "188805a0-6088-4b7d-83ae-2484c808589c")
+	)
+	(junction
 		(at 84.455 104.775)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5856,6 +5862,12 @@
 		(uuid "3377dc63-4865-4aa6-b5ec-248617640cc3")
 	)
 	(junction
+		(at 187.96 85.09)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "35a51f6c-5741-4b91-b19a-f4db1a54f212")
+	)
+	(junction
 		(at 259.08 53.34)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5872,12 +5884,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3f4b43d8-d980-4ea2-b683-4cedf95ee021")
-	)
-	(junction
-		(at 187.96 85.09)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "46130a35-05b4-40fc-8ddb-2db2efc62ed1")
 	)
 	(junction
 		(at 126.365 109.855)
@@ -6028,12 +6034,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "c5e0088d-0108-4849-866a-33a3422b1fe3")
-	)
-	(junction
-		(at 187.96 77.47)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "c647c3b7-ee8a-44f9-a068-0ffc6f95974c")
 	)
 	(junction
 		(at 161.29 99.695)
@@ -10417,6 +10417,152 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C")
+		(at 187.96 81.28 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "635eeddc-744b-4247-85e0-505877fb3b3b")
+		(property "Reference" "C17"
+			(at 190.5 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4.7uF 50V"
+			(at 195.326 81.661 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "RevK:C_0805"
+			(at 186.9948 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 187.96 81.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 187.96 81.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "38d3c929-32ad-4d7e-acbd-f7a4dec9f45c")
+		)
+		(pin "2"
+			(uuid "ed7b0784-6aa3-452d-89c7-f07d9cfb4acb")
+		)
+		(instances
+			(project "EPD"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "C17")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:L")
+		(at 187.96 93.98 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "63b2c7cc-e6f9-456a-9485-7722b6abaa77")
+		(property "Reference" "L1"
+			(at 189.2272 92.7678 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "470uH"
+			(at 189.2272 95.1921 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "RevK:L_4x4"
+			(at 187.96 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 187.96 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 187.96 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C42429207"
+			(at 187.96 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "04898283-d787-454a-9329-8fc5eabb92a7")
+		)
+		(pin "2"
+			(uuid "e668f022-9042-41b2-a801-f33630f6a6de")
+		)
+		(instances
+			(project "EPD"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "L1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 183.515 158.75 0)
 		(unit 1)
@@ -11311,12 +11457,13 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Regulator and associated components."
 			(at 164.465 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
 			)
 		)
 		(property "MPN" "C2684786"
@@ -11447,74 +11594,6 @@
 			(project "Generic"
 				(path "/babeabf2-f3b0-4ed5-8d9e-0215947e6cf3"
 					(reference "R12")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "RevK:Hidden")
-		(at 185.42 45.72 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "80f6954e-835e-4d92-aa94-93d0d638ab2f")
-		(property "Reference" "L2"
-			(at 186.69 45.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "10uH"
-			(at 191.77 45.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "RevK:L_4x4_"
-			(at 183.515 45.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 185.42 45.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 185.42 45.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(instances
-			(project "EPD"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "L2")
-					(unit 1)
-				)
-			)
-			(project "Generic"
-				(path "/babeabf2-f3b0-4ed5-8d9e-0215947e6cf3"
-					(reference "L2")
 					(unit 1)
 				)
 			)
@@ -12388,78 +12467,6 @@
 			(project "EPD"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "#PWR030")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 187.96 81.28 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "a86dd271-32f0-43fe-8c9b-cc70c74495ce")
-		(property "Reference" "C17"
-			(at 190.5 78.74 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "4.7uF"
-			(at 191.135 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "RevK:C_0402"
-			(at 186.9948 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 187.96 81.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 187.96 81.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "37ab53eb-7afa-450d-945f-018d4e771ae5")
-		)
-		(pin "2"
-			(uuid "a85f7e72-f9b6-4ae9-b4d8-850c4e9eb7d6")
-		)
-		(instances
-			(project "USBA"
-				(path "/2d210a96-f81f-42a9-8bf4-1b43c11086f3"
-					(reference "C3")
-					(unit 1)
-				)
-			)
-			(project "EPD"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "C17")
 					(unit 1)
 				)
 			)
@@ -13496,6 +13503,73 @@
 			(project "Generic"
 				(path "/babeabf2-f3b0-4ed5-8d9e-0215947e6cf3"
 					(reference "R13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 187.96 107.315 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "cfa71aa8-f86c-43d1-87d5-57a28557ae88")
+		(property "Reference" "C18"
+			(at 190.5 104.775 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4.7uF 50V"
+			(at 195.326 107.696 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "RevK:C_0805"
+			(at 186.9948 103.505 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 187.96 107.315 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 187.96 107.315 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "28d66dfc-ceab-48d0-8a2f-a85ea849d7c6")
+		)
+		(pin "2"
+			(uuid "cf17a78b-44e0-4803-8d07-2399ecaa464b")
+		)
+		(instances
+			(project "EPD"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "C18")
 					(unit 1)
 				)
 			)
@@ -14884,78 +14958,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 187.96 107.315 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "e6316977-9504-4013-a125-ff2844cee59a")
-		(property "Reference" "C18"
-			(at 190.5 104.775 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "4.7uF"
-			(at 191.135 109.855 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "RevK:C_0402"
-			(at 186.9948 103.505 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 187.96 107.315 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 187.96 107.315 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "b5bc5179-dace-4502-921a-e996a0d28277")
-		)
-		(pin "2"
-			(uuid "32dd11da-1816-4c51-ab3f-130584e12a84")
-		)
-		(instances
-			(project "USBA"
-				(path "/2d210a96-f81f-42a9-8bf4-1b43c11086f3"
-					(reference "C3")
-					(unit 1)
-				)
-			)
-			(project "EPD"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "C18")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Connector_Generic:Conn_01x26")
 		(at 118.11 117.475 180)
 		(unit 1)
@@ -15385,6 +15387,78 @@
 		)
 	)
 	(symbol
+		(lib_id "RevK:Hidden")
+		(at 185.42 45.72 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f1e3f056-b6f0-4b7c-b8c2-93339789edbb")
+		(property "Reference" "L2"
+			(at 186.69 45.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "47uH 1.3A"
+			(at 191.77 45.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "RevK:L_4x4_"
+			(at 183.515 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 185.42 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 185.42 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C602032"
+			(at 185.42 45.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "EPD"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "L2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 155.575 140.335 90)
 		(unit 1)
@@ -15593,75 +15667,6 @@
 			(project "EPD"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "#PWR07")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:L")
-		(at 187.96 93.98 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "fc42cf63-a60f-4de8-a353-7495d9c48ba0")
-		(property "Reference" "L1"
-			(at 189.2273 92.7679 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10uH"
-			(at 189.2273 95.1921 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "RevK:L_4x4"
-			(at 187.96 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 187.96 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 187.96 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "abe7d050-a546-4fab-a2da-0523738d9689")
-		)
-		(pin "2"
-			(uuid "d060b2c9-92ea-4191-a755-3649cfbdc5d3")
-		)
-		(instances
-			(project "EPD"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "L1")
 					(unit 1)
 				)
 			)

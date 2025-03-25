@@ -1177,6 +1177,11 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       return dollar_time (revk_moon_full_next (now), colon ? : "%F %H:%M");
    if (!strcasecmp (c, "NEWMOON"))
       return dollar_time (revk_moon_new (now), colon ? : "%F %H:%M");
+   if (!strncasecmp (c, "MOONPHASE", 9))
+   {
+      int n = atoi (c + 9) ? : 360;
+      return asprintf (&r, "%d", (revk_moon_phase () * n + 180) / 360 % n);
+   }
    if (!strcasecmp (c, "DEFCON"))
    {
       if (b.defcon > 5)
