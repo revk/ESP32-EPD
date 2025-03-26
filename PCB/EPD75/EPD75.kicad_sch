@@ -3739,7 +3739,7 @@
 						(justify right top)
 					)
 				)
-				(text "10uF\n10uF\n100nF\n124k\n39k2\n1M\n10uH+"
+				(text "10uF\n10uF\n100nF\n124k\n39k2\n1M\n10uH"
 					(at 13.335 6.985 0)
 					(effects
 						(font
@@ -16652,7 +16652,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "47uH 1.3A"
+		(property "Value" "10uH"
 			(at 186.69 31.115 90)
 			(effects
 				(font
@@ -16688,7 +16688,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C602032"
+		(property "MPN" "C42428017"
 			(at 180.34 31.115 90)
 			(effects
 				(font
