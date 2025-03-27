@@ -256,7 +256,7 @@ widget_bins (uint16_t s, const char *c)
          }
          if (bottom)
             showday ();
-         setlights (leds < now ? led : NULL);
+         setlights (now < clear && leds < now ? led : NULL);
       }
       // Cleanup
       while (icons)
