@@ -6,7 +6,7 @@ This is an open source project, but bear in mind you cannot sell boards bearing 
 
 ## Buy?
 
-This code works with many E-paper panels, but I have bought up some really nice 7.5" Waveshare ones on laminated glass with black border, and have them on Tindie with my controller (this code pre-loaded). [Tindie](https://www.tindie.com/products/revk/75-e-paper-controller-24-leds-sd-card-slot/) but you can also order firect if you have an A&A account, and even collect if in South Wales!
+This code works with many E-paper panels, but I have bought up some really nice 7.5" Waveshare ones on laminated glass with black border, and have them on Tindie with my controller (this code pre-loaded). [Tindie](https://www.tindie.com/products/revk/75-e-paper-controller-24-leds-sd-card-slot/) but you can also order direct if you have an A&A account, and even collect if in South Wales!
 
 # ESP32-EPD
 
