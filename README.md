@@ -157,6 +157,8 @@ You can set the weather api for use with [https://www.weatherapi.com/](https://w
 
 Sending the `command/EPD/weather` returns current weather JSON as an `info` response to help you understand the response fields you can use.
 
+The data requested from the API is `forecast`, so typically includes a `dayforecast`, which can be accessed, e.g. `${WEATHER.forecast.forecastday[0].day.maxtemp_c}`
+
 ## Solar
 
 You can set the IP address of your SolarEdge inverter. This uses MODBUS (TCP port 1502) to get key data which is constructed in to a JSON object, with fields such as `$SOLAR.power`, `$SOLAR.today`, etc.
