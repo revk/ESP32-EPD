@@ -1192,7 +1192,20 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       return r;
    }
    if (!strcasecmp (c, "WEATHER"))
+   {
+      if (colon && !strcmp (colon, "128") && jo_find (weather, dot))
+      {                         // Fudge weather
+         char *i = jo_strdup (weather);
+         if (i)
+         {
+            char *s = strstr (i, "64x64");
+            asprintf (&r, "%.*s128x128%s", (int) (s - i), i, s + 5);
+            free (i);
+            return r;
+         }
+      }
       return dollar_json (weather, dot, colon);
+   }
    if (!strcasecmp (c, "SOLAR"))
       return dollar_json (solar, dot, colon);
    if (!strncasecmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && !c[5] && c[4] > '0'
