@@ -540,6 +540,7 @@ static const char *
 pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
 {
    plot_t *p = opaque;
+   // TODO colour GFX
    if (a & 0x8000)
       gfx_pixel (p->ox + x, p->oy + y, (r / 3 + g / 3 + b / 3) / 256);
    return NULL;
