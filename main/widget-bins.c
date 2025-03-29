@@ -256,7 +256,7 @@ widget_bins (uint16_t s, const char *c)
          }
          if (bottom)
             showday ();
-         setlights (now < clear && leds < now ? led : NULL);
+         setlights (leds < now ? led : NULL);
       }
       // Cleanup
       while (icons)
@@ -270,6 +270,7 @@ widget_bins (uint16_t s, const char *c)
       }
       free (base);
       free (led);
-   }
+   } else
+      setlights (NULL);
    jo_free (&j);
 }
