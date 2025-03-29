@@ -1610,8 +1610,8 @@ app_main ()
          free (url);
          if (w && w->data && w->json)
          {
-            if (w->cache > up + 3600)
-               w->cache = up + 3600;
+            if (w->cache > up + 60)
+               w->cache = up + 60; // 1000000/month accesses on free tariff!
             jo_t j = jo_parse_mem (w->data, w->size);
             if (j)
             {
