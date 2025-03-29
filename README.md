@@ -56,7 +56,7 @@ Using `${variable}` you can append the variable name with.
 |`SNMPDESC`|Description reported from SNMP poll|
 |`SNMPFBVER`|FireBrick version from description reported from SNMP poll|
 |`SNMPUPTIME`|Uptime reported from SNMP poll|
-|`WEATHER`|Extract a field from weather api response JSON, suffix `:128` finds `64x64` and replaces with `128x128`|
+|`WEATHER`|Extract a field from weather api response JSON, suffix `:128` finds `64x64` and replaces with `128x128`, e.g. `https:${WEATHER.current.condition.icon:128}`|
 |`SOLAR`|Extract a field from SolareEdge MODBUS TCP collection generated JSON|
 |`MQTTn`|Extract a field from JSON payload payload on subscribed MQTT (`jsonsub`)|
 
