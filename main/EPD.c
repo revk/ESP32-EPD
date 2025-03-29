@@ -219,21 +219,18 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    if (!strcasecmp (suffix, "weather"))
    {
       jo_t j = jo_copy (weather);
-      revk_info (suffix, &j);
-      return "";
+      return revk_info (suffix, &j) ? : "";
    }
    if (!strncasecmp (suffix, "mqtt", 4) && isdigit ((int) (uint8_t) suffix[4]) && !suffix[5] && suffix[4] > '0'
        && suffix[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
    {
       jo_t j = jo_copy (mqttjson[suffix[4] - '1']);
-      revk_info (suffix, &j);
-      return "";
+      return revk_info (suffix, &j) ? : "";
    }
    if (!strcasecmp (suffix, "solar"))
    {
       jo_t j = jo_copy (solar);
-      revk_info (suffix, &j);
-      return "";
+      return revk_info (suffix, &j) ? : "";
    }
    if (!strcmp (suffix, "setting"))
    {
@@ -1604,9 +1601,9 @@ app_main ()
       {                         // Weather
          char *url;
          if (*postown)
-            asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%s", weatherapi, postown);
+            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
          else
-            asprintf (&url, "http://api.weatherapi.com/v1/current.json?key=%s&q=%f,%f", weatherapi,
+            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
                       (float) poslat / 10000000, (float) poslon / 1000000);
          file_t *w = download (url, NULL);
          ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
