@@ -1234,6 +1234,32 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    return r;
 }
 
+const char *
+dollar_check (const char *c, const char *tag)
+{                               // Check if dollar tag present - allow any suffix
+   while ((c = strchr (c, '$')))
+   {
+      c++;
+      if (*c == '$')
+         c++;
+      else
+      {
+         if (*c == '{')
+         {
+            c++;
+            if (!strncasecmp (c, tag, strlen (tag)))
+               return c;
+            while (*c && *c != '}')
+               c++;
+            continue;
+         }
+         if (!strncasecmp (c, tag, strlen (tag)))
+            return c;
+      }
+   }
+   return NULL;
+}
+
 char *
 dollars (char *c, time_t now)
 {                               // Check c for $ expansion, return c, or malloc'd replacement
@@ -1818,26 +1844,26 @@ revk_web_extra (httpd_req_t * req, int page)
       add (p, "widgetc");
 
    // Extra fields
-   if (strcasestr (c, "${WEATHER"))
+   const char *found;
+   if ((found = dollar_check (c, "WEATHER")))
    {
       revk_web_setting (req, NULL, "weatherapi");
       revk_web_setting (req, NULL, "postown");
    }
-   if (strcasestr (c, "${WEATHER") || strcasestr (c, "$SUNSET") || strcasestr (c, "${SUNSET") || strcasestr (c, "$SUNRISE")
-       || strcasestr (c, "${SUNRISE"))
+   if (found || dollar_check (c, "SUN"))
    {
       revk_web_setting (req, NULL, "poslat");
       revk_web_setting (req, NULL, "poslon");
    }
-   if (strcasestr (c, "$WIFI") || strcasestr (c, "$SSID"))
+   if ((found = dollar_check (c, "WIFI")) || dollar_check (c, "SSID"))
       revk_web_setting (req, NULL, "qrssid");
-   if (strcasestr (c, "$WIFI") || strcasestr (c, "$PASS"))
+   if (found || dollar_check (c, "PASS"))
       revk_web_setting (req, NULL, "qrpass");
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE && strchr (c, '*'))
       revk_web_setting (req, NULL, "seasoncode");
-   if (strcasestr (c, "$COUNTDOWN"))
+   if (dollar_check (c, "COUNTDOWN"))
       revk_web_setting (req, NULL, "refdate");
-   if (strcasestr (c, "$SNMP"))
+   if (dollar_check (c, "SNMP"))
       revk_web_setting (req, NULL, "snmphost");
 
    // Notes
