@@ -20,6 +20,10 @@ This code is much more generic, allowing a number of *widgets* to be applied to 
 
 A number of PCBs designs are included. The most work on this code as been done using the `EPD75` (mono) display. It will need more work for colour OLED displays and black/white/red e-paper.
 
+## LEDs
+
+You can set LED by `command/EPD/rgb` and a string of LED colour letters.
+
 ## Widgets
 
 Each widget has basic settings with *type*, and position (*x*/*y*), and alignment (*left*/*centre*/*right* and *top*/*middle*/*bottom*) and the *size* of the widget, and, of course a *content* setting. Some widgets may reference other settings as well in the way they work.
