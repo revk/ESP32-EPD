@@ -1178,7 +1178,7 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    if (!strncasecmp (c, "MOONPHASE", 9))
    {
       int n = atoi (c + 9) ? : 360;
-      asprintf (&r, "%d", (revk_moon_phase (now) * n + 180 / n) / 360 % n);
+      asprintf (&r, "%d", (revk_moon_phase (now) * n + 180) / 360 % n);
       return r;
    }
    if (!strcasecmp (c, "DEFCON"))
