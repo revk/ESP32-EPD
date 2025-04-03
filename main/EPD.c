@@ -1825,7 +1825,9 @@ revk_web_extra (httpd_req_t * req, int page)
    const char *p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
       p = "Font size<br>(_ prefix for descenders, | for light)";
-   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS)
+      p = "Font size (_ prefix for . small)";
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
       p = "Font size";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_HLINE)
       p = "Line width";
