@@ -1713,7 +1713,10 @@ app_main ()
                gfx_pos_t s = widgets[w] & 0xFFF;
                if (!s)
                   s = 4;
-               gfx_7seg (s, "%s", c);
+	       uint8_t flags=0;
+               if (s & 0x8000)
+                  flags |= GFX_7SEG_SMALL_DOT;
+               gfx_7seg (flags,s, "%s", c);
             }
             break;
          case REVK_SETTINGS_WIDGETT_IMAGE:
