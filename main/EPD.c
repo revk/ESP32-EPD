@@ -1710,14 +1710,15 @@ app_main ()
          case REVK_SETTINGS_WIDGETT_DIGITS:
             if (*c)
             {
-               gfx_pos_t s = widgets[w] & 0xFFF;
-               if (!s)
-                  s = 4;
+               gfx_pos_t s = widgets[w];
                uint8_t flags = 0;
                if (s & 0x8000)
                   flags |= GFX_7SEG_SMALL_DOT;
                if (s & 0x4000)
                   flags |= GFX_7SEG_SMALL_COLON;
+               s &= 0xFFF;
+               if (!s)
+                  s = 4;
                gfx_7seg (flags, s, "%s", c);
             }
             break;
