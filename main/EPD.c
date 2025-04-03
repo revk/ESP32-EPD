@@ -1611,7 +1611,7 @@ app_main ()
          if (w && w->data && w->json)
          {
             if (w->cache > up + 60)
-               w->cache = up + 60; // 1000000/month accesses on free tariff!
+               w->cache = up + 60;      // 1000000/month accesses on free tariff!
             jo_t j = jo_parse_mem (w->data, w->size);
             if (j)
             {
@@ -1713,10 +1713,12 @@ app_main ()
                gfx_pos_t s = widgets[w] & 0xFFF;
                if (!s)
                   s = 4;
-	       uint8_t flags=0;
+               uint8_t flags = 0;
                if (s & 0x8000)
                   flags |= GFX_7SEG_SMALL_DOT;
-               gfx_7seg (flags,s, "%s", c);
+               if (s & 0x4000)
+                  flags |= GFX_7SEG_SMALL_COLON;
+               gfx_7seg (flags, s, "%s", c);
             }
             break;
          case REVK_SETTINGS_WIDGETT_IMAGE:
