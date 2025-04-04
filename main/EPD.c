@@ -44,6 +44,7 @@ static struct
 } volatile b = { 0 };
 
 volatile uint32_t override = 0;
+volatile char *overrideimage = NULL;
 
 jo_t weather = NULL;
 jo_t solar = NULL;
@@ -216,6 +217,14 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    if (client || !prefix || target || strcmp (prefix, topiccommand) || !suffix)
       return NULL;
    // Not for us or not a command from main MQTT
+   if (!strcasecmp (suffix, "override") && *value)
+   {
+      char *was = (void *) overrideimage;
+      overrideimage = NULL;
+      free (was);
+      overrideimage = strdup (value);
+      return "";
+   }
    if (!strcasecmp (suffix, "weather"))
    {
       jo_t j = jo_copy (weather);
@@ -445,7 +454,7 @@ download (char *url, const char *suffix)
             s++;
          asprintf (&fn, "%s/%s", sd_mount, s);
          char *q = fn + sizeof (sd_mount);
-         while (*q && isalnum ((int) (uint8_t) * q))
+         while (*q && (isalnum ((int) (uint8_t) * q) || *q == '_' || *q == '-'))
             q++;
          if (*q == '.')
          {
@@ -1578,6 +1587,24 @@ app_main ()
             free (qr2);
          }
       }
+      if (overrideimage)
+      {
+         char *was = (void *) overrideimage;
+         overrideimage = NULL;
+         if (was)
+         {
+            file_t *i = download (was, ".png");
+            if (i && i->w)
+            {
+               epd_lock ();
+               gfx_clear (0);
+               plot (i, gfx_width () / 2 - i->w / 2, gfx_height () / 2 - i->h / 2);
+               epd_unlock ();
+               override = up + 60;
+            }
+            free (was);
+         }
+      }
       if (override)
       {
          if (override < up)
@@ -1750,7 +1777,6 @@ app_main ()
                     oy;
                   gfx_draw (i->w, i->h, 0, 0, &ox, &oy);
                   plot (i, ox, oy);
-
                }
             }
             break;

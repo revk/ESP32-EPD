@@ -24,6 +24,10 @@ A number of PCBs designs are included. The most work on this code as been done u
 
 You can set LED by `command/EPD/rgb` and a string of LED colour letters.
 
+## Override
+
+You can send `comamnd/EPD/override` with a URL or image file name to override the display for 60 seconds.
+
 ## Widgets
 
 Each widget has basic settings with *type*, and position (*x*/*y*), and alignment (*left*/*centre*/*right* and *top*/*middle*/*bottom*) and the *size* of the widget, and, of course a *content* setting. Some widgets may reference other settings as well in the way they work.
