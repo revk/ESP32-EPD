@@ -220,6 +220,8 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    if (!strcasecmp (suffix, "override") && *value)
    {
       char *was = (void *) overrideimage;
+      if (was)
+         return "Too quick";
       overrideimage = NULL;
       free (was);
       overrideimage = strdup (value);
@@ -1598,6 +1600,7 @@ app_main ()
             {
                epd_lock ();
                gfx_clear (0);
+               gfx_refresh ();
                plot (i, gfx_width () / 2 - i->w / 2, gfx_height () / 2 - i->h / 2);
                epd_unlock ();
                override = up + 60;
