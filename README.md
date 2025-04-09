@@ -84,7 +84,7 @@ Extra flags can be added to the size.
 |----|-------|
 |`_`|Allow space for descenders|
 |`|`|Lighter stroke|
-|`/`|Italic|
+|`/`|Italic (this is best when using colour displays as anti-aliased)|
 
 ### Blocky
 
@@ -111,7 +111,7 @@ Extra flags can be added to the size.
 |----|-------|
 |`_`|Smaller digits after `.`|
 |`|`|Smaller digits after `:`|
-|`/`|Italic|
+|`/`|Italic (this is best when using colour displays as anti-aliased)|
 
 ### Image
 
@@ -133,7 +133,7 @@ Extra flags can be added to the size. The size is normally total pixel size and 
 |----|-------|
 |`_`|Size is unit size not overall size|
 |`|`|Plot without quiet zone|
-|`/`|Special (no standard) QR with dots - better when larger QR|
+|`/`|Special (non standard) QR with dots - better when larger QR|
 
 ### HLine/VLine
 

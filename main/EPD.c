@@ -103,12 +103,18 @@ gfx_qr (const char *value, uint16_t max)
    int d = (max - width * s) / 2;
    ox += d;
    oy += d;
-   int s2 = (s / 2) * (s / 2);
+   int s2 = s * s;
+   if (s < 3)
+      special = 0;
+   if (s >= 3)
+      s2--;
+   if (s >= 8)
+      s2--;
    for (int y = 0; y < width; y++)
       for (int x = 0; x < width; x++)
       {
          uint8_t b = qr[width * y + x];
-         if (!special || !(b & QR_TAG_BLACK) || (b & QR_TAG_FIXED))
+         if (!special || !(b & QR_TAG_BLACK) || (b & QR_TAG_TARGET))
             for (int dy = 0; dy < s; dy++)      // box
                for (int dx = 0; dx < s; dx++)
                   gfx_pixel (ox + x * s + dx, oy + y * s + dy, b & QR_TAG_BLACK ? 0xFF : 0);
@@ -116,7 +122,7 @@ gfx_qr (const char *value, uint16_t max)
             for (int dy = 0; dy < s; dy++)      // dot
                for (int dx = 0; dx < s; dx++)
                   gfx_pixel (ox + x * s + dx, oy + y * s + dy,
-                             ((s / 2 - dy) * (s / 2 - dy) + (s / 2 - dx) * (s / 2 - dx) < s2) ? 255 : 0);
+                             ((dx * 2 + 1 - s) * (dx * 2 + 1 - s) + (dy * 2 + 1 - s) * (dy * 2 + 1 - s) < s2) ? 255 : 0);
       }
    free (qr);
 #endif
