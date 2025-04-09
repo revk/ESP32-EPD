@@ -78,6 +78,14 @@ A wide range of accented characters are supported based on Mullard SAA5050 telet
 
 In future I may add red text as an option for KWR displays.
 
+Extra flags can be added to the size.
+
+|Flag|Meaning|
+|----|-------|
+|`_`|Allow space for descenders|
+|`|`|Lighter stroke|
+|`/`|Italic|
+
 ### Blocky
 
 Same as `text` but blocky (pixel based) characters.
@@ -97,7 +105,13 @@ Only a single line is handled, and a limited character set:
 
 Whilst vector based text allows any size, the 7 segment logic currently allows sizes up to 20, which allows 2 digits, colon, and 2 digits to just fit within 480 pixels width on a 7.5" e-paper panel in portrait. 
 
-Extra flags (`_` and `|`) allow for smaller text after a `.` or `:`, ideal for temperatures with a decimal place
+Extra flags can be added to the size.
+
+|Flag|Meaning|
+|----|-------|
+|`_`|Smaller digits after `.`|
+|`|`|Smaller digits after `:`|
+|`/`|Italic|
 
 ### Image
 
@@ -111,7 +125,15 @@ In future I hope to isolate black, white, and red for KWR displays.
 
 ### QR
 
-The content is content of QR code. The size is normally the overall size in pixels, with the QR scaled to fit within that. There is also a tag to say size is pixel size (pixels per QR unit block). There is an option to not have the standard 4 unit border.
+The content is content of QR code. The size is normally the overall size in pixels, with the QR scaled to fit within that. There is also a tag to say size is pixel size (pixels per QR unit block). 
+
+Extra flags can be added to the size. The size is normally total pixel size and QR is largest that can uniformly fit in that size.
+
+|Flag|Meaning|
+|----|-------|
+|`_`|Size is unit size not overall size|
+|`|`|Plot without quiet zone|
+|`/`|Special (no standard) QR with dots - better when larger QR|
 
 ### HLine/VLine
 

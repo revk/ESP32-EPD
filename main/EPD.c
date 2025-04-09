@@ -78,6 +78,9 @@ gfx_qr (const char *value, uint16_t max)
    uint8_t *qr = qr_encode (strlen (value), value,.widthp = &width,.noquiet = (max & 0x4000 ? 1 : 0));
    if (!qr)
       return "Failed to encode";
+   uint8_t special = 0;
+   if (max & 0x2000)
+      special = 1;
    if (max & 0x8000)
       max = width * (max & 0xFFF);
    max &= 0xFFF;
@@ -100,11 +103,21 @@ gfx_qr (const char *value, uint16_t max)
    int d = (max - width * s) / 2;
    ox += d;
    oy += d;
+   int s2 = (s / 2) * (s / 2);
    for (int y = 0; y < width; y++)
       for (int x = 0; x < width; x++)
-         for (int dy = 0; dy < s; dy++)
-            for (int dx = 0; dx < s; dx++)
-               gfx_pixel (ox + x * s + dx, oy + y * s + dy, qr[width * y + x] & QR_TAG_BLACK ? 0xFF : 0);
+      {
+         uint8_t b = qr[width * y + x];
+         if (!special || !(b & QR_TAG_BLACK) || (b & QR_TAG_FIXED))
+            for (int dy = 0; dy < s; dy++)      // box
+               for (int dx = 0; dx < s; dx++)
+                  gfx_pixel (ox + x * s + dx, oy + y * s + dy, b & QR_TAG_BLACK ? 0xFF : 0);
+         else
+            for (int dy = 0; dy < s; dy++)      // dot
+               for (int dx = 0; dx < s; dx++)
+                  gfx_pixel (ox + x * s + dx, oy + y * s + dy,
+                             ((s / 2 - dy) * (s / 2 - dy) + (s / 2 - dx) * (s / 2 - dx) < s2) ? 255 : 0);
+      }
    free (qr);
 #endif
    return NULL;
