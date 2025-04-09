@@ -1716,6 +1716,8 @@ app_main ()
                   flags |= GFX_TEXT_DESCENDERS;
                if (s & 0x4000)
                   flags |= GFX_TEXT_LIGHT;
+               if (s & 0x2000)
+                  flags |= GFX_TEXT_ITALIC;
                s &= 0xFFF;
                if (!s)
                   s = 5;
@@ -1731,6 +1733,8 @@ app_main ()
                   flags |= GFX_TEXT_DESCENDERS;
                if (s & 0x4000)
                   flags |= GFX_TEXT_LIGHT;
+               if (s & 0x2000)
+                  flags |= GFX_TEXT_ITALIC;
                s &= 0xFFF;
                if (!s)
                   s = 4;
@@ -1746,6 +1750,8 @@ app_main ()
                   flags |= GFX_7SEG_SMALL_DOT;
                if (s & 0x4000)
                   flags |= GFX_7SEG_SMALL_COLON;
+               if (s & 0x2000)
+                  flags |= GFX_7SEG_ITALIC;
                s &= 0xFFF;
                if (!s)
                   s = 4;
@@ -1854,9 +1860,9 @@ revk_web_extra (httpd_req_t * req, int page)
    const char *c = widgetc[page - 1];
    const char *p = NULL;
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
-      p = "Font size<br>(_ prefix for descenders, | for light)";
+      p = "Font size<br>(_ prefix for descenders, | for light, / for italic)";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS)
-      p = "Font size (_ prefix for . small)";
+      p = "Font size (_ prefix for . small, / for italic)";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
       p = "Font size";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_HLINE)
