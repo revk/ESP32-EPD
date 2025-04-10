@@ -1815,7 +1815,7 @@ app_main ()
 #else
          gfx_foreground (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 0 : 0xFFFFFF);
          gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL
-                         || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 0 : 0xFFFFFF);
+                         || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 0xFFFFFF : 0);
 #endif
          // Content substitutions
          char *c = dollars (widgetc[w], now);
