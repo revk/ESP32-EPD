@@ -623,7 +623,7 @@ web_root (httpd_req_t * req)
    revk_web_send (req, "<p>");
    int32_t w = gfx_width ();
    int32_t h = gfx_height ();
-#define	DIV 2
+   int DIV = gfx_width () / 200 ? : 1;
    revk_web_send (req, "<div style='display:inline-block;width:%dpx;height:%dpx;margin:5px;border:10px solid %s;border-%s:%dpx solid %s;'><img width=%d height=%d src='frame.png' style='transform:",   //
                   w / DIV, h / DIV,     //
 #ifdef	GFX_LCD
