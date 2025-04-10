@@ -44,7 +44,7 @@ Using `${variable}` you can append the variable name with.
 
 |Variable|Meaning|
 |------|-------|
-|`TIME`|Current time `HH:MM`|
+|`TIME`|Current time (`HH:MM` for epaper, `HH:MM:SS` otherwise)|
 |`DATE`|Current date `YYYY-MM-DD`|
 |`DAY`|Current day, e.g. `WEDNESDAY` (this is not strftime based)|
 |`SEASON`|Seasonal character code, e.g. `E` for Easter - is the primary season code at current time|

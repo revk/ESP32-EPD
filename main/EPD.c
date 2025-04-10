@@ -1235,7 +1235,13 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    if (!strcasecmp (c, "SEASONS"))
       return strdup (revk_season (time (0)));
    if (!strcasecmp (c, "TIME"))
-      return dollar_time (now, colon ? : "%H:%M");
+      return dollar_time (now, colon ? :
+#ifdef	GFX_EPDD
+                          "%H:%M"
+#else
+                          "%T"
+#endif
+         );
    if (!strcasecmp (c, "DATE"))
       return dollar_time (now, colon ? : "%F");
    if (!strcasecmp (c, "DAY"))
