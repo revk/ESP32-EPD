@@ -1,8 +1,10 @@
 #define	WIDGETS		CONFIG_REVK_WEB_EXTRA_PAGES
 
-gpio	rgb		2				// RGB GPIO
+gpio	rgb		2				// RGB
+
 gpio	gfx.pwr						// Display power
 gpio	gfx.ena						// Display ENA
+gpio	gfx.bl						// Display Backlight
 gpio	gfx.mosi	40				// Display MOSI
 gpio	gfx.sck		39				// Display SCK
 gpio	gfx.cs		38				// Display CS
