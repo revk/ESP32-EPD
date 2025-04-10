@@ -1,4 +1,4 @@
-# General E-paper signage
+# General E-paper/OLED/LCD signage
 
 ## Trademark
 
@@ -10,7 +10,7 @@ This code works with many E-paper panels, but I have bought up some really nice 
 
 # ESP32-EPD
 
-<img src='PCB/EPD75/EPD75.png' align=right width=25%>This uses me [ESP32-GFX](https://github.com/revk/ESP32-GFX) library and provides a general E-paper (and some OLED) sign with a configurable selection of *widgets*.
+<img src='PCB/EPD75/EPD75.png' align=right width=25%>This uses my [ESP32-GFX](https://github.com/revk/ESP32-GFX) library and provides a general E-paper, OLED, and LCD, sign with a configurable selection of *widgets*.
 
 *This is the new version of my `EPDSign` code which had a few options (clock, date, day, wifi and QR, background images, etc). Please upgrade to this as EPD-SIGN is no longer maintained.*
 

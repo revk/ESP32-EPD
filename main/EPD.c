@@ -633,7 +633,7 @@ web_root (httpd_req_t * req)
 #endif
                   gfxflip & 4 ? gfxflip & 2 ? "left" : "right" : gfxflip & 2 ? "top" : "bottom",        //
 #ifdef	GFX_LCD
-                  10, "black", 10,      //
+                  10, "black",  //
 #else
                   20, gfxinvert ? "black" : "white",    //
 #endif
@@ -690,14 +690,21 @@ web_frame (httpd_req_t * req)
    {                            // Black/White/Red
 #if 0
       // TODO
-      lwpng_encode_t *p = lwpng_encode_2bit (w, h, &my_alloc, &my_free, NULL);
-      if (b)
-         while (h--)
-         {
-            lwpng_encode_scanline (p, b);
-            b += (w + 7) / 4;
-         }
-      e = lwpng_encoded (&p, &len, &png);
+      uint8_t *buf = mallocspi (w * 3);
+      if (!buf)
+         e = "malloc";
+      else
+      {
+         lwpng_encode_t *p = lwpng_encode_2bit (w, h, &my_alloc, &my_free, NULL);
+         if (b)
+            while (h--)
+            {
+               lwpng_encode_scanline (p, b);
+               b += (w + 7) / 4;
+            }
+         e = lwpng_encoded (&p, &len, &png);
+         free (buf);
+      }
 #else
       e = "No 2 bit coding yet";
 #endif
