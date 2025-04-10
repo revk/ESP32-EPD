@@ -567,9 +567,13 @@ static const char *
 pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
 {
    plot_t *p = opaque;
-   // TODO colour GFX
-   if (a & 0x8000)
-      gfx_pixel (p->ox + x, p->oy + y, (r / 3 + g / 3 + b / 3) / 256);
+   if (!(a & 0x8000))
+      return NULL;
+#ifdef GFX_COLOUR
+   gfx_pixel_colour (p->ox + x, p->oy + y, ((r >> 8) << 16) | ((g >> 8) << 8) | (b >> 8));
+#else
+   gfx_pixel (p->ox + x, p->oy + y, (r / 3 + g / 3 + b / 3) / 256);
+#endif
    return NULL;
 }
 
@@ -620,11 +624,19 @@ web_root (httpd_req_t * req)
    int32_t w = gfx_width ();
    int32_t h = gfx_height ();
 #define	DIV 2
-   revk_web_send (req, "<div style='display:inline-block;width:%dpx;height:%dpx;margin:5px;border:10px solid %s;border-%s:20px solid %s;'><img width=%d height=%d src='frame.png' style='transform:",   //
+   revk_web_send (req, "<div style='display:inline-block;width:%dpx;height:%dpx;margin:5px;border:10px solid %s;border-%s:%dpx solid %s;'><img width=%d height=%d src='frame.png' style='transform:",   //
                   w / DIV, h / DIV,     //
+#ifdef	GFX_LCD
+                  "black",      //
+#else
                   gfxinvert ? "black" : "white",        //
+#endif
                   gfxflip & 4 ? gfxflip & 2 ? "left" : "right" : gfxflip & 2 ? "top" : "bottom",        //
-                  gfxinvert ? "black" : "white",        //
+#ifdef	GFX_LCD
+                  10, "black", 10,      //
+#else
+                  20, gfxinvert ? "black" : "white",    //
+#endif
                   gfx_raw_w () / DIV, gfx_raw_h () / DIV        //
       );
    if (gfxflip & 4)
@@ -663,14 +675,73 @@ web_frame (httpd_req_t * req)
    uint32_t h = gfx_raw_h ();
    uint8_t *b = gfx_raw_b ();
    ESP_LOGD (TAG, "Encode W=%lu H=%lu", w, h);
-   lwpng_encode_t *p = lwpng_encode_1bit (w, h, &my_alloc, &my_free, NULL);
-   if (b)
-      while (h--)
+   const char *e = NULL;
+   if (gfx_bpp () == 1)
+   {
+      lwpng_encode_t *p = lwpng_encode_1bit (w, h, &my_alloc, &my_free, NULL);
+      if (b)
+         while (h--)
+         {
+            lwpng_encode_scanline (p, b);
+            b += (w + 7) / 8;
+         }
+      e = lwpng_encoded (&p, &len, &png);
+   } else if (gfx_bpp () == 2)
+   {                            // Black/White/Red
+#if 0
+      // TODO
+      lwpng_encode_t *p = lwpng_encode_2bit (w, h, &my_alloc, &my_free, NULL);
+      if (b)
+         while (h--)
+         {
+            lwpng_encode_scanline (p, b);
+            b += (w + 7) / 4;
+         }
+      e = lwpng_encoded (&p, &len, &png);
+#else
+      e = "No 2 bit coding yet";
+#endif
+   } else if (gfx_bpp () == 8)
+   {                            // Grey
+      lwpng_encode_t *p = lwpng_encode_grey (w, h, &my_alloc, &my_free, NULL);
+      if (b)
+         while (h--)
+         {
+            lwpng_encode_scanline (p, b);
+            b += w;
+         }
+      e = lwpng_encoded (&p, &len, &png);
+   } else if (gfx_bpp () == 16)
+   {                            // RGB packed
+      uint8_t *buf = mallocspi (w * 3);
+      if (!buf)
+         e = "malloc";
+      else
       {
-         lwpng_encode_scanline (p, b);
-         b += (w + 7) / 8;
+         lwpng_encode_t *p = lwpng_encode_rgb (w, h, &my_alloc, &my_free, NULL);
+         if (b)
+            while (h--)
+            {
+               for (int x = 0; x < w; x++)
+               {
+                  uint16_t v = (b[x * 2 + 0] << 8) | b[x * 2 + 1];
+                  uint8_t r = (v >> 11) << 3;
+                  r += (r >> 5);
+                  uint8_t g = ((v >> 5) & 0x3F) << 2;
+                  g += (g >> 6);
+                  uint8_t b = (v & 0x1F) << 3;
+                  b += (b >> 5);
+                  buf[x * 3 + 0] = r;
+                  buf[x * 3 + 1] = g;
+                  buf[x * 3 + 2] = b;
+               }
+               lwpng_encode_scanline (p, buf);
+               b += w * 2;
+            }
+         e = lwpng_encoded (&p, &len, &png);
+         free (buf);
       }
-   const char *e = lwpng_encoded (&p, &len, &png);
+   }
    ESP_LOGD (TAG, "Encoded %u bytes %s", len, e ? : "");
    if (e)
    {
@@ -1409,8 +1480,7 @@ app_main ()
    {
       register_get_uri ("/", web_root);
 #ifdef	CONFIG_LWPNG_ENCODE
-      if (gfx_bpp () == 1)
-         register_get_uri ("/frame.png", web_frame);
+      register_get_uri ("/frame.png", web_frame);
 #endif
       revk_web_settings_add (webserver);
    }
@@ -1508,11 +1578,14 @@ app_main ()
       flash ();
    showlights ("");
    uint32_t fresh = 0;
-   uint32_t min = 0;
+   uint32_t last = 0;
    while (!revk_shutting_down (NULL))
    {
-      usleep (100000);
-      time_t now = time (0) + 2;        // Ahead for EPD
+      usleep (10000);
+      time_t now = time (0);
+#ifdef	GFX_EPD
+      now += 2;                 // Slow update
+#endif
       if (now < 1000000000)
          now = 0;
       uint32_t up = uptime ();
@@ -1537,7 +1610,10 @@ app_main ()
             char temp[32];
             char *qr1 = NULL,
                *qr2 = NULL;
-            p += sprintf (p, "[_6]%.16s/%.16s/[3]%s %s/", appname, hostname, revk_version, revk_build_date (temp) ? : "?");
+            uint8_t s = gfx_width () / 160 ? : 1;
+            p +=
+               sprintf (p, "[_%d]%.16s/%.16s/[%d]%s %s/", s * 2, appname, hostname, s, revk_version,
+                        revk_build_date (temp) ? : "?");
             if (sta_netif)
             {
                wifi_ap_record_t ap = {
@@ -1546,15 +1622,17 @@ app_main ()
                if (*ap.ssid)
                {
                   override = up + startup;
-                  p += sprintf (p, "[3] /[6]WiFi/[_6|]%.32s/[3] /Channel %d/RSSI %d/", (char *) ap.ssid, ap.primary, ap.rssi);
+                  p +=
+                     sprintf (p, "[%d] /[%d]WiFi/[_|]%.32s/[%d] /Channel %d/RSSI %d/", s, s * 2, (char *) ap.ssid, s, ap.primary,
+                              ap.rssi);
                   char ip[40];
                   if (revk_ipv4 (ip))
                   {
-                     p += sprintf (p, "[6] /IPv4/[|]%s/", ip);
+                     p += sprintf (p, "[%d] /IPv4/[|]%s/", s * 2, ip);
                      asprintf (&qr2, "http://%s/", ip);
                   }
                   if (revk_ipv6 (ip))
-                     p += sprintf (p, "[6] /IPv6/[2|]%s/", ip);
+                     p += sprintf (p, "[%d] /IPv6/[%d|]%s/", s * 2, s - 1 ? : 1, ip);
                }
             }
             if (!override && ap_netif)
@@ -1563,7 +1641,7 @@ app_main ()
                if (len)
                {
                   override = up + (aptime ? : 600);
-                  p += sprintf (p, "[3] /[6]WiFi[_3|]%.*s/", len, temp);
+                  p += sprintf (p, "[%d] /[%d]WiFi/[_%d|]%.*s/", s, s * 2, s, len, temp);
                   if (*appass)
                      asprintf (&qr1, "WIFI:S:%.*s;T:WPA2;P:%s;;", len, temp, appass);
                   else
@@ -1572,7 +1650,7 @@ app_main ()
                      esp_netif_ip_info_t ip;
                      if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
                      {
-                        p += sprintf (p, "[6] /IPv4/[|]" IPSTR "/ /", IP2STR (&ip.ip));
+                        p += sprintf (p, "[%d] /IPv4/[|]" IPSTR "/ /", IP2STR (&ip.ip), s);
                         asprintf (&qr2, "http://" IPSTR "/", IP2STR (&ip.ip));
                      }
                   }
@@ -1581,8 +1659,8 @@ app_main ()
             if (override)
             {
                if (sdsize)
-                  p += sprintf (p, "/ /[2]SD free %lluG of %lluG/", sdfree / 1000000000ULL, sdsize / 1000000000ULL);
-               p += sprintf (p, "[3] /");
+                  p += sprintf (p, "/ /[%d]SD free %lluG of %lluG/", s - 1 ? : 1, sdfree / 1000000000ULL, sdsize / 1000000000ULL);
+               p += sprintf (p, "[%d] /", s);
                ESP_LOGE (TAG, "%s", msg);
                epd_lock ();
                gfx_message (msg);
@@ -1630,13 +1708,18 @@ app_main ()
       if (override)
       {
          if (override < up)
-            min = override = 0;
+            last = override = 0;
          else
             continue;
       }
-      if (!b.startup || (now / 60 == min && !b.redraw))
+#ifdef	GFX_EPD
+      if (!b.startup || (now / 60 == last && !b.redraw))
          continue;              // Check / update every minute
-      min = now / 60;
+      last = now / 60;
+#else
+      if (!b.startup || (now == last && !b.redraw))
+         last = now;
+#endif
       season = *revk_season (now);
       if (*seasoncode)
          season = *seasoncode;
@@ -1719,9 +1802,14 @@ app_main ()
                y += gfx_height ();
             gfx_pos (x, y, a);
          }
-         gfx_colour (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 'K' : 'W');
-         gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 'W' : 'K');
-         //if (widgett[w] || *widgetc[w]) ESP_LOGE (TAG, "Widget %2d X=%03d Y=%03d A=%02X F=%c B=%c", w + 1, gfx_x (), gfx_y (), gfx_a (), gfx_f (), gfx_b ());
+#ifdef	GFX_COLOUR
+         gfx_background (gfx_rgb (*widgetb[w] ? : 'K'));
+         gfx_foreground (gfx_rgb (*widgetf[w] ? : 'W'));
+#else
+         gfx_foreground (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 0 : 0xFFFFFF);
+         gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL
+                         || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 0 : 0xFFFFFF);
+#endif
          // Content substitutions
          char *c = dollars (widgetc[w], now);
          switch (widgett[w])
@@ -1864,6 +1952,12 @@ revk_web_extra (httpd_req_t * req, int page)
    }
    revk_web_setting_title (req, "Widget settings %d", page);
    revk_web_setting_info (req, "This build is for a display %dx%d pixels", gfx_width (), gfx_height ());
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
+      revk_web_setting_info (req, "Font size allows _ for descenders, | for light, / for italics.");
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS)
+      revk_web_setting_info (req, "Font size allows _ for small after ., | for small after :, / for italics.");
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
+      revk_web_setting_info (req, "Size allows _ for unit size (else overall size), | for no quite zone, / for special.");
    void add (const char *pre, const char *tag)
    {
       char name[20];
@@ -1871,25 +1965,27 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting (req, pre, name);
    }
    add (NULL, "widgett");
+#ifdef	GFX_COLOUR
+   add (NULL, "widgetf");
+   add (NULL, "widgetb");
+#else
    add (NULL, "widgetk");
+#endif
    add (NULL, "widgeth");
    add (NULL, "widgetx");
    add (NULL, "widgetv");
    add (NULL, "widgety");
    const char *c = widgetc[page - 1];
    const char *p = NULL;
-   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS)
-      p = "Font size<br>(_ prefix for descenders, | for light, / for italic)";
-   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS)
-      p = "Font size (_ prefix for . small, / for italic)";
-   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS ||
+       widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
       p = "Font size";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_HLINE)
       p = "Line width";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_VLINE)
       p = "Line height";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
-      p = "Overall size<br>(_ prefix for unit size, | for no border)";
+      p = "Size";
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_IMAGE)
       add (p, "widgets");
    p = NULL;

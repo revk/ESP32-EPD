@@ -1,4 +1,10 @@
 #define	WIDGETS		CONFIG_REVK_WEB_EXTRA_PAGES
+#if defined(CONFIG_GFX_BUILD_SUFFIX_LCD24)
+#define	GFX_COLOUR
+#define	GFX_LCD
+#else
+#define	GFX_EPD
+#endif
 
 gpio	rgb		2				// RGB
 
@@ -44,7 +50,12 @@ s	baseurl		.live			// Default base URL
 u32	cachetime	300 .live		// Default cache for https
 
 enum	widget.t		.hide .live .array=WIDGETS .enums="Text,Blocks,Digits,Image,QR,HLine,VLine,Bins"		// Widget type
+#ifdef	GFX_COLOUR
+c1	widget.f		.hide .live .array=WIDGETS	// Foreground colour
+c1	widget.b		.hide .live .array=WIDGETS	// Background colour
+#else
 enum	widget.k		.hide .live .array=WIDGETS .enums="Normal,Invert,Mask,MaskInvert"	// Plot mode
+#endif
 s16	widget.x	240	.hide .live .array=WIDGETS			// X position (from left, or -ve from right)
 enum	widget.h	1	.hide .live .array=WIDGETS .enums="Left,Centre,Right,Prev"		// Horizontal align
 s16	widget.y	400	.hide .live .array=WIDGETS			// Y position (from top, or -ve from bottom)
