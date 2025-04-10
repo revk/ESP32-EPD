@@ -1444,7 +1444,7 @@ app_main ()
    }
    {
       revk_gpio_output (gfxpwr, 1);
-    const char *e = gfx_init (cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
+    const char *e = gfx_init (ena:gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
       if (e)
       {
          ESP_LOGE (TAG, "gfx %s", e);
