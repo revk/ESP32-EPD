@@ -570,7 +570,7 @@ pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b,
    if (!(a & 0x8000))
       return NULL;
 #ifdef GFX_COLOUR
-   gfx_pixel_colour (p->ox + x, p->oy + y, ((r >> 8) << 16) | ((g >> 8) << 8) | (b >> 8));
+   gfx_pixel_argb (p->ox + x, p->oy + y, ((a >> 8) << 24) | ((r >> 8) << 16) | ((g >> 8) << 8) | (b >> 8));
 #else
    gfx_pixel (p->ox + x, p->oy + y, (r / 3 + g / 3 + b / 3) / 256);
 #endif
@@ -624,6 +624,7 @@ web_root (httpd_req_t * req)
    int32_t w = gfx_width ();
    int32_t h = gfx_height ();
    int DIV = gfx_width () / 200 ? : 1;
+   uint8_t f=gfx_flip();
    revk_web_send (req, "<div style='display:inline-block;width:%dpx;height:%dpx;margin:5px;border:10px solid %s;border-%s:%dpx solid %s;'><img width=%d height=%d src='frame.png' style='transform:",   //
                   w / DIV, h / DIV,     //
 #ifdef	GFX_LCD
@@ -631,7 +632,7 @@ web_root (httpd_req_t * req)
 #else
                   gfxinvert ? "black" : "white",        //
 #endif
-                  gfxflip & 4 ? gfxflip & 2 ? "left" : "right" : gfxflip & 2 ? "top" : "bottom",        //
+                  f & 4 ? f & 2 ? "left" : "right" : f & 2 ? "top" : "bottom",        //
 #ifdef	GFX_LCD
                   10, "black",  //
 #else
@@ -639,10 +640,10 @@ web_root (httpd_req_t * req)
 #endif
                   gfx_raw_w () / DIV, gfx_raw_h () / DIV        //
       );
-   if (gfxflip & 4)
+   if (f & 4)
       revk_web_send (req, "translate(%dpx,%dpx)rotate(90deg)scale(1,-1)",       //
                      (w - h) / 2 / DIV, (h - w) / 2 / DIV);
-   revk_web_send (req, "scale(%d,%d);'></div>", gfxflip & 1 ? -1 : 1, gfxflip & 2 ? -1 : 1      //
+   revk_web_send (req, "scale(%d,%d);'></div>", f & 1 ? -1 : 1, f & 2 ? -1 : 1      //
       );
 #undef DIV
    revk_web_send (req, "</p><p><a href=/>Reload</a></p>");
@@ -653,7 +654,7 @@ web_root (httpd_req_t * req)
 #ifdef	GFX_COLOUR
 static gfx_colour_t
 contrast (gfx_colour_t c)
-{ // Black or white foreground
+{                               // Black or white foreground
    if ((((c >> 16) & 255) * 2 + ((c >> 8) & 255) * 3 + (c & 255)) >= 255 * 3)
       return 0;
    return 0xFFFFFF;
@@ -1745,7 +1746,8 @@ app_main ()
       last = now / 60;
 #else
       if (!b.startup || (now == last && !b.redraw))
-         last = now;
+         continue;
+      last = now;
 #endif
       season = *revk_season (now);
       if (*seasoncode)
