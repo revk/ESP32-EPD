@@ -567,13 +567,15 @@ static const char *
 pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
 {
    plot_t *p = opaque;
-   if (!(a & 0x8000))
-      return NULL;
-#ifdef GFX_COLOUR
-   gfx_pixel_argb (p->ox + x, p->oy + y, ((a >> 8) << 24) | ((r >> 8) << 16) | ((g >> 8) << 8) | (b >> 8));
-#else
-   gfx_pixel (p->ox + x, p->oy + y, (r / 3 + g / 3 + b / 3) / 256);
+#ifndef	GFX_COLOUR
+   if (gfxinvert)
+   { // Gets inverted to reverse before
+      r ^= 0xFFFF;
+      g ^= 0xFFFF;
+      b ^= 0xFFFF;
+   }
 #endif
+   gfx_pixel_argb (p->ox + x, p->oy + y, ((a >> 8) << 24) | ((r >> 8) << 16) | ((g >> 8) << 8) | (b >> 8));
    return NULL;
 }
 
@@ -624,7 +626,7 @@ web_root (httpd_req_t * req)
    int32_t w = gfx_width ();
    int32_t h = gfx_height ();
    int DIV = gfx_width () / 200 ? : 1;
-   uint8_t f=gfx_flip();
+   uint8_t f = gfx_flip ();
    revk_web_send (req, "<div style='display:inline-block;width:%dpx;height:%dpx;margin:5px;border:10px solid %s;border-%s:%dpx solid %s;'><img width=%d height=%d src='frame.png' style='transform:",   //
                   w / DIV, h / DIV,     //
 #ifdef	GFX_LCD
@@ -632,7 +634,7 @@ web_root (httpd_req_t * req)
 #else
                   gfxinvert ? "black" : "white",        //
 #endif
-                  f & 4 ? f & 2 ? "left" : "right" : f & 2 ? "top" : "bottom",        //
+                  f & 4 ? f & 2 ? "left" : "right" : f & 2 ? "top" : "bottom",  //
 #ifdef	GFX_LCD
                   10, "black",  //
 #else
@@ -643,7 +645,7 @@ web_root (httpd_req_t * req)
    if (f & 4)
       revk_web_send (req, "translate(%dpx,%dpx)rotate(90deg)scale(1,-1)",       //
                      (w - h) / 2 / DIV, (h - w) / 2 / DIV);
-   revk_web_send (req, "scale(%d,%d);'></div>", f & 1 ? -1 : 1, f & 2 ? -1 : 1      //
+   revk_web_send (req, "scale(%d,%d);'></div>", f & 1 ? -1 : 1, f & 2 ? -1 : 1  //
       );
 #undef DIV
    revk_web_send (req, "</p><p><a href=/>Reload</a></p>");
