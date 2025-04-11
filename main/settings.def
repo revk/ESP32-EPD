@@ -49,6 +49,10 @@ bit	fb.version		.live			// Assume SNMP desc is FireBrick, extract version
 s	baseurl		.live			// Default base URL
 u32	cachetime	300 .live		// Default cache for https
 
+#ifdef	GFX_COLOUR
+c1	background		.hide .live 		// Background colour
+#endif
+
 enum	widget.t		.hide .live .array=WIDGETS .enums="Text,Blocks,Digits,Image,QR,HLine,VLine,Bins"		// Widget type
 #ifdef	GFX_COLOUR
 c1	widget.f		.hide .live .array=WIDGETS	// Foreground colour

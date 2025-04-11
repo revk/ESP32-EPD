@@ -650,11 +650,26 @@ web_root (httpd_req_t * req)
    return revk_web_foot (req, 0, 1, NULL);
 }
 
+#ifdef	GFX_COLOUR
+static gfx_colour_t
+contrast (gfx_colour_t c)
+{ // Black or white foreground
+   if ((((c >> 16) & 255) * 2 + ((c >> 8) & 255) * 3 + (c & 255)) >= 255 * 3)
+      return 0;
+   return 0xFFFFFF;
+}
+#endif
+
 void
 epd_lock (void)
 {
    xSemaphoreTake (epd_mutex, portMAX_DELAY);
    gfx_lock ();
+#ifdef GFX_COLOUR
+   gfx_colour_t c = gfx_rgb (*background);
+   gfx_background (c);
+   gfx_foreground (contrast (c));
+#endif
 }
 
 void
@@ -674,7 +689,6 @@ web_frame (httpd_req_t * req)
    uint32_t w = gfx_raw_w ();
    uint32_t h = gfx_raw_h ();
    uint8_t *b = gfx_raw_b ();
-   ESP_LOGD (TAG, "Encode W=%lu H=%lu", w, h);
    const char *e = NULL;
    if (gfx_bpp () == 1)
    {
@@ -1816,8 +1830,8 @@ app_main ()
             gfx_pos (x, y, a);
          }
 #ifdef	GFX_COLOUR
-         gfx_background (gfx_rgb (*widgetb[w] ? : 'K'));
-         gfx_foreground (gfx_rgb (*widgetf[w] ? : 'W'));
+         gfx_background (gfx_rgb (*widgetb[w] ? : *background));
+         gfx_foreground (*widgetf[w] ? gfx_rgb (*widgetf[w]) : contrast (gfx_b ()));
 #else
          gfx_foreground (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL || widgetk[w] == REVK_SETTINGS_WIDGETK_MASK ? 0 : 0xFFFFFF);
          gfx_background (widgetk[w] == REVK_SETTINGS_WIDGETK_NORMAL
@@ -1953,7 +1967,11 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting_info (req,
                              "Background image at URL should be 1 bit per pixel raw data for the image. See <a href='https://github.com/revk/ESP32-RevK/blob/master/Manuals/Seasonal.md'>season code</a>.");
       revk_web_setting (req, "Startup", "startup");
+#ifdef	GFX_COLOUR
+      revk_web_setting (req, "Background", "background");
+#else
       revk_web_setting (req, "Image invert", "gfxinvert");
+#endif
       if (rgb.set && leds > 1)
       {
          revk_web_setting_title (req, "LEDs");

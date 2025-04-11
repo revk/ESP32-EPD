@@ -94,7 +94,7 @@ Same as `text` but blocky (pixel based) characters.
 
 Display content using classic 7 segment display format.
 
-This is ideal for `$DATE` and `$TIME`. It plots only the segments as black or white (see *mask* below), no overall background. The design allows 7 segment character parts to go on and off like a traditional LCD display. This helps reduce changes and unseamly *shadows* on an e-paper display and make for a clean transitions.
+This is ideal for `$DATE` and `$TIME`. For solid colour e-paper, this plots only the segments as black or white (see *mask* below), no overall background, otherwise the background is plotted as a box like text (unless mask).
 
 Only a single line is handled, and a limited character set:
 
@@ -201,6 +201,6 @@ Sending the `command/EPD/solar` returns current solar JSON as an `info` response
 
 For most widgets the *x*/*y* and *align* apply as expected. But there is also a mask/invert setting. It is also possible to set a widget relative to previous widget using a *prev* setting on the alignment.
 
-Invert simply swaps black/white.
+For solid colour e-paper, you can invert the plotting and set a mask. Invert simply swaps black/white. Mask means only plot for asserted colour - content of text or white in am image. However, when dealing with an *image* the mask is not sensible when the PNG image has alpha as that is used as mask. Depending on the display and `gfx.invert` properties images may need to be inverted.
 
-Mask means only plot for asserted colour - content of text or white in am image. However, when dealing with an *image* the mask is not sensible when the PNG image has alpha as that is used as mask. Depending on the display and `gfx.invert` properties images may need to be inverted.
+For anti-aliased displays the options are foreground and background colour. Text and digits plot a solid background box first. If no background set then the screen background is used. If no foreground set a contrast black/white is picked. If you set background and foreground the same this is a mask mode.
