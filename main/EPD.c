@@ -569,7 +569,7 @@ pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b,
    plot_t *p = opaque;
 #ifndef	GFX_COLOUR
    if (gfxinvert)
-   { // Gets inverted to reverse before
+   {                            // Gets inverted to reverse before
       r ^= 0xFFFF;
       g ^= 0xFFFF;
       b ^= 0xFFFF;
@@ -1589,6 +1589,7 @@ app_main ()
          ESP_LOGE (TAG, "SD Mounted %llu/%llu", sdfree, sdsize);
       }
    }
+#ifdef	GFX_EPD
    void flash (void)
    {                            // Random data
       uint32_t r = 0;
@@ -1606,8 +1607,8 @@ app_main ()
    }
    if (gfxflash)
       flash ();
+#endif
    showlights ("");
-   uint32_t fresh = 0;
    uint32_t last = 0;
    while (!revk_shutting_down (NULL))
    {
@@ -1786,18 +1787,21 @@ app_main ()
       }
       b.redraw = 0;
       // Image
+#ifdef	GFX_EPD
       if (gfxnight && t.tm_hour >= 2 && t.tm_hour < 4)
       {
          flash ();
          gfx_refresh ();        // Full update
          b.redraw = 1;
       }
+      static uint32_t fresh = 0;
       if (refresh && (!gfxnight || refresh < 86400) && now / refresh != fresh)
       {                         // Or, periodic refresh, e.g. once a day or more
          fresh = now / refresh;
          gfx_refresh ();
          b.redraw = 1;
       }
+#endif
       epd_lock ();
       gfx_clear (0);
       uint8_t h = 0,

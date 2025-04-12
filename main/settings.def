@@ -17,7 +17,13 @@ gpio	gfx.cs		38				// Display CS
 gpio	gfx.dc		37				// Display DC
 gpio	gfx.rst		36				// Display RST
 gpio	gfx.busy	35				// Display BUSY
+u8	gfx.flip	6				// Display Flip
+bit	gfx.invert	1				// Display invert
+#ifdef	GFX_EPD
+bit	gfx.flash	1				// Display startup flashy
 bit	gfx.night	1	.live			// Display overnight refresh
+u32	refresh		86400	.live .unit="s"		// Full refresh time
+#endif
 
 gpio	relay						// Relay output
 
@@ -29,12 +35,8 @@ gpio    sd.dat0         6	.old="sdmiso"   // MicroSD DAT0 / MISO
 gpio    sd.dat1                			// MicroSD DAT1
 gpio    sd.cd           -7                	// MicroSD CD
 
-u8	gfx.flip	6				// Display Flip
-bit	gfx.invert	1				// Display invert
-bit	gfx.flash	1				// Display startup flashy
 u8	startup		10	.unit="s"		// Start up message
 u8	leds		25				// Number of LEDs
-u32	refresh		86400	.live .unit="s"		// Full refresh time
 
 s32	pos.lat			.live .decimal=7 .unit="°N"	// Latitude
 s32	pos.lon			.live .decimal=6 .unit="°E"	// Longitude
