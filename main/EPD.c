@@ -26,6 +26,10 @@ static const char TAG[] = "EPD";
 #define	MASK	0x1F
 #define MINSIZE	4
 
+#ifndef	GFX_EPD
+#define	gfxinvert	0
+#endif
+
 const char sd_mount[] = "/sd";
 uint64_t sdsize = 0,            // SD card data
    sdfree = 0;
