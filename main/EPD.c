@@ -1495,6 +1495,7 @@ app_main ()
    snmp.sock = -1;
    revk_boot (&app_callback);
    revk_start ();
+   revk_gpio_output (gfxbl, 0);
    epd_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (epd_mutex);
    revk_mqtt_sub (0, "DEFCON/#", defcon_cb, NULL);
@@ -1963,6 +1964,7 @@ app_main ()
       epd_unlock ();
       snmp_tx ();
    }
+   revk_gpio_set (gfxbl, 0);
    b.die = 1;
 }
 
