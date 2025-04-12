@@ -36,6 +36,10 @@ components/ESP32-RevK/revk_settings: components/ESP32-RevK/revk_settings.c
 
 set:    epd75r epd154k epd154r ssd1681 epd29k lcd24 lcd2 epd75k
 
+lcd2:
+	components/ESP32-RevK/setbuildsuffix -S3-MINI-N4-R2-LCD2
+	@make
+
 lcd24:
 	components/ESP32-RevK/setbuildsuffix -S3-MINI-N4-R2-LCD24
 	@make
