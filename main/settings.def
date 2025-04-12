@@ -10,12 +10,12 @@ gpio	rgb		2				// RGB
 
 gpio	gfx.pwr						// Display power
 gpio	gfx.ena						// Display ENA
-gpio	gfx.bl						// Display Backlight
 gpio	gfx.mosi	40				// Display MOSI
 gpio	gfx.sck		39				// Display SCK
 gpio	gfx.cs		38				// Display CS
 gpio	gfx.dc		37				// Display DC
 gpio	gfx.rst		36				// Display RST
+gpio	gfx.bl						// Display Backlight
 gpio	gfx.busy	35				// Display BUSY
 u8	gfx.flip	6				// Display Flip
 bit	gfx.invert	1				// Display invert
