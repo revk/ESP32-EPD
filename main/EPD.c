@@ -117,11 +117,11 @@ gfx_qr (const char *value, uint16_t max)
          if (!special || !(b & QR_TAG_BLACK) || (b & QR_TAG_TARGET))
             for (int dy = 0; dy < s; dy++)      // box
                for (int dx = 0; dx < s; dx++)
-                  gfx_pixel (ox + x * s + dx, oy + y * s + dy, b & QR_TAG_BLACK ? 0xFF : 0);
+                  gfx_pixel_fb (ox + x * s + dx, oy + y * s + dy, b & QR_TAG_BLACK ? 0xFF : 0);
          else
             for (int dy = 0; dy < s; dy++)      // dot
                for (int dx = 0; dx < s; dx++)
-                  gfx_pixel (ox + x * s + dx, oy + y * s + dy,
+                  gfx_pixel_fb (ox + x * s + dx, oy + y * s + dy,
                              ((dx * 2 + 1 - s) * (dx * 2 + 1 - s) + (dy * 2 + 1 - s) * (dy * 2 + 1 - s) < s2) ? 255 : 0);
       }
    free (qr);
