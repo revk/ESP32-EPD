@@ -54,7 +54,7 @@ widget_clock (uint16_t s, const char *c)
       }
    if (ticks)
       for (a = 0; a < 360; a += 30)
-         gfx_line2 (cx + isin (a, s * 9 / 10), cy - icos (a, s * 9 / 10), cx + isin (a, s), cy - icos (a, s), s / 40 ? : 1);
+         gfx_line2 (cx + isin (a, s * 9 / 10), cy - icos (a, s * 9 / 10), cx + isin (a, s), cy - icos (a, s), s / 80 ? : 1);
    // Hands
 #ifndef	GFX_EPD
    a = t.tm_sec * 360 / 60;
