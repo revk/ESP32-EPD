@@ -36,28 +36,33 @@ widget_clock (uint16_t s, const char *c)
    gfx_pos_t cx = ox * 2 + s,
       cy = oy * 2 + s;
    if (surround)
-      gfx_circle2 (cx, cy, s - s / 50, s / 50);
+   {
+      gfx_circle2 (cx, cy, s - s / 50, s / 50 ? : 1);
+      s = s * 48 / 50;
+   }
+   uint8_t o = 19;
+   if (ticks)
+      o -= 2;
    if (numbers)
       for (int h = 1; h <= 12; h++)
       {
          a = h * 360 / 12;
          char temp[3];
          sprintf (temp, "%d", h);
-         gfx_pos ((cx + isin (a, s * 17 / 20)) / 2, (cy - icos (a, s * 17 / 20)) / 2, GFX_C | GFX_M);
+         gfx_pos ((cx + isin (a, s * o / 20)) / 2, (cy - icos (a, s * o / 20)) / 2, GFX_C | GFX_M);
          gfx_text (0, s / 180 ? : 1, temp);
       }
    if (ticks)
       for (a = 0; a < 360; a += 30)
-         gfx_line2 (cx + isin (a, s * 9 / 10), cy - icos (a, s * 9 / 10), cx + isin (a, s), cy - icos (a, s), s / 40);
-   ESP_LOGE (TAG, "cx %d cy %d", cx, cy);
+         gfx_line2 (cx + isin (a, s * 9 / 10), cy - icos (a, s * 9 / 10), cx + isin (a, s), cy - icos (a, s), s / 40 ? : 1);
    // Hands
 #ifndef	GFX_EPD
    a = t.tm_sec * 360 / 60;
-   gfx_line2 (cx, cy, cx + isin (a, s), cy - icos (a, s), s / 40);
+   gfx_line2 (cx, cy, cx + isin (a, s), cy - icos (a, s), s / 40 ? : 1);
 #endif
    a = t.tm_min * 360 / 60;
-   gfx_line2 (cx, cy, cx + isin (a, s * 7 / 10), cy - icos (a, s * 7 / 10), s / 30);
+   gfx_line2 (cx, cy, cx + isin (a, s * 7 / 10), cy - icos (a, s * 7 / 10), s / 30 ? : 1);
    a = t.tm_hour * 360 / 12;
-   gfx_line2 (cx, cy, cx + isin (a, s * 5 / 10), cy - icos (a, s * 5 / 10), s / 15);
+   gfx_line2 (cx, cy, cx + isin (a, s * 5 / 10), cy - icos (a, s * 5 / 10), s / 15 ? : 1);
    gfx_pos (nx, ny, na);
 }
