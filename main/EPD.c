@@ -79,7 +79,7 @@ static void
 json_store (jo_t * jp, jo_t j)
 {
    xSemaphoreTake (json_mutex, portMAX_DELAY);
-   jo_free(jp);
+   jo_free (jp);
    *jp = j;
    xSemaphoreGive (json_mutex);
 }
@@ -700,7 +700,7 @@ epd_unlock (void)
 static esp_err_t
 web_frame (httpd_req_t * req)
 {
-   epd_lock ();
+   xSemaphoreTake (epd_mutex, portMAX_DELAY);
    uint8_t *png = NULL;
    size_t len = 0;
    uint32_t w = gfx_raw_w ();
@@ -792,7 +792,7 @@ web_frame (httpd_req_t * req)
       httpd_resp_send (req, (char *) png, len);
    }
    free (png);
-   epd_unlock ();
+   xSemaphoreGive (epd_mutex);
    return ESP_OK;
 }
 #endif
@@ -1953,7 +1953,7 @@ app_main ()
                  oy,
                  s = (widgets[w] & 0xFFF) ? : gfx_width ();;
                gfx_draw (s, 1, 0, 0, &ox, &oy);
-               gfx_line (ox, oy, ox + s, oy, 255);
+               gfx_line (ox, oy, ox + s, oy);
             }
             break;
          case REVK_SETTINGS_WIDGETT_VLINE:
@@ -1962,12 +1962,16 @@ app_main ()
                  oy,
                  s = (widgets[w] & 0xFFF) ? : gfx_width ();;
                gfx_draw (1, s, 0, 0, &ox, &oy);
-               gfx_line (ox, oy, ox, oy + s, 255);
+               gfx_line (ox, oy, ox, oy + s);
             }
             break;
          case REVK_SETTINGS_WIDGETT_BINS:
             extern void widget_bins (uint16_t, const char *);
             widget_bins (widgets[w], c);
+            break;
+         case REVK_SETTINGS_WIDGETT_CLOCK:
+            extern void widget_clock (uint16_t, const char *);
+            widget_clock (widgets[w], c);
             break;
          }
          if (c != widgetc[w])
@@ -2048,7 +2052,8 @@ revk_web_extra (httpd_req_t * req, int page)
       p = "Bins data JSON URL";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
       p = "QR code content";
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE
+       && widgett[page - 1] != REVK_SETTINGS_WIDGETT_CLOCK)
       add (p, "widgetc");
 
    // Extra fields
