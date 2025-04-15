@@ -37,8 +37,8 @@ widget_clock (uint16_t s, const char *c)
       cy = oy * 2 + s;
    if (surround)
    {
-      gfx_circle2 (cx, cy, s - s / 50, s / 50 ? : 1);
-      s = s * 48 / 50;
+      gfx_circle2 (cx, cy, s - s / 40, s / 80 ? : 1);
+      s = s * 78 / 80;
    }
    uint8_t o = 19;
    if (ticks)
