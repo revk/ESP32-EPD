@@ -2,7 +2,8 @@
 #include "gfx.h"
 #include "EPD.h"
 
-static const char TAG[] = "BINS";
+#define	UNUSED __attribute__((unused))
+static const char UNUSED TAG[] = "BINS";
 
 typedef struct icon_s
 {

@@ -73,6 +73,16 @@ led_strip_handle_t strip = NULL;
 sdmmc_card_t *card = NULL;
 
 static SemaphoreHandle_t epd_mutex = NULL;
+static SemaphoreHandle_t json_mutex = NULL;
+
+static void
+json_store (jo_t * jp, jo_t j)
+{
+   xSemaphoreTake (json_mutex, portMAX_DELAY);
+   jo_free (jp);
+   *jp = j;
+   xSemaphoreGive (json_mutex);
+}
 
 const char *
 gfx_qr (const char *value, uint16_t max)
@@ -126,7 +136,7 @@ gfx_qr (const char *value, uint16_t max)
             for (int dy = 0; dy < s; dy++)      // dot
                for (int dx = 0; dx < s; dx++)
                   gfx_pixel_fb (ox + x * s + dx, oy + y * s + dy,
-                             ((dx * 2 + 1 - s) * (dx * 2 + 1 - s) + (dy * 2 + 1 - s) * (dy * 2 + 1 - s) < s2) ? 255 : 0);
+                                ((dx * 2 + 1 - s) * (dx * 2 + 1 - s) + (dy * 2 + 1 - s) * (dy * 2 + 1 - s) < s2) ? 255 : 0);
       }
    free (qr);
 #endif
@@ -690,7 +700,7 @@ epd_unlock (void)
 static esp_err_t
 web_frame (httpd_req_t * req)
 {
-   epd_lock ();
+   xSemaphoreTake (epd_mutex, portMAX_DELAY);
    uint8_t *png = NULL;
    size_t len = 0;
    uint32_t w = gfx_raw_w ();
@@ -782,7 +792,7 @@ web_frame (httpd_req_t * req)
       httpd_resp_send (req, (char *) png, len);
    }
    free (png);
-   epd_unlock ();
+   xSemaphoreGive (epd_mutex);
    return ESP_OK;
 }
 #endif
@@ -1177,10 +1187,7 @@ solar_task (void *x)
             jo_free (&s);
          }
          addvalue ("today", total - solarsod, total_scale - 3); // kWh
-
-         jo_t was = solar;
-         solar = j;
-         jo_free (&was);
+         json_store (&solar, j);
          if (solarlog)
          {
             jo_t j = jo_copy (solar);
@@ -1232,17 +1239,26 @@ dollar_time (time_t now, const char *fmt)
 }
 
 char *
-dollar_json (jo_t j, const char *dot, const char *colon)
+dollar_json (jo_t * jp, const char *dot, const char *colon)
 {
-   if (!j || !dot)
+   if (!jp || !dot)
       return NULL;
-   jo_type_t t = jo_find (j, dot);
-   if (!t)
-      return NULL;
-   if (colon && t == JO_NUMBER)
-   {                            // TODO formatting
+   xSemaphoreTake (json_mutex, portMAX_DELAY);
+   char *res = NULL;
+   jo_t j = *jp;
+   if (j)
+   {
+      jo_type_t t = jo_find (j, dot);
+      if (t)
+      {
+         res = jo_strdup (j);
+         if (colon && t == JO_NUMBER)
+         {                      // TODO formatting
+         }
+      }
    }
-   return jo_strdup (j);
+   xSemaphoreGive (json_mutex);
+   return res;
 }
 
 char *
@@ -1336,13 +1352,13 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
             return r;
          }
       }
-      return dollar_json (weather, dot, colon);
+      return dollar_json (&weather, dot, colon);
    }
    if (!strcasecmp (c, "SOLAR"))
-      return dollar_json (solar, dot, colon);
+      return dollar_json (&solar, dot, colon);
    if (!strncasecmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && !c[5] && c[4] > '0'
        && c[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
-      return dollar_json (mqttjson[c[4] - '1'], dot, colon);
+      return dollar_json (&mqttjson[c[4] - '1'], dot, colon);
    if (!strcasecmp (c, "SNMPHOST") && snmp.host)
       return strdup (snmp.host);
    if (!strcasecmp (c, "SNMPDESC") && snmp.desc)
@@ -1483,13 +1499,38 @@ mqttjson_cb (void *arg, const char *topic, jo_t j)
    uint32_t i = (int) arg;
    if (i >= sizeof (jsonsub) / sizeof (*jsonsub))
       return;
-   jo_t was = mqttjson[i];
-   if (!was && !j)
-      return;
-   if (was && j && !strcmp (jo_debug (was), jo_debug (j)))
-      return;
-   mqttjson[i] = (j ? jo_dup (j) : NULL);
-   jo_free (&was);
+   json_store (&mqttjson[i], jo_dup (j));
+}
+
+void
+weather_task (void *x)
+{
+   while (1)
+   {
+      if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
+      {                         // Weather
+         uint32_t up = uptime ();
+         char *url;
+         if (*postown)
+            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
+         else
+            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
+                      (float) poslat / 10000000, (float) poslon / 1000000);
+         file_t *w = download (url, NULL);
+         ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
+         free (url);
+         if (w && w->data && w->json)
+         {
+            if (w->cache > up + 60)
+               w->cache = up + 60;      // 1000000/month accesses on free tariff!
+            jo_t j = jo_parse_mem (w->data, w->size);
+            if (j)
+               json_store (&weather, j);
+         }
+         sleep (60);
+      } else
+         sleep (1);
+   }
 }
 
 void
@@ -1502,6 +1543,8 @@ app_main ()
    revk_gpio_output (gfxbl, 0);
    epd_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (epd_mutex);
+   json_mutex = xSemaphoreCreateMutex ();
+   xSemaphoreGive (json_mutex);
    revk_mqtt_sub (0, "DEFCON/#", defcon_cb, NULL);
    for (int i = 0; i < sizeof (jsonsub) / sizeof (*jsonsub); i++)
       if (*jsonsub[i])
@@ -1541,6 +1584,7 @@ app_main ()
    revk_task ("snmp", snmp_rx_task, NULL, 4);
    if (*solarip)
       revk_task ("solar", solar_task, NULL, 10);
+   revk_task ("weather", weather_task, NULL, 10);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -1766,30 +1810,6 @@ app_main ()
          showlights (lighton == lightoff || (lighton < lightoff && lighton <= hhmm && lightoff > hhmm)
                      || (lightoff < lighton && (lighton <= hhmm || lightoff > hhmm)) ? lights : "");
       }
-      if ((poslat || poslon || *postown) && *weatherapi)
-      {                         // Weather
-         char *url;
-         if (*postown)
-            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
-         else
-            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
-                      (float) poslat / 10000000, (float) poslon / 1000000);
-         file_t *w = download (url, NULL);
-         ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
-         free (url);
-         if (w && w->data && w->json)
-         {
-            if (w->cache > up + 60)
-               w->cache = up + 60;      // 1000000/month accesses on free tariff!
-            jo_t j = jo_parse_mem (w->data, w->size);
-            if (j)
-            {
-               jo_t was = weather;
-               weather = j;
-               jo_free (&was);
-            }
-         }
-      }
       b.redraw = 0;
       // Image
 #ifdef	GFX_EPD
@@ -1945,7 +1965,7 @@ app_main ()
                  oy,
                  s = (widgets[w] & 0xFFF) ? : gfx_width ();;
                gfx_draw (s, 1, 0, 0, &ox, &oy);
-               gfx_line (ox, oy, ox + s, oy, 255);
+               gfx_line (ox, oy, ox + s, oy);
             }
             break;
          case REVK_SETTINGS_WIDGETT_VLINE:
@@ -1954,12 +1974,16 @@ app_main ()
                  oy,
                  s = (widgets[w] & 0xFFF) ? : gfx_width ();;
                gfx_draw (1, s, 0, 0, &ox, &oy);
-               gfx_line (ox, oy, ox, oy + s, 255);
+               gfx_line (ox, oy, ox, oy + s);
             }
             break;
          case REVK_SETTINGS_WIDGETT_BINS:
             extern void widget_bins (uint16_t, const char *);
             widget_bins (widgets[w], c);
+            break;
+         case REVK_SETTINGS_WIDGETT_CLOCK:
+            extern void widget_clock (uint16_t, const char *);
+            widget_clock (widgets[w], c);
             break;
          }
          if (c != widgetc[w])
@@ -2040,7 +2064,8 @@ revk_web_extra (httpd_req_t * req, int page)
       p = "Bins data JSON URL";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
       p = "QR code content";
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE
+       && widgett[page - 1] != REVK_SETTINGS_WIDGETT_CLOCK)
       add (p, "widgetc");
 
    // Extra fields

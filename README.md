@@ -179,6 +179,16 @@ Example.
 }
 ```
 
+### Clock
+
+Simple analogue clock face
+
+|Flag|Meaning|
+|----|-------|
+|`_`|Circle around clock and fill background|
+|`|`|Tick marks on hour|
+|`/`|Numbers on hour|
+
 ### More
 
 More widgets planned, and more `$variable` planned.
