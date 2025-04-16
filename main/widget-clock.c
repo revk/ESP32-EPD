@@ -27,7 +27,7 @@ widget_clock (uint16_t s, const char *c)
       s = 20;
    gfx_pos_t ox,
      oy;
-   uint16_t a;
+   uint32_t a;
    gfx_draw (s, s, 0, 0, &ox, &oy);
    gfx_pos_t nx = gfx_x (),
       ny = gfx_y ();
