@@ -1503,6 +1503,37 @@ mqttjson_cb (void *arg, const char *topic, jo_t j)
 }
 
 void
+weather_task (void *x)
+{
+   while (1)
+   {
+      if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
+      {                         // Weather
+         uint32_t up = uptime ();
+         char *url;
+         if (*postown)
+            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
+         else
+            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
+                      (float) poslat / 10000000, (float) poslon / 1000000);
+         file_t *w = download (url, NULL);
+         ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
+         free (url);
+         if (w && w->data && w->json)
+         {
+            if (w->cache > up + 60)
+               w->cache = up + 60;      // 1000000/month accesses on free tariff!
+            jo_t j = jo_parse_mem (w->data, w->size);
+            if (j)
+               json_store (&weather, j);
+         }
+         sleep (60);
+      } else
+         sleep (1);
+   }
+}
+
+void
 app_main ()
 {
    b.defcon = 7;
@@ -1553,6 +1584,7 @@ app_main ()
    revk_task ("snmp", snmp_rx_task, NULL, 4);
    if (*solarip)
       revk_task ("solar", solar_task, NULL, 10);
+   revk_task ("weather", weather_task, NULL, 10);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -1777,26 +1809,6 @@ app_main ()
          int hhmm = t.tm_hour * 100 + t.tm_min;
          showlights (lighton == lightoff || (lighton < lightoff && lighton <= hhmm && lightoff > hhmm)
                      || (lightoff < lighton && (lighton <= hhmm || lightoff > hhmm)) ? lights : "");
-      }
-      if ((poslat || poslon || *postown) && *weatherapi)
-      {                         // Weather
-         char *url;
-         if (*postown)
-            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
-         else
-            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
-                      (float) poslat / 10000000, (float) poslon / 1000000);
-         file_t *w = download (url, NULL);
-         ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
-         free (url);
-         if (w && w->data && w->json)
-         {
-            if (w->cache > up + 60)
-               w->cache = up + 60;      // 1000000/month accesses on free tariff!
-            jo_t j = jo_parse_mem (w->data, w->size);
-            if (j)
-               json_store (&weather, j);
-         }
       }
       b.redraw = 0;
       // Image
