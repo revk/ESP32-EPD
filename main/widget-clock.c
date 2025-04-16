@@ -57,13 +57,14 @@ widget_clock (uint16_t s, const char *c)
          gfx_line2 (cx + isin (a, s * 19 / 20), cy - icos (a, s * 19 / 20), cx + isin (a, s - s / 50), cy - icos (a, s - s / 50),
                     s / 50 ? : 1);
    // Hands
+   uint32_t sec = t.tm_hour * 3600 + t.tm_min * 60 + t.tm_sec;
 #ifndef	GFX_EPD
-   a = t.tm_sec * 360 / 60;
+   a = sec * 6;
    gfx_line2 (cx, cy, cx + isin (a, s), cy - icos (a, s), s / 40 ? : 1);
 #endif
-   a = (t.tm_min * 60 + t.tm_sec) * 360 / 60 / 60;
+   a = sec / 10;
    gfx_line2 (cx, cy, cx + isin (a, s * 7 / 10), cy - icos (a, s * 7 / 10), s / 30 ? : 1);
-   a = (t.tm_hour * 60 + t.tm_min) * 360 / 12 / 60;
+   a = sec / 600;
    gfx_line2 (cx, cy, cx + isin (a, s * 5 / 10), cy - icos (a, s * 5 / 10), s / 15 ? : 1);
    gfx_pos (nx, ny, na);
 }
