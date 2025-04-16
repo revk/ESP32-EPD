@@ -37,8 +37,8 @@ widget_clock (uint16_t s, const char *c)
       cy = oy * 2 + s;
    if (surround)
    {
-      gfx_circle2 (cx, cy, s - s / 20, s / 40 ? : 1);
-      s = s * 38 / 40;
+      gfx_circle2 (cx, cy, s - s / 25, s / 50 ? : 1);
+      s = s * 48 / 50;
    }
    uint8_t o = 19;
    if (ticks)
@@ -54,7 +54,7 @@ widget_clock (uint16_t s, const char *c)
       }
    if (ticks)
       for (a = 0; a < 360; a += 30)
-         gfx_line2 (cx + isin (a, s * 19 / 20), cy - icos (a, s * 19 / 20), cx + isin (a, s), cy - icos (a, s), s / 40 ? : 1);
+         gfx_line2 (cx + isin (a, s * 19 / 20), cy - icos (a, s * 19 / 20), cx + isin (a, s), cy - icos (a, s), s / 50 ? : 1);
    // Hands
 #ifndef	GFX_EPD
    a = t.tm_sec * 360 / 60;
