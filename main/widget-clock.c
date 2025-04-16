@@ -64,7 +64,7 @@ widget_clock (uint16_t s, const char *c)
 #endif
    a = (sec + 5) / 10;
    gfx_line2 (cx, cy, cx + isin (a, s * 7 / 10), cy - icos (a, s * 7 / 10), s / 30 ? : 1);
-   a = (sec + 300) / 600;
+   a = (sec + 60) / 120;
    gfx_line2 (cx, cy, cx + isin (a, s * 5 / 10), cy - icos (a, s * 5 / 10), s / 15 ? : 1);
    gfx_pos (nx, ny, na);
 }
