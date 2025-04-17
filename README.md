@@ -113,6 +113,8 @@ Extra flags can be added to the size.
 |`|`|Smaller digits after `:`|
 |`/`|Italic (this is best when using colour displays as anti-aliased)|
 
+Note that with `_` a trailing `C` or `F` is handled as superscript for temperatures.
+
 ### Image
 
 This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting) cutting for e-paper at 50% brightness (does not dither, etc). It can include *alpha* channel to control if plotted.

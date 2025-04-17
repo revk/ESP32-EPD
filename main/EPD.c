@@ -477,8 +477,8 @@ download (char *url, const char *suffix)
          buf = NULL;
       }
    }
-   if (card)
-   {                            // SD
+   if (card && !i->json)
+   {                            // SD (JSON is assumed dynamic and not saved, pngs we assume sensible to cache or read from card)
       char *s = strrchr (url, '/');
       if (!s)
          s = url;
