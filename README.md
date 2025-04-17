@@ -40,7 +40,7 @@ Using `${variable}` you can append the variable name with.
 
 - `:format` for any time based variables, for `strftime` formatting, e.g. `${TIME:%a %:%M}` may show `Wed 10:15`
 - `.fields` for any JSON based variables, allows the JSON field, e.g. `${WEATHER.current.condition.code}`
-- `.field:format` will alow some formatting of fields from JSON based variables. TBA but probably decimal places on numeric fields.
+- `.field:format` will allow some formatting of fields from JSON based variables.
 
 |Variable|Meaning|
 |------|-------|
@@ -67,6 +67,19 @@ Using `${variable}` you can append the variable name with.
 |`WEATHER`|Extract a field from weather api response JSON, suffix `:128` finds `64x64` and replaces with `128x128`, e.g. `https:${WEATHER.current.condition.icon:128}`|
 |`SOLAR`|Extract a field from SolareEdge MODBUS TCP collection generated JSON|
 |`MQTTn`|Extract a field from JSON payload payload on subscribed MQTT (`jsonsub`)|
+
+Numeric JSON value formats
+
+|Tag|Meaning|
+|---|-------|
+|*digit*|set number of places|
+|`k`|Divide by 1000|
+|`M`|Divide by 1000000|
+|`m`|Multiply by 1000|
+|`u`|Multiply by 1000000|
+|`K`|Change Celsius to Kelvin|
+|`F`|Change Celsius to Fahrenheit|
+|`C`|Change Fahrenheit Celsius|
 
 ### Text
 

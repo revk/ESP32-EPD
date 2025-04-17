@@ -260,22 +260,25 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       overrideimage = strdup (value);
       return "";
    }
-   if (!strcasecmp (suffix, "weather"))
+   const char *log_json (jo_t * jp)
    {
-      jo_t j = jo_copy (weather);
-      return revk_info (suffix, &j) ? : "";
+      const char *e = "No data";
+      xSemaphoreTake (json_mutex, portMAX_DELAY);
+      if (*jp)
+      {
+         jo_t j = jo_copy (*jp);
+         e = revk_info (suffix, &j) ? : "";
+      }
+      xSemaphoreGive (json_mutex);
+      return e;
    }
+   if (!strcasecmp (suffix, "weather"))
+      return log_json (&weather);
    if (!strncasecmp (suffix, "mqtt", 4) && isdigit ((int) (uint8_t) suffix[4]) && !suffix[5] && suffix[4] > '0'
        && suffix[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
-   {
-      jo_t j = jo_copy (mqttjson[suffix[4] - '1']);
-      return revk_info (suffix, &j) ? : "";
-   }
+      return log_json (&mqttjson[suffix[4] - '1']);
    if (!strcasecmp (suffix, "solar"))
-   {
-      jo_t j = jo_copy (solar);
-      return revk_info (suffix, &j) ? : "";
-   }
+      return log_json (&solar);
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -1239,6 +1242,41 @@ dollar_time (time_t now, const char *fmt)
 }
 
 char *
+suffix_number (long double v, const char *tag)
+{
+   char *r = NULL;
+   uint8_t digits = 1;
+   while (*tag)
+   {
+      if (*tag >= '0' && *tag <= '9')
+         digits = *tag - '0';
+      else if (*tag == 'd')
+         v /= 10;
+      else if (*tag == 'c')
+         v /= 100;
+      else if (*tag == 'k')
+         v /= 1000;
+      else if (*tag == 'M')
+         v /= 1000000;
+      else if (*tag == 'm')
+         v *= 1000;
+      else if (*tag == 'u')
+         v *= 1000000;
+      else if (*tag == 'D')
+         v *= 10;
+      else if (*tag == 'K')
+         v += 273.15;
+      else if (*tag == 'F')
+         v = (v + 40) * 1.8 - 40;
+      else if (*tag == 'C')
+         v = (v + 40) / 1.8 - 40;
+      tag++;
+   }
+   asprintf (&r, "%.*Lf", digits, v);
+   return r;
+}
+
+char *
 dollar_json (jo_t * jp, const char *dot, const char *colon)
 {
    if (!jp || !dot)
@@ -1251,10 +1289,11 @@ dollar_json (jo_t * jp, const char *dot, const char *colon)
       jo_type_t t = jo_find (j, dot);
       if (t)
       {
-         res = jo_strdup (j);
-         if (colon && t == JO_NUMBER)
-         {                      // TODO formatting
-         }
+	      ESP_LOGE(TAG,"t=%d colon=%s",t,colon?:"?");
+         if (colon && *colon && t == JO_NUMBER)
+            res = suffix_number (jo_read_float (j), colon);
+         else
+            res = jo_strdup (j);
       }
    }
    xSemaphoreGive (json_mutex);
@@ -1341,6 +1380,8 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    }
    if (!strcasecmp (c, "WEATHER"))
    {
+      r = NULL;
+      xSemaphoreTake (json_mutex, portMAX_DELAY);
       if (colon && !strcmp (colon, "128") && jo_find (weather, dot))
       {                         // Fudge weather
          char *i = jo_strdup (weather);
@@ -1349,10 +1390,12 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
             char *s = strstr (i, "64x64");
             asprintf (&r, "%.*s128x128%s", (int) (s - i), i, s + 5);
             free (i);
-            return r;
          }
       }
-      return dollar_json (&weather, dot, colon);
+      xSemaphoreGive (json_mutex);
+      if (!r)
+         r = dollar_json (&weather, dot, colon);
+      return r;
    }
    if (!strcasecmp (c, "SOLAR"))
       return dollar_json (&solar, dot, colon);
