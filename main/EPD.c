@@ -1242,10 +1242,9 @@ dollar_time (time_t now, const char *fmt)
 }
 
 char *
-suffix_number (long double v, const char *tag)
+suffix_number (long double v, uint8_t digits, const char *tag)
 {
    char *r = NULL;
-   uint8_t digits = 1;
    while (*tag)
    {
       if (*tag >= '0' && *tag <= '9')
@@ -1289,11 +1288,16 @@ dollar_json (jo_t * jp, const char *dot, const char *colon)
       jo_type_t t = jo_find (j, dot);
       if (t)
       {
-	      ESP_LOGE(TAG,"t=%d colon=%s",t,colon?:"?");
-         if (colon && *colon && t == JO_NUMBER)
-            res = suffix_number (jo_read_float (j), colon);
-         else
-            res = jo_strdup (j);
+         res = jo_strdup (j);
+         if (res && *res && colon && *colon && t == JO_NUMBER)
+         {
+            uint8_t digits = 1;
+            char *d = strchr (res, '.');
+            if (d)
+               digits = strlen (d + 1);
+            free (res);
+            res = suffix_number (jo_read_float (j), digits, colon);
+         }
       }
    }
    xSemaphoreGive (json_mutex);
