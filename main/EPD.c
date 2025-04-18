@@ -566,6 +566,9 @@ typedef struct plot_s
 {
    gfx_pos_t ox,
      oy;
+#ifndef	GFX_COLOUR
+   uint8_t invert;
+#endif
 } plot_t;
 
 static void *
@@ -584,22 +587,21 @@ static const char *
 pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
 {
    plot_t *p = opaque;
-#ifndef	GFX_COLOUR
-   if (gfxinvert)
+   if (p->invert)
    {                            // Gets inverted to reverse before
       r ^= 0xFFFF;
       g ^= 0xFFFF;
       b ^= 0xFFFF;
    }
-#endif
    gfx_pixel_argb (p->ox + x, p->oy + y, ((a >> 8) << 24) | ((r >> 8) << 16) | ((g >> 8) << 8) | (b >> 8));
    return NULL;
 }
 
 void
-plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy)
+plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy, uint8_t invert)
 {
-   plot_t settings = { ox, oy };
+   plot_t settings = { ox, oy, invert
+   };
    lwpng_decode_t *p = lwpng_decode (&settings, NULL, &pixel, &my_alloc, &my_free, NULL);
    lwpng_data (p, i->size, i->data);
    const char *e = lwpng_decoded (&p);
@@ -1825,7 +1827,7 @@ app_main ()
                epd_lock ();
                gfx_clear (0);
                gfx_refresh ();
-               plot (i, gfx_width () / 2 - i->w / 2, gfx_height () / 2 - i->h / 2);
+               plot (i, gfx_width () / 2 - i->w / 2, gfx_height () / 2 - i->h / 2, 0);
                epd_unlock ();
                override = up + 60;
             }
@@ -1999,7 +2001,13 @@ app_main ()
                   gfx_pos_t ox,
                     oy;
                   gfx_draw (i->w, i->h, 0, 0, &ox, &oy);
-                  plot (i, ox, oy);
+                  plot (i, ox, oy
+#ifndef	GFX_COLOUR
+                        , widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT || widgetk[w] == REVK_SETTINGS_WIDGETK_INVERT
+#else
+                        , 0
+#endif
+                     );
                }
             }
             break;
