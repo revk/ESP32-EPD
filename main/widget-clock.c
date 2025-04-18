@@ -27,7 +27,7 @@ widget_clock (uint16_t s, const char *c)
       s = 20;
    gfx_pos_t ox,
      oy;
-   uint16_t a;
+   uint32_t a;
    gfx_draw (s, s, 0, 0, &ox, &oy);
    gfx_pos_t nx = gfx_x (),
       ny = gfx_y ();
@@ -50,20 +50,21 @@ widget_clock (uint16_t s, const char *c)
          char temp[3];
          sprintf (temp, "%d", h);
          gfx_pos ((cx + isin (a, s * o / 20)) / 2, (cy - icos (a, s * o / 20)) / 2, GFX_C | GFX_M);
-         gfx_text (0, s / 180 ? : 1, temp);
+         gfx_text (0, s / 95 ? : 1, temp);
       }
    if (ticks)
       for (a = 0; a < 360; a += 30)
          gfx_line2 (cx + isin (a, s * 19 / 20), cy - icos (a, s * 19 / 20), cx + isin (a, s - s / 50), cy - icos (a, s - s / 50),
                     s / 50 ? : 1);
    // Hands
+   uint32_t sec = t.tm_hour * 3600 + t.tm_min * 60 + t.tm_sec;
 #ifndef	GFX_EPD
-   a = t.tm_sec * 360 / 60;
+   a = sec * 6;
    gfx_line2 (cx, cy, cx + isin (a, s), cy - icos (a, s), s / 40 ? : 1);
 #endif
-   a = (t.tm_min * 60 + t.tm_sec) * 360 / 60 / 60;
+   a = (sec + 5) / 10;
    gfx_line2 (cx, cy, cx + isin (a, s * 7 / 10), cy - icos (a, s * 7 / 10), s / 30 ? : 1);
-   a = (t.tm_hour * 60 + t.tm_min) * 360 / 12 / 60;
+   a = (sec + 60) / 120;
    gfx_line2 (cx, cy, cx + isin (a, s * 5 / 10), cy - icos (a, s * 5 / 10), s / 15 ? : 1);
    gfx_pos (nx, ny, na);
 }
