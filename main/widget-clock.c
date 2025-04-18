@@ -50,7 +50,7 @@ widget_clock (uint16_t s, const char *c)
          char temp[3];
          sprintf (temp, "%d", h);
          gfx_pos ((cx + isin (a, s * o / 20)) / 2, (cy - icos (a, s * o / 20)) / 2, GFX_C | GFX_M);
-         gfx_text (0, s / 90 ? : 1, temp);
+         gfx_text (0, s / 95 ? : 1, temp);
       }
    if (ticks)
       for (a = 0; a < 360; a += 30)
