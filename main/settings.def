@@ -43,8 +43,8 @@ s32	pos.lon			.live .decimal=6 .unit="°E"	// Longitude
 s	pos.town		.live 	// Town name (for weather)
 
 s	lights		RGB	.live			// LEDs pattern (colour letters)
-u16	light.on		.live	.digits=4 .place="HHMM"	// Lights on time (HHMM)
-u16	light.off		.live	.digits=4 .place="HHMM"	// Lights off time (HHMM)
+u16	light.on		.live	.digits=4 .place="HHMM"	// Lights on time (HHMM). 5000±59 sinrise, 7000±59 sunset
+u16	light.off		.live	.digits=4 .place="HHMM"	// Lights off time (HHMM). 5000±59 sinrise, 7000±59 sunset
 
 bit	fb.version		.live			// Assume SNMP desc is FireBrick, extract version
 

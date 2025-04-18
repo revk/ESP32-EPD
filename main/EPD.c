@@ -50,6 +50,20 @@ static struct
 volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
 
+#ifdef	CONFIG_REVK_SOLAR
+time_t sunrise = 0,
+   sunset = 0;
+int16_t lastday = -1;
+uint16_t sunrisehhmm = 0,
+   sunsethhmm = 0;
+#endif
+
+#ifdef	GFX_EPD
+const char hhmm[] = "%H:%M";
+#else
+const char hhmm[] = "%T";
+#endif
+
 jo_t weather = NULL;
 jo_t solar = NULL;
 jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
@@ -1314,13 +1328,7 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    if (!strcasecmp (c, "SEASONS"))
       return strdup (revk_season (time (0)));
    if (!strcasecmp (c, "TIME"))
-      return dollar_time (now, colon ? :
-#ifdef	GFX_EPD
-                          "%H:%M"
-#else
-                          "%T"
-#endif
-         );
+      return dollar_time (now, colon ? : hhmm);
    if (!strcasecmp (c, "DATE"))
       return dollar_time (now, colon ? : "%F");
    if (!strcasecmp (c, "DAY"))
@@ -1358,11 +1366,9 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    }
 #ifdef	CONFIG_REVK_SOLAR
    if (!strcasecmp (c, "SUNSET") && now && (poslat || poslon))
-      return dollar_time (sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
-                                   (double) poslon / poslon_scale, SUN_DEFAULT), colon ? : "%H:%M");
+      return dollar_time (sunset, colon ? : hhmm);
    if (!strcasecmp (c, "SUNRISE") && now && (poslat || poslon))
-      return dollar_time (sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
-                                    (double) poslon / poslon_scale, SUN_DEFAULT), colon ? : "%H:%M");
+      return dollar_time (sunrise, colon ? : hhmm);
 #endif
    if (!strcasecmp (c, "FULLMOON"))
       return dollar_time (revk_moon_full_next (now), colon ? : "%F %H:%M");
@@ -1717,6 +1723,23 @@ app_main ()
       uint32_t up = uptime ();
       struct tm t;
       localtime_r (&now, &t);
+      if (t.tm_yday != lastday)
+      {                         // Daily
+#ifdef	CONFIG_REVK_SOLAR
+         lastday = t.tm_yday;
+         struct tm tm;
+         sunrise =
+            sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale, (double) poslon / poslon_scale,
+                      SUN_DEFAULT);
+         localtime_r (&sunrise, &tm);
+         sunrisehhmm = tm.tm_hour * 100 + t.tm_min;
+         sunset =
+            sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale, (double) poslon / poslon_scale,
+                     SUN_DEFAULT);
+         localtime_r (&sunset, &tm);
+         sunsethhmm = tm.tm_hour * 100 + t.tm_min;
+#endif
+      }
       if (b.setting)
       {
          b.setting = 0;
@@ -1852,9 +1875,34 @@ app_main ()
          season = *seasoncode;
       if (*lights && !b.lightoverride)
       {
+         uint16_t on = lighton,
+            off = lightoff;
+#ifdef	CONFIG_REVK_SOLAR
+         uint16_t ss (uint16_t x)
+         {                      // sun based adjust
+            int16_t d = 0;
+            if (x > 4000 && x < 6000)
+            {
+               d = x - 5000;
+               x = sunrisehhmm;
+            } else if (x > 6000 && x < 8000)
+            {
+               d = x - 7000;
+               x = sunsethhmm;
+            }
+            if (d)
+            {
+               x = (x / 100) * 60 + (x % 100);
+               x += d;
+               x = (x / 60) * 100 + (x % 60);
+            }
+            return x;
+         }
+         on = ss (on);
+         off = ss (off);
+#endif
          int hhmm = t.tm_hour * 100 + t.tm_min;
-         showlights (lighton == lightoff || (lighton < lightoff && lighton <= hhmm && lightoff > hhmm)
-                     || (lightoff < lighton && (lighton <= hhmm || lightoff > hhmm)) ? lights : "");
+         showlights (on == off || (on < off && on <= hhmm && off > hhmm) || (off < on && (on <= hhmm || off > hhmm)) ? lights : "");
       }
       b.redraw = 0;
       // Image

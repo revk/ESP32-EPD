@@ -83,7 +83,7 @@ Numeric JSON value formats
 
 ### Text
 
-This is one of the simplest widgets, and allows simple multi line text to be displayed. The font size defines the text size, with `1` being one pixel per 5x9 matrix image. The system uses a vector based font, and the *size* has modifers for allowing space below for decenders, and light weight vector lines.
+This is one of the simplest widgets, and allows simple multi line text to be displayed. The font size defines the text size, with `1` being one pixel per 5x9 matrix image. The system uses a vector based font, and the *size* has modifers for allowing space below for descenders, and light weight vector lines.
 
 Note that text is normally fixed space font with a small number of exceptions (`.`, `:`, `|`, `!`). Options may be added to force fixed space and maybe allow more proportional spaced characters at some point.
 
