@@ -566,9 +566,7 @@ typedef struct plot_s
 {
    gfx_pos_t ox,
      oy;
-#ifndef	GFX_COLOUR
    uint8_t invert;
-#endif
 } plot_t;
 
 static void *
@@ -600,8 +598,7 @@ pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b,
 void
 plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy, uint8_t invert)
 {
-   plot_t settings = { ox, oy, invert
-   };
+   plot_t settings = { ox, oy, invert };
    lwpng_decode_t *p = lwpng_decode (&settings, NULL, &pixel, &my_alloc, &my_free, NULL);
    lwpng_data (p, i->size, i->data);
    const char *e = lwpng_decoded (&p);
