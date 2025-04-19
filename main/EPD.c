@@ -2166,8 +2166,9 @@ revk_web_extra (httpd_req_t * req, int page)
       p = "Bins data JSON URL";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
       p = "QR code content";
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE
-       && widgett[page - 1] != REVK_SETTINGS_WIDGETT_CLOCK)
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_CLOCK)
+      p = "Time";
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
       add (p, "widgetc");
 
    // Extra fields

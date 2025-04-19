@@ -202,7 +202,7 @@ Example.
 
 ### Clock
 
-Simple analogue clock face
+Simple analogue clock face - default is current time,. but you can specify HH:MM or HH:MM:SS in content, e.g. using `$SUNSET` etc.
 
 |Flag|Meaning|
 |----|-------|
