@@ -55,6 +55,7 @@ u32	cachetime	300 .live		// Default cache for https
 c1	background		.hide .live 		// Background colour
 #endif
 
+s	tab			.hide .live .array=WIDGETS	// Tab name
 enum	widget.t		.hide .live .array=WIDGETS .enums="Text,Blocks,Digits,Image,QR,HLine,VLine,Bins,Clock"		// Widget type
 #ifdef	GFX_COLOUR
 c1	widget.f		.hide .live .array=WIDGETS	// Foreground colour

@@ -2155,6 +2155,7 @@ revk_web_extra (httpd_req_t * req, int page)
       sprintf (name, "%s%d", tag, page);
       revk_web_setting (req, pre, name);
    }
+   add (NULL, "tab");
    add (NULL, "widgett");
 #ifdef	GFX_COLOUR
    add (NULL, "widgetf");
