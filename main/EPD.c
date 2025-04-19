@@ -1989,13 +1989,15 @@ app_main ()
             if (*c)
             {
                uint16_t s = widgets[w];
-               uint8_t flags = GFX_TEXT_BLOCKY;
+               uint8_t flags = 0;
                if (s & 0x8000)
                   flags |= GFX_TEXT_DESCENDERS;
                if (s & 0x4000)
                   flags |= GFX_TEXT_LIGHT;
                if (s & 0x2000)
-                  flags |= GFX_TEXT_ITALIC;
+                  flags |= GFX_TEXT_DOTTY;
+               else
+                  flags |= GFX_TEXT_BLOCKY;
                s &= 0xFFF;
                if (!s)
                   s = 4;

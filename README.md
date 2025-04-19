@@ -103,6 +103,12 @@ Extra flags can be added to the size.
 
 Same as `text` but blocky (pixel based) characters.
 
+|Flag|Meaning|
+|----|-------|
+|`_`|Allow space for descenders|
+|`|`|Smaller spaced out squares|
+|`/`|Dots not squares|
+
 ### Digits
 
 Display content using classic 7 segment display format.
