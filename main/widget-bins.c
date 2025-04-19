@@ -241,7 +241,13 @@ widget_bins (uint16_t s, const char *c)
                      x += (width - i->start) / 2;
                }
                if (i->file)
-                  plot (i->file, x, oy + i->dy, 0);     // Icon
+                  plot (i->file, x, oy + i->dy,
+#ifdef	GFX_EPD
+                        gfxinvert
+#else
+                        0
+#endif
+                     );         // Icon
                else
                {                // Name
                   gfx_pos (x, oy + i->dy, GFX_L | GFX_T);

@@ -1360,6 +1360,10 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
          ref = parse_time (refdate, t.tm_year + 1901);  // Counting up, allow for year being next year
       return dollar_diff (ref, now);
    }
+   if (!strcasecmp (c, "ID"))
+      return strdup (revk_id);
+   if (!strcasecmp (c, "HOSTNAME"))
+      return strdup (hostname);
    if (!strcasecmp (c, "SSID"))
       return strdup (*qrssid ? qrssid : wifissid);
    if (!strcasecmp (c, "PASS"))

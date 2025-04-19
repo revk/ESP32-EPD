@@ -50,6 +50,8 @@ Using `${variable}` you can append the variable name with.
 |`SEASON`|Seasonal character code, e.g. `E` for Easter - is the primary season code at current time|
 |`SEASONS`|Seasonal character codes, as occasionally there may be more than one active|
 |`COUNTDOWN`|Countdown/up from `refdate`, not a `refdate` with year `0000` means countdown to date/time specified in current/next year|
+|`ID`|Device ID|
+|`HOSTNAME`|Hostname|
 |`SSID`|Current WiFi SSID (can be configured or use the WiFi settings)|
 |`PASS`|Current WiFi passphrase (can be configured or use the WiFi settings)|
 |`WIFI`|QR code formatted current WiFi details `$SSID` and `$PASS` info|
