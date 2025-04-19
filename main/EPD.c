@@ -1819,7 +1819,7 @@ app_main ()
                      esp_netif_ip_info_t ip;
                      if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
                      {
-                        p += sprintf (p, "[%d] /IPv4/[|]" IPSTR "/ /", s, IP2STR (&ip.ip));
+                        p += sprintf (p, "[%d] /IPv4/[|]" IPSTR "/ /", s * 2, IP2STR (&ip.ip));
                         asprintf (&qr2, "http://" IPSTR "/", IP2STR (&ip.ip));
                      }
                   }
