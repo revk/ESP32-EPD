@@ -1247,7 +1247,27 @@ char *
 dollar_time (time_t now, const char *fmt)
 {
    struct tm t;
-   localtime_r (&now, &t);
+   int l = strlen (fmt);
+   if (l >= +5 && (fmt[l - 5] == '-' || fmt[l - 5] == '+') && isdigit ((int) (uint8_t) fmt[l - 4])
+       && isdigit ((int) (uint8_t) fmt[l - 3]) && isdigit ((int) (uint8_t) fmt[l - 2]) && isdigit ((int) (uint8_t) fmt[l - 1]))
+   {
+      uint32_t a = ((fmt[l - 4] - '0') * 10 + fmt[l - 3] - '0') * 3600 + ((fmt[l - 2] - '0') * 10 + fmt[l - 1] - '0') * 60;
+      if (fmt[l - 5] == '-')
+         now -= a;
+      else
+         now += a;
+      fmt = (const char *) strdupa (fmt);
+      ((char *) fmt)[l - 5] = 0;
+      gmtime_r (&now, &t);
+   } else if (l >= 1 && fmt[l - 1] == 'Z')
+   {
+      fmt = (const char *) strdupa (fmt);
+      ((char *) fmt)[l - 1] = 0;
+      gmtime_r (&now, &t);
+   } else
+      localtime_r (&now, &t);
+   if (!*fmt)
+      fmt = hhmm;
    char temp[100];
    *temp = 0;
    strftime (temp, sizeof (temp), fmt, &t);

@@ -38,7 +38,7 @@ The *content* for any widget can contain `$` expanded fields, this can be `$vari
 
 Using `${variable}` you can append the variable name with.
 
-- `:format` for any time based variables, for `strftime` formatting, e.g. `${TIME:%a %:%M}` may show `Wed 10:15`
+- `:format` for any time based variables, for `strftime` formatting, e.g. `${TIME:%a %:%M}` may show `Wed 10:15`, and optionally ending with `+HHMM` or `-HHMM` or `Z` to set time zone
 - `.fields` for any JSON based variables, allows the JSON field, e.g. `${WEATHER.current.condition.code}`
 - `.field:format` will allow some formatting of fields from JSON based variables.
 
