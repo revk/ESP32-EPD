@@ -98,7 +98,7 @@ Extra flags can be added to the size.
 |Flag|Meaning|
 |----|-------|
 |`_`|Allow space for descenders|
-|`|`|Lighter stroke|
+|`\|`|Lighter stroke|
 |`/`|Italic (this is best when using colour displays as anti-aliased)|
 
 ### Blocky
@@ -108,7 +108,7 @@ Same as `text` but blocky (pixel based) characters.
 |Flag|Meaning|
 |----|-------|
 |`_`|Allow space for descenders|
-|`|`|Smaller spaced out squares|
+|`\|`|Smaller spaced out squares|
 |`/`|Dots not squares|
 
 ### Digits
@@ -131,7 +131,7 @@ Extra flags can be added to the size.
 |Flag|Meaning|
 |----|-------|
 |`_`|Smaller digits after `.`|
-|`|`|Smaller digits after `:`|
+|`\|`|Smaller digits after `:`|
 |`/`|Italic (this is best when using colour displays as anti-aliased)|
 
 Note that with `_` a trailing `C` or `F` is handled as superscript for temperatures.
@@ -155,7 +155,7 @@ Extra flags can be added to the size. The size is normally total pixel size and 
 |Flag|Meaning|
 |----|-------|
 |`_`|Size is unit size not overall size|
-|`|`|Plot without quiet zone|
+|`\|`|Plot without quiet zone|
 |`/`|Special (non standard) QR with dots - better when larger QR|
 
 ### HLine/VLine
