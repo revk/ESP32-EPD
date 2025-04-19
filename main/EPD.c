@@ -1871,7 +1871,13 @@ app_main ()
                epd_lock ();
                gfx_clear (0);
                gfx_refresh ();
-               plot (i, gfx_width () / 2 - i->w / 2, gfx_height () / 2 - i->h / 2, 0);
+               plot (i, gfx_width () / 2 - i->w / 2, gfx_height () / 2 - i->h / 2,
+#ifdef	GFX_EPD
+                     gfxinvert
+#else
+                     0
+#endif
+                  );
                epd_unlock ();
                override = up + 60;
             }
