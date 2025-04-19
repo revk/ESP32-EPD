@@ -209,7 +209,7 @@ Simple analogue clock face - default is current time,. but you can specify HH:MM
 |Flag|Meaning|
 |----|-------|
 |`_`|Circle around clock and fill background|
-|`|`|Tick marks on hour|
+|`\|`|Tick marks on hour|
 |`/`|Numbers on hour|
 
 ### More
