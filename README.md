@@ -18,7 +18,9 @@ This code is much more generic, allowing a number of *widgets* to be applied to 
 
 ## PCBs
 
-A number of PCBs designs are included. The most work on this code as been done using the `EPD75` (mono) display. It will need more work for colour OLED displays and black/white/red e-paper.
+<img size=25% align=right src=https://github.com/user-attachments/assets/1ef1e463-68c8-4b88-aa3e-d03f21327863>
+A number of PCBs designs are included. The most work on this code as been done using the `EPD75` (mono) display, and the `LCD2` and `LCD24` format colour LCD displays. Otehr displays 
+simply need work on the GFX library now as needed, but should work with a range of different display types and models quite easily. 
 
 ## LEDs
 
