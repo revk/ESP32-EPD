@@ -166,6 +166,7 @@ Draws a single pixel horizontal or virtial line based on size and alignment.
 
 ### Bins
 
+<img size=25% align=right src=https://github.com/user-attachments/assets/9996a021-2ce7-4d75-970c-ddaa125b35f0>
 This allows display of bin collection. This is based on a JSON file, the content is the URL to fetch the JSON. A script `monmouthire.cgi` is defined for now. The *size* is font size for the bin collection day or week (or `TODAY`/`TOMORROW`) which is shown along with icons.
 
 Top level JSON, specifies next bin collection day.
