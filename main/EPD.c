@@ -97,6 +97,7 @@ json_store (jo_t * jp, jo_t j)
    xSemaphoreTake (json_mutex, portMAX_DELAY);
    jo_free (jp);
    *jp = j;
+   jo_rewind (j);
    xSemaphoreGive (json_mutex);
 }
 
@@ -1626,7 +1627,8 @@ weather_get (void)
             w->cache = up + 60; // 1000000/month accesses on free tariff!
          jo_t j = jo_parse_mem (w->data, w->size);
          if (j)
-            json_store (&weather, j);
+            json_store (&weather, jo_dup (j));
+         jo_free (&j);
       }
       xSemaphoreGive (file_mutex);
    }
