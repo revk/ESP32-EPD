@@ -9,13 +9,15 @@ typedef struct file_s
    uint32_t w;                  // PNG width
    uint32_t h;                  // PNG height
    uint8_t *data;               // File data
+   uint8_t reload:1;		// File in use after cache expired, so reload
    uint8_t card:1;              // We have tried card
    uint8_t json:1;              // Is JSON
 } file_t;
+extern SemaphoreHandle_t file_mutex;
 
 extern const char *const longday[];
 extern const char *const shortday[];
 
-file_t *download (char *url,const char *suffix);
+file_t *download (char *url,const char *suffix,char force);
 void plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy,uint8_t invert);
 void setlights(const char *rgb);

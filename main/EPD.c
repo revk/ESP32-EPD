@@ -3,6 +3,8 @@
 
 static const char TAG[] = "EPD";
 
+//#define	TIMINGS
+
 #include "revk.h"
 #include "esp_system.h"
 #include "esp_timer.h"
@@ -53,7 +55,6 @@ volatile char *overrideimage = NULL;
 #ifdef	CONFIG_REVK_SOLAR
 time_t sunrise = 0,
    sunset = 0;
-int16_t lastday = -1;
 uint16_t sunrisehhmm = 0,
    sunsethhmm = 0;
 #endif
@@ -86,8 +87,9 @@ httpd_handle_t webserver = NULL;
 led_strip_handle_t strip = NULL;
 sdmmc_card_t *card = NULL;
 
-static SemaphoreHandle_t epd_mutex = NULL;
-static SemaphoreHandle_t json_mutex = NULL;
+SemaphoreHandle_t epd_mutex = NULL;
+SemaphoreHandle_t json_mutex = NULL;
+SemaphoreHandle_t file_mutex = NULL;
 
 static void
 json_store (jo_t * jp, jo_t j)
@@ -331,6 +333,7 @@ file_t *files = NULL;
 file_t *
 find_file (char *url)
 {
+   xSemaphoreTake (file_mutex, portMAX_DELAY);
    file_t *i;
    for (i = files; i && strcmp (i->url, url); i = i->next);
    if (!i)
@@ -344,12 +347,13 @@ find_file (char *url)
          files = i;
       }
    }
+   xSemaphoreGive (file_mutex);
    return i;
 }
 
 void
 check_file (file_t * i)
-{
+{                               // In mutex
    if (!i || !i->data || !i->size)
       return;
    i->changed = time (0);
@@ -382,7 +386,7 @@ check_file (file_t * i)
 }
 
 file_t *
-download (char *url, const char *suffix)
+download (char *url, const char *suffix, char force)
 {
    file_t *i = find_file (url);
    if (!i)
@@ -406,20 +410,23 @@ download (char *url, const char *suffix)
          l--;
       asprintf (&url, "%.*s/%s%s", l, baseurl, i->url, suffix);
    }
-   ESP_LOGD (TAG, "Get %s", url);
    int32_t len = 0;
    uint8_t *buf = NULL;
-   esp_http_client_config_t config = {
-      .url = url,
-      .crt_bundle_attach = esp_crt_bundle_attach,
-      .timeout_ms = 20000,
-   };
    int response = -1;
-   if (i->cache > uptime ())
-      response = (i->data ? 304 : 404); // Cached
-   else if (!revk_link_down () && (!strncasecmp (url, "http://", 7) || !strncasecmp (url, "https://", 8)))
+   if (i->cache && !force)
    {
+      if (i->cache < uptime ())
+         i->reload = 1;
+      response = (i->data ? 304 : 404); // Cached
+   } else if (!revk_link_down () && (!strncasecmp (url, "http://", 7) || !strncasecmp (url, "https://", 8)))
+   {
+      esp_http_client_config_t config = {
+         .url = url,
+         .crt_bundle_attach = esp_crt_bundle_attach,
+         .timeout_ms = 20000,
+      };
       i->cache = uptime () + cachetime;
+      i->reload = 0;
       esp_http_client_handle_t client = esp_http_client_init (&config);
       if (client)
       {
@@ -486,10 +493,12 @@ download (char *url, const char *suffix)
             response = 0;       // No change
          } else
          {                      // Change
+            xSemaphoreTake (file_mutex, portMAX_DELAY);
             free (i->data);
             i->data = buf;
             i->size = len;
             check_file (i);
+            xSemaphoreGive (file_mutex);
          }
          buf = NULL;
       }
@@ -554,10 +563,12 @@ download (char *url, const char *suffix)
                         jo_string (j, "read", fn);
                         revk_info ("SD", &j);
                         response = 200; // Treat as received
+                        xSemaphoreTake (file_mutex, portMAX_DELAY);
                         free (i->data);
                         i->data = buf;
                         i->size = s.st_size;
                         check_file (i);
+                        xSemaphoreGive (file_mutex);
                      }
                      buf = NULL;
                   }
@@ -612,10 +623,12 @@ pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b,
 void
 plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy, uint8_t invert)
 {
+   xSemaphoreTake (file_mutex, portMAX_DELAY);
    plot_t settings = { ox, oy, invert };
    lwpng_decode_t *p = lwpng_decode (&settings, NULL, &pixel, &my_alloc, &my_free, NULL);
    lwpng_data (p, i->size, i->data);
    const char *e = lwpng_decoded (&p);
+   xSemaphoreGive (file_mutex);
    if (e)
       ESP_LOGE (TAG, "PNG fail %s", e);
 }
@@ -815,7 +828,7 @@ web_frame (httpd_req_t * req)
 
 void
 snmp_tx (void)
-{                               // Send an SNMP if neede
+{                               // Send an SNMP if needed
    if (!*snmphost)
       return;
    uint32_t up = uptime ();
@@ -1579,33 +1592,15 @@ mqttjson_cb (void *arg, const char *topic, jo_t j)
 }
 
 void
-weather_task (void *x)
+reload_task (void *x)
 {
    while (1)
    {
-      if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
-      {                         // Weather
-         uint32_t up = uptime ();
-         char *url;
-         if (*postown)
-            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
-         else
-            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
-                      (float) poslat / 10000000, (float) poslon / 1000000);
-         file_t *w = download (url, NULL);
-         ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
-         free (url);
-         if (w && w->data && w->json)
-         {
-            if (w->cache > up + 60)
-               w->cache = up + 60;      // 1000000/month accesses on free tariff!
-            jo_t j = jo_parse_mem (w->data, w->size);
-            if (j)
-               json_store (&weather, j);
-         }
-         sleep (60);
-      } else
-         sleep (1);
+      file_t *i;
+      for (i = files; i; i = i->next)
+         if (i->reload)
+            download (i->url, NULL, 1);
+      sleep (1);
    }
 }
 
@@ -1621,6 +1616,8 @@ app_main ()
    xSemaphoreGive (epd_mutex);
    json_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (json_mutex);
+   file_mutex = xSemaphoreCreateMutex ();
+   xSemaphoreGive (file_mutex);
    revk_mqtt_sub (0, "DEFCON/#", defcon_cb, NULL);
    for (int i = 0; i < sizeof (jsonsub) / sizeof (*jsonsub); i++)
       if (*jsonsub[i])
@@ -1660,7 +1657,7 @@ app_main ()
    revk_task ("snmp", snmp_rx_task, NULL, 4);
    if (*solarip)
       revk_task ("solar", solar_task, NULL, 10);
-   revk_task ("weather", weather_task, NULL, 10);
+   revk_task ("reload", reload_task, NULL, 10);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -1734,7 +1731,12 @@ app_main ()
       flash ();
 #endif
    showlights ("");
-   uint32_t last = 0;
+   int16_t lastday = -1;
+   int8_t lasthour = -1;
+   int8_t lastmin = -1;
+#ifndef	GFX_EPD
+   int8_t lastsec = -1;
+#endif
    while (!revk_shutting_down (NULL))
    {
       usleep (10000);
@@ -1747,10 +1749,14 @@ app_main ()
       uint32_t up = uptime ();
       struct tm t;
       localtime_r (&now, &t);
+#ifdef	TIMINGS
+      uint64_t timea = esp_timer_get_time ();
+#endif
       if (t.tm_yday != lastday)
       {                         // Daily
-#ifdef	CONFIG_REVK_SOLAR
          lastday = t.tm_yday;
+         lasthour = -1;
+#ifdef	CONFIG_REVK_SOLAR
          struct tm tm;
          sunrise =
             sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale, (double) poslon / poslon_scale,
@@ -1763,6 +1769,44 @@ app_main ()
          localtime_r (&sunset, &tm);
          sunsethhmm = tm.tm_hour * 100 + t.tm_min;
 #endif
+      }
+      if (t.tm_hour != lasthour)
+      {                         // Hourly
+         lasthour = t.tm_hour;
+         lastmin = -1;
+      }
+      if (t.tm_min != lastmin)
+      {                         // Per minute
+         lastmin = t.tm_min;
+#ifndef	GFX_EPD
+         lastsec = -1;
+#endif
+#ifndef	ESP_EPD
+         b.redraw = 1;
+#endif
+         if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
+         {                      // Weather
+            uint32_t up = uptime ();
+            char *url;
+            if (*postown)
+               asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
+            else
+               asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
+                         (float) poslat / 10000000, (float) poslon / 1000000);
+            file_t *w = download (url, NULL, 0);
+            ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
+            free (url);
+            xSemaphoreTake (file_mutex, portMAX_DELAY);
+            if (w && w->data && w->json)
+            {
+               if (w->cache > up + 60)
+                  w->cache = up + 60;   // 1000000/month accesses on free tariff!
+               jo_t j = jo_parse_mem (w->data, w->size);
+               if (j)
+                  json_store (&weather, j);
+            }
+            xSemaphoreGive (file_mutex);
+         }
       }
       if (b.setting)
       {
@@ -1865,7 +1909,7 @@ app_main ()
          overrideimage = NULL;
          if (was)
          {
-            file_t *i = download (was, ".png");
+            file_t *i = download (was, ".png", 0);
             if (i && i->w)
             {
                epd_lock ();
@@ -1887,18 +1931,20 @@ app_main ()
       if (override)
       {
          if (override < up)
-            last = override = 0;
-         else
+         {
+            override = 0;
+            b.redraw = 1;
+         } else
             continue;
       }
 #ifdef	GFX_EPD
-      if (!b.startup || (now / 60 == last && !b.redraw))
+      if (!b.startup || (t.tm_min == lastmin && !b.redraw))
          continue;              // Check / update every minute
-      last = now / 60;
+      lastmin = t.tm_min;
 #else
-      if (!b.startup || (now == last && !b.redraw))
+      if (!b.startup || (t.tm_sec == lastsec && !b.redraw))
          continue;
-      last = now;
+      lastsec = t.tm_sec;
 #endif
       season = *revk_season (now);
       if (*seasoncode)
@@ -1952,6 +1998,9 @@ app_main ()
       }
 #endif
       epd_lock ();
+#ifdef	TIMINGS
+      uint64_t timeb = esp_timer_get_time ();
+#endif
       gfx_clear (0);
       uint8_t h = 0,
          v = 0;
@@ -2063,16 +2112,16 @@ app_main ()
                   if (season)
                   {
                      *s = season;
-                     i = download (url, ".png");
+                     i = download (url, ".png", 0);
                   }
                   if (!i || !i->size)
                   {
                      strcpy (s, s + 1);
-                     i = download (url, ".png");
+                     i = download (url, ".png", 0);
                   }
 
                } else
-                  i = download (c, ".png");
+                  i = download (c, ".png", 0);
                if (i && i->size && i->w && i->h)
                {
                   gfx_pos_t ox,
@@ -2121,7 +2170,15 @@ app_main ()
          if (c != widgetc[w])
             free (c);
       }
+#ifdef	TIMINGS
+      uint64_t timec = esp_timer_get_time ();
+#endif
       epd_unlock ();
+#ifdef	TIMINGS
+      uint64_t timed = esp_timer_get_time ();
+      ESP_LOGE (TAG, "Setup %4lldms, plot %4lldms, update %4lldms", (timeb - timea + 500) / 10000, (timec - timeb + 500) / 1000,
+                (timed - timec + 500) / 1000);
+#endif
       snmp_tx ();
    }
    revk_gpio_set (gfxbl, 0);
@@ -2201,7 +2258,6 @@ revk_web_extra (httpd_req_t * req, int page)
       p = "Time";
    if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
       add (p, "widgetc");
-
    // Extra fields
    const char *found;
    if ((found = dollar_check (c, "WEATHER")))
@@ -2224,7 +2280,6 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting (req, NULL, "refdate");
    if (dollar_check (c, "SNMP"))
       revk_web_setting (req, NULL, "snmphost");
-
    // Notes
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
