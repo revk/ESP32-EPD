@@ -140,14 +140,14 @@ gfx_qr (const char *value, uint16_t max)
       s2--;
    if (s >= 8)
       s2--;
+   // Some time we should change this to use the run plotting and anti-aliasing
    for (int y = 0; y < width; y++)
       for (int x = 0; x < width; x++)
       {
          uint8_t b = qr[width * y + x];
          if (!special || !(b & QR_TAG_BLACK) || (b & QR_TAG_TARGET))
             for (int dy = 0; dy < s; dy++)      // box
-               for (int dx = 0; dx < s; dx++)
-                  gfx_pixel_fb (ox + x * s + dx, oy + y * s + dy, b & QR_TAG_BLACK ? 0xFF : 0);
+               gfx_pixel_fb_run (ox + x * s, oy + y * s + dy, b & QR_TAG_BLACK ? 0xFF : 0, s);
          else
             for (int dy = 0; dy < s; dy++)      // dot
                for (int dx = 0; dx < s; dx++)
