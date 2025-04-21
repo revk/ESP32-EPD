@@ -1947,9 +1947,8 @@ app_main ()
             continue;
       }
 #ifdef	GFX_EPD
-      if (!b.startup || (t.tm_min == lastmin && !b.redraw))
-         continue;              // Check / update every minute
-      lastmin = t.tm_min;
+      if (!b.startup || !b.redraw)
+         continue;
 #else
       if (!b.startup || (t.tm_sec == lastsec && !b.redraw))
          continue;
