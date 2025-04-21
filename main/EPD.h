@@ -3,6 +3,7 @@ typedef struct file_s
 {
    struct file_s *next;         // Next file in chain
    char *url;                   // URL as passed to download
+   const char *suffix;                   // Default suffix
    uint32_t cache;              // Cache until this uptiome
    time_t changed;              // Last changed
    uint32_t size;               // File size

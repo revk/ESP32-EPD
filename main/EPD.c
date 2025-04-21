@@ -332,11 +332,11 @@ app_callback (int client, const char *prefix, const char *target, const char *su
 file_t *files = NULL;
 
 file_t *
-find_file (char *url)
+find_file (char *url, const char *suffix)
 {
    xSemaphoreTake (file_mutex, portMAX_DELAY);
    file_t *i;
-   for (i = files; i && strcmp (i->url, url); i = i->next);
+   for (i = files; i && (strcmp (i->url, url) || strcmp (i->suffix ? : "", suffix ? : "")); i = i->next);
    if (!i)
    {
       i = mallocspi (sizeof (*i));
@@ -344,6 +344,7 @@ find_file (char *url)
       {
          memset (i, 0, sizeof (*i));
          i->url = strdup (url);
+         i->suffix = suffix;
          i->next = files;
          files = i;
       }
@@ -389,9 +390,10 @@ check_file (file_t * i)
 file_t *
 download (char *url, const char *suffix, char force)
 {
-   file_t *i = find_file (url);
+   file_t *i = find_file (url, suffix);
    if (!i)
       return i;
+   suffix = i->suffix;
    if (!suffix || strchr (url, '?'))
       suffix = "";
    else
@@ -1600,7 +1602,7 @@ reload_task (void *x)
       file_t *i;
       for (i = files; i; i = i->next)
          if (i->reload)
-            download (i->url, NULL, 1);
+            download (i->url, i->suffix, 1);
       sleep (1);
    }
 }
