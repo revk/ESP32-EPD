@@ -3,7 +3,7 @@
 
 static const char TAG[] = "EPD";
 
-//#define	TIMINGS
+//#define       TIMINGS
 
 #include "revk.h"
 #include "esp_system.h"
@@ -1605,6 +1605,34 @@ reload_task (void *x)
 }
 
 void
+weather_get (void)
+{
+   if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
+   {                            // Weather
+      uint32_t up = uptime ();
+      char *url;
+      if (*postown)
+         asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
+      else
+         asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
+                   (float) poslat / 10000000, (float) poslon / 1000000);
+      file_t *w = download (url, NULL, 0);
+      ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
+      free (url);
+      xSemaphoreTake (file_mutex, portMAX_DELAY);
+      if (w && w->data && w->json)
+      {
+         if (w->cache > up + 60)
+            w->cache = up + 60; // 1000000/month accesses on free tariff!
+         jo_t j = jo_parse_mem (w->data, w->size);
+         if (j)
+            json_store (&weather, j);
+      }
+      xSemaphoreGive (file_mutex);
+   }
+}
+
+void
 app_main ()
 {
    b.defcon = 7;
@@ -1784,29 +1812,7 @@ app_main ()
 #ifndef	ESP_EPD
          b.redraw = 1;
 #endif
-         if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
-         {                      // Weather
-            uint32_t up = uptime ();
-            char *url;
-            if (*postown)
-               asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
-            else
-               asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
-                         (float) poslat / 10000000, (float) poslon / 1000000);
-            file_t *w = download (url, NULL, 0);
-            ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
-            free (url);
-            xSemaphoreTake (file_mutex, portMAX_DELAY);
-            if (w && w->data && w->json)
-            {
-               if (w->cache > up + 60)
-                  w->cache = up + 60;   // 1000000/month accesses on free tariff!
-               jo_t j = jo_parse_mem (w->data, w->size);
-               if (j)
-                  json_store (&weather, j);
-            }
-            xSemaphoreGive (file_mutex);
-         }
+         weather_get ();
       }
       if (b.setting)
       {
@@ -1816,6 +1822,7 @@ app_main ()
       if (b.wificonnect)
       {
          snmp_tx ();
+         weather_get ();
          gfx_refresh ();
          b.redraw = 1;
          b.startup = 1;
