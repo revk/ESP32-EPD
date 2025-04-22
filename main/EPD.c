@@ -1869,7 +1869,7 @@ app_main ()
                if (len)
                {
                   override = up + (aptime ? : 600);
-                  p += sprintf (p, "[%d] /[%d]WiFi/[_%d|]%.*s/", s, s * 2, s, len, temp);
+                  p += sprintf (p, "[%d] /[%d]Join WiFi/[_%d|]%.*s/", s, s * 2, s, len, temp);
                   if (*appass)
                      asprintf (&qr1, "WIFI:S:%.*s;T:WPA2;P:%s;;", len, temp, appass);
                   else
@@ -1895,8 +1895,8 @@ app_main ()
                int max = gfx_height () - gfx_y ();
                if (max > 0)
                {
-                  if (max > gfx_width () / 2)
-                     max = gfx_width () / 2;
+                  if (max > gfx_width () * 9 / 20)
+                     max = gfx_width () * 9 / 20;
                   if (qr1)
                   {
                      gfx_pos (0, gfx_height () - 1, GFX_L | GFX_B);
