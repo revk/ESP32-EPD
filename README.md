@@ -140,7 +140,7 @@ Note that with `_` a trailing `C` or `F` is handled as superscript for temperatu
 
 ### Image
 
-This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting) cutting for e-paper at 50% brightness (does not dither, etc). It can include *alpha* channel to control if plotted.
+This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting). It can include *alpha* channel to control if plotted (cuts at 50%.
 
 The image is typically stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
 
