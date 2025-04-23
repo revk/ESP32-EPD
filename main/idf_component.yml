@@ -17,3 +17,5 @@ dependencies:
   #   public: true
   espressif/zlib: '*'
   espressif/mdns: '*'
+  espressif/ds18b20: '*'
+  espressif/onewire_bus: '*'

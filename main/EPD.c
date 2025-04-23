@@ -19,6 +19,9 @@ static const char TAG[] = "EPD";
 #include "iec18004.h"
 #include <hal/spi_types.h>
 #include <driver/gpio.h>
+#include <driver/i2c.h>
+#include <onewire_bus.h>
+#include <ds18b20.h>
 #include <lwpng.h>
 #include "EPD.h"
 
@@ -65,9 +68,11 @@ const char hhmm[] = "%H:%M";
 const char hhmm[] = "%T";
 #endif
 
+static int8_t i2cport = 0;
+jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
 jo_t weather = NULL;
 jo_t solar = NULL;
-jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
+jo_t veml6040 = NULL;
 
 struct
 {
@@ -296,6 +301,8 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       return log_json (&mqttjson[suffix[4] - '1']);
    if (!strcasecmp (suffix, "solar"))
       return log_json (&solar);
+   if (!strcasecmp (suffix, "veml6040"))
+      return log_json (&veml6040);
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -1046,6 +1053,136 @@ led_task (void *x)
 }
 
 void
+btn_task (void *x)
+{
+   while (1)
+   {
+      usleep (10000);
+      // TODO
+   }
+}
+
+void
+ds18b20_task (void *x)
+{
+   while (1)
+   {
+      usleep (10000);
+      // TODO
+   }
+}
+
+static int32_t
+veml6040_read (uint8_t cmd)
+{
+   uint8_t h = 0,
+      l = 0;
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (veml6040i2c << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, cmd, true);
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (veml6040i2c << 1) | I2C_MASTER_READ, true);
+   i2c_master_read_byte (t, &l, I2C_MASTER_ACK);
+   i2c_master_read_byte (t, &h, I2C_MASTER_LAST_NACK);
+   i2c_master_stop (t);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+   if (err)
+      return -1;
+   return (h << 8) + l;
+}
+
+static void
+veml6040_write (uint8_t cmd, uint16_t val)
+{
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (veml6040i2c << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, cmd, true);
+   i2c_master_write_byte (t, val & 0xFF, true);
+   i2c_master_write_byte (t, val >> 8, true);
+   i2c_master_stop (t);
+   i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+}
+
+void
+i2c_task (void *x)
+{
+   if (i2c_driver_install (i2cport, I2C_MODE_MASTER, 0, 0, 0))
+   {
+      jo_t j = jo_object_alloc ();
+      jo_string (j, "error", "Install fail");
+      jo_int (j, "sda", sda.num);
+      jo_int (j, "scl", scl.num);
+      revk_error ("I2C", &j);
+      i2cport = -1;
+   } else
+   {
+      i2c_config_t config = {
+         .mode = I2C_MODE_MASTER,
+         .sda_io_num = sda.num,
+         .scl_io_num = scl.num,
+         .sda_pullup_en = true,
+         .scl_pullup_en = true,
+         .master.clk_speed = 100000,
+      };
+      if (i2c_param_config (i2cport, &config))
+      {
+         i2c_driver_delete (i2cport);
+         jo_t j = jo_object_alloc ();
+         jo_string (j, "error", "Config fail");
+         jo_int (j, "sda", sda.num);
+         jo_int (j, "scl", scl.num);
+         revk_error ("I2C", &j);
+         i2cport = -1;
+      } else
+         i2c_set_timeout (i2cport, 80000 * 5);  /* 5 ms ? allow for clock stretching */
+   }
+   if (i2cport < 0)
+      vTaskDelete (NULL);
+   void fail (uint8_t addr, const char *e)
+   {
+      ESP_LOGE (TAG, "I2C fail %02X: %s", addr & 0x7F, e);
+      jo_t j = jo_object_alloc ();
+      jo_string (j, "error", e);
+      jo_int (j, "sda", sda.num);
+      jo_int (j, "scl", scl.num);
+      jo_stringf (j, "addr", "%02X", addr & 0x7F);
+      revk_error ("I2C", &j);
+   }
+   // Init
+   if (veml6040i2c)
+   {
+      if (veml6040_read (0) < 0)
+         fail (veml6040i2c, "VEML6040");
+      else
+      {
+         veml6040 = jo_object_alloc ();
+         veml6040_write (0x00, 0x0040); // IT=4 TRIG=0 AF=0 SD=0
+      }
+   }
+   // Poll
+   while (1)
+   {
+      if (veml6040)
+      {                         // Scale to lux
+         float w;
+         jo_t j = jo_object_alloc ();
+         jo_litf (j, "r", "%.2f", (float) veml6040_read (0x08) * 1031 / 65535);
+         jo_litf (j, "g", "%.2f", (float) veml6040_read (0x09) * 1031 / 65535);
+         jo_litf (j, "b", "%.2f", (float) veml6040_read (0x0A) * 1031 / 65535);
+         jo_litf (j, "w", "%.2f", w = (float) veml6040_read (0x0B) * 1031 / 65535);
+         json_store (&veml6040, j);
+         if (veml6040dark && gfxbl.set)
+            revk_gpio_set (gfxbl, w < veml6040dark ? 1 : 0);
+      }
+      sleep (1);
+   }
+}
+
+void
 solar_task (void *x)
 {
    int backup = 1;
@@ -1690,6 +1827,12 @@ app_main ()
    if (*solarip)
       revk_task ("solar", solar_task, NULL, 10);
    revk_task ("reload", reload_task, NULL, 10);
+   if (sda.set && scl.set)
+      revk_task ("i2c", i2c_task, NULL, 10);
+   if (btnn.set || btns.set || btne.set || btnw.set || btnp.set)
+      revk_task ("btn", btn_task, NULL, 10);
+   if (ds18b20.set)
+      revk_task ("18b20", ds18b20_task, NULL, 10);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -2296,4 +2439,11 @@ revk_web_extra (httpd_req_t * req, int page)
    else if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_BINS)
       revk_web_setting_info (req,
                              "Content can contain <tt>$</tt> expansion fields like <tt>$TIME</tt>, <tt>${DAY}</tt>. See manual for more details");
+}
+
+void
+revk_state_extra (jo_t j)
+{
+   if (veml6040)
+      jo_json (j, "veml6040", veml6040);
 }
