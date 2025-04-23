@@ -70,9 +70,11 @@ const char hhmm[] = "%T";
 
 static int8_t i2cport = 0;
 jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
+
 jo_t weather = NULL;
 jo_t solar = NULL;
 jo_t veml6040 = NULL;
+jo_t mcp9808 = NULL;
 
 struct
 {
@@ -303,6 +305,8 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       return log_json (&solar);
    if (!strcasecmp (suffix, "veml6040"))
       return log_json (&veml6040);
+   if (!strcasecmp (suffix, "mcp9808"))
+      return log_json (&mcp9808);
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -1073,35 +1077,78 @@ ds18b20_task (void *x)
 }
 
 static int32_t
-veml6040_read (uint8_t cmd)
+i2c_read_16lh (uint8_t addr, uint8_t cmd)
 {
    uint8_t h = 0,
       l = 0;
    i2c_cmd_handle_t t = i2c_cmd_link_create ();
    i2c_master_start (t);
-   i2c_master_write_byte (t, (veml6040i2c << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_WRITE, true);
    i2c_master_write_byte (t, cmd, true);
    i2c_master_start (t);
-   i2c_master_write_byte (t, (veml6040i2c << 1) | I2C_MASTER_READ, true);
+   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_READ, true);
    i2c_master_read_byte (t, &l, I2C_MASTER_ACK);
    i2c_master_read_byte (t, &h, I2C_MASTER_LAST_NACK);
    i2c_master_stop (t);
    esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
    i2c_cmd_link_delete (t);
    if (err)
+   {
+      ESP_LOGE (TAG, "I2C %02X %02X fail", addr, cmd);
       return -1;
+   }
+   ESP_LOGD (TAG, "I2C %02X %02X %02X%02X OK", addr, cmd, h, l);
    return (h << 8) + l;
 }
 
 static void
-veml6040_write (uint8_t cmd, uint16_t val)
+i2c_write_16lh (uint8_t addr, uint8_t cmd, uint16_t val)
 {
    i2c_cmd_handle_t t = i2c_cmd_link_create ();
    i2c_master_start (t);
-   i2c_master_write_byte (t, (veml6040i2c << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_WRITE, true);
    i2c_master_write_byte (t, cmd, true);
    i2c_master_write_byte (t, val & 0xFF, true);
    i2c_master_write_byte (t, val >> 8, true);
+   i2c_master_stop (t);
+   i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+}
+
+static int32_t
+i2c_read_16hl (uint8_t addr, uint8_t cmd)
+{
+   uint8_t h = 0,
+      l = 0;
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, cmd, true);
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_READ, true);
+   i2c_master_read_byte (t, &h, I2C_MASTER_ACK);
+   i2c_master_read_byte (t, &l, I2C_MASTER_LAST_NACK);
+   i2c_master_stop (t);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+   if (err)
+   {
+      ESP_LOGE (TAG, "I2C %02X %02X fail", addr, cmd);
+      return -1;
+   }
+   ESP_LOGD (TAG, "I2C %02X %02X %02X%02X OK", addr, cmd, h, l);
+   return (h << 8) + l;
+}
+
+static void
+i2c_write_16hl (uint8_t addr, uint8_t cmd, uint16_t val)
+{
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, cmd, true);
+   i2c_master_write_byte (t, val >> 8, true);
+   i2c_master_write_byte (t, val & 0xFF, true);
    i2c_master_stop (t);
    i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
    i2c_cmd_link_delete (t);
@@ -1155,13 +1202,20 @@ i2c_task (void *x)
    // Init
    if (veml6040i2c)
    {
-      if (veml6040_read (0) < 0)
+      if (i2c_read_16lh (veml6040i2c, 0) < 0)
          fail (veml6040i2c, "VEML6040");
       else
       {
          veml6040 = jo_object_alloc ();
-         veml6040_write (0x00, 0x0040); // IT=4 TRIG=0 AF=0 SD=0
+         i2c_write_16lh (veml6040i2c, 0x00, 0x0040);    // IT=4 TRIG=0 AF=0 SD=0
       }
+   }
+   if (mcp9808i2c)
+   {
+      if (i2c_read_16hl (mcp9808i2c, 6) != 0x54 || i2c_read_16hl (mcp9808i2c, 7) != 0x0400)
+         fail (mcp9808i2c, "MCP9808");
+      else
+         mcp9808 = jo_object_alloc ();
    }
    // Poll
    while (1)
@@ -1170,13 +1224,20 @@ i2c_task (void *x)
       {                         // Scale to lux
          float w;
          jo_t j = jo_object_alloc ();
-         jo_litf (j, "r", "%.2f", (float) veml6040_read (0x08) * 1031 / 65535);
-         jo_litf (j, "g", "%.2f", (float) veml6040_read (0x09) * 1031 / 65535);
-         jo_litf (j, "b", "%.2f", (float) veml6040_read (0x0A) * 1031 / 65535);
-         jo_litf (j, "w", "%.2f", w = (float) veml6040_read (0x0B) * 1031 / 65535);
+         jo_litf (j, "r", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x08) * 1031 / 65535);
+         jo_litf (j, "g", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x09) * 1031 / 65535);
+         jo_litf (j, "b", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x0A) * 1031 / 65535);
+         jo_litf (j, "w", "%.2f", w = (float) i2c_read_16lh (veml6040i2c, 0x0B) * 1031 / 65535);
          json_store (&veml6040, j);
          if (veml6040dark && gfxbl.set)
-            revk_gpio_set (gfxbl, w < veml6040dark ? 1 : 0);
+            revk_gpio_set (gfxbl, w < veml6040dark ? 0 : 1);
+      }
+      if (mcp9808)
+      {
+         int16_t t = (i2c_read_16hl (mcp9808i2c, 5) << 3);
+         jo_t j = jo_object_alloc ();
+         jo_litf (j, "c", "%.2f", (float) t / 128 + (float) mcp9808dt / mcp9808dt_scale);
+         json_store (&mcp9808, j);
       }
       sleep (1);
    }
@@ -1585,6 +1646,10 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    }
    if (!strcasecmp (c, "SOLAR"))
       return dollar_json (&solar, dot, colon);
+   if (!strcasecmp (c, "VEML6040"))
+      return dollar_json (&veml6040, dot, colon);
+   if (!strcasecmp (c, "MCP9808"))
+      return dollar_json (&mcp9808, dot, colon);
    if (!strncasecmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && !c[5] && c[4] > '0'
        && c[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
       return dollar_json (&mqttjson[c[4] - '1'], dot, colon);
@@ -1912,6 +1977,7 @@ app_main ()
 #ifndef	GFX_EPD
    int8_t lastsec = -1;
 #endif
+   int8_t lastreport = -1;
    while (!revk_shutting_down (NULL))
    {
       usleep (10000);
@@ -1927,6 +1993,11 @@ app_main ()
 #ifdef	TIMINGS
       uint64_t timea = esp_timer_get_time ();
 #endif
+      if (reporting && (int8_t) (now / reporting) != lastreport)
+      {
+         lastreport = now / reporting;
+         revk_command ("status", NULL);
+      }
       if (t.tm_yday != lastday)
       {                         // Daily
          lastday = t.tm_yday;
@@ -2446,4 +2517,6 @@ revk_state_extra (jo_t j)
 {
    if (veml6040)
       jo_json (j, "veml6040", veml6040);
+   if (mcp9808)
+      jo_json (j, "mcp9808", mcp9808);
 }

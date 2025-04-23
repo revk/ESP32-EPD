@@ -81,6 +81,8 @@ s	refdate			.live			// Reference date/time (YYYY-MM-DD HH:MM:SS)
 s	snmphost		.live			// Hostname for SNMP poll
 s	json.sub		.array=5 .old="mqttsub"		// Subscriptions for JSON payload $MQTTn
 
+u16	reporting	60	.unit="s"		// Report interval
+
 gpio	btn.n						// Button N
 gpio	btn.s						// Button S
 gpio	btn.e						// Button E
@@ -105,7 +107,7 @@ u8	gzp6816d.i2c		.set .hex		// GZP6816D Pressure sensor
 s16	gzp6816d.dt		.live .decimal=2	// GZP6816D Temp offset
 
 u8	veml6040.i2c		.set .hex		// VEML6040 Light sensor
-u16	veml6040.dark		.live .unit="lux"	// Level below which we turn off display
+u8	veml6040.dark		.live .unit="lux"	// Level below which we turn off display
 
 u8	t6793.i2c		.set .hex		// T6793 CO2 sensor
 s16	t6793.dt		.live .decimal=2	// T6793 Temp offset
