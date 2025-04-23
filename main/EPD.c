@@ -3,6 +3,8 @@
 
 static const char TAG[] = "EPD";
 
+//#define       TIMINGS
+
 #include "revk.h"
 #include "esp_system.h"
 #include "esp_timer.h"
@@ -50,6 +52,19 @@ static struct
 volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
 
+#ifdef	CONFIG_REVK_SOLAR
+time_t sunrise = 0,
+   sunset = 0;
+uint16_t sunrisehhmm = 0,
+   sunsethhmm = 0;
+#endif
+
+#ifdef	GFX_EPD
+const char hhmm[] = "%H:%M";
+#else
+const char hhmm[] = "%T";
+#endif
+
 jo_t weather = NULL;
 jo_t solar = NULL;
 jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
@@ -72,8 +87,9 @@ httpd_handle_t webserver = NULL;
 led_strip_handle_t strip = NULL;
 sdmmc_card_t *card = NULL;
 
-static SemaphoreHandle_t epd_mutex = NULL;
-static SemaphoreHandle_t json_mutex = NULL;
+SemaphoreHandle_t epd_mutex = NULL;
+SemaphoreHandle_t json_mutex = NULL;
+SemaphoreHandle_t file_mutex = NULL;
 
 static void
 json_store (jo_t * jp, jo_t j)
@@ -81,6 +97,7 @@ json_store (jo_t * jp, jo_t j)
    xSemaphoreTake (json_mutex, portMAX_DELAY);
    jo_free (jp);
    *jp = j;
+   jo_rewind (j);
    xSemaphoreGive (json_mutex);
 }
 
@@ -124,14 +141,14 @@ gfx_qr (const char *value, uint16_t max)
       s2--;
    if (s >= 8)
       s2--;
+   // Some time we should change this to use the run plotting and anti-aliasing
    for (int y = 0; y < width; y++)
       for (int x = 0; x < width; x++)
       {
          uint8_t b = qr[width * y + x];
          if (!special || !(b & QR_TAG_BLACK) || (b & QR_TAG_TARGET))
             for (int dy = 0; dy < s; dy++)      // box
-               for (int dx = 0; dx < s; dx++)
-                  gfx_pixel_fb (ox + x * s + dx, oy + y * s + dy, b & QR_TAG_BLACK ? 0xFF : 0);
+               gfx_pixel_fb_run (ox + x * s, oy + y * s + dy, b & QR_TAG_BLACK ? 0xFF : 0, s);
          else
             for (int dy = 0; dy < s; dy++)      // dot
                for (int dx = 0; dx < s; dx++)
@@ -315,10 +332,11 @@ app_callback (int client, const char *prefix, const char *target, const char *su
 file_t *files = NULL;
 
 file_t *
-find_file (char *url)
+find_file (char *url, const char *suffix)
 {
+   xSemaphoreTake (file_mutex, portMAX_DELAY);
    file_t *i;
-   for (i = files; i && strcmp (i->url, url); i = i->next);
+   for (i = files; i && (strcmp (i->url, url) || strcmp (i->suffix ? : "", suffix ? : "")); i = i->next);
    if (!i)
    {
       i = mallocspi (sizeof (*i));
@@ -326,16 +344,18 @@ find_file (char *url)
       {
          memset (i, 0, sizeof (*i));
          i->url = strdup (url);
+         i->suffix = suffix;
          i->next = files;
          files = i;
       }
    }
+   xSemaphoreGive (file_mutex);
    return i;
 }
 
 void
 check_file (file_t * i)
-{
+{                               // In mutex
    if (!i || !i->data || !i->size)
       return;
    i->changed = time (0);
@@ -368,11 +388,12 @@ check_file (file_t * i)
 }
 
 file_t *
-download (char *url, const char *suffix)
+download (char *url, const char *suffix, char force)
 {
-   file_t *i = find_file (url);
+   file_t *i = find_file (url, suffix);
    if (!i)
       return i;
+   suffix = i->suffix;
    if (!suffix || strchr (url, '?'))
       suffix = "";
    else
@@ -392,20 +413,23 @@ download (char *url, const char *suffix)
          l--;
       asprintf (&url, "%.*s/%s%s", l, baseurl, i->url, suffix);
    }
-   ESP_LOGD (TAG, "Get %s", url);
    int32_t len = 0;
    uint8_t *buf = NULL;
-   esp_http_client_config_t config = {
-      .url = url,
-      .crt_bundle_attach = esp_crt_bundle_attach,
-      .timeout_ms = 20000,
-   };
    int response = -1;
-   if (i->cache > uptime ())
-      response = (i->data ? 304 : 404); // Cached
-   else if (!revk_link_down () && (!strncasecmp (url, "http://", 7) || !strncasecmp (url, "https://", 8)))
+   if (i->cache && !force)
    {
+      if (i->cache < uptime ())
+         i->reload = 1;
+      response = (i->data ? 304 : 404); // Cached
+   } else if (!revk_link_down () && (!strncasecmp (url, "http://", 7) || !strncasecmp (url, "https://", 8)))
+   {
+      esp_http_client_config_t config = {
+         .url = url,
+         .crt_bundle_attach = esp_crt_bundle_attach,
+         .timeout_ms = 20000,
+      };
       i->cache = uptime () + cachetime;
+      i->reload = 0;
       esp_http_client_handle_t client = esp_http_client_init (&config);
       if (client)
       {
@@ -472,10 +496,12 @@ download (char *url, const char *suffix)
             response = 0;       // No change
          } else
          {                      // Change
+            xSemaphoreTake (file_mutex, portMAX_DELAY);
             free (i->data);
             i->data = buf;
             i->size = len;
             check_file (i);
+            xSemaphoreGive (file_mutex);
          }
          buf = NULL;
       }
@@ -540,10 +566,12 @@ download (char *url, const char *suffix)
                         jo_string (j, "read", fn);
                         revk_info ("SD", &j);
                         response = 200; // Treat as received
+                        xSemaphoreTake (file_mutex, portMAX_DELAY);
                         free (i->data);
                         i->data = buf;
                         i->size = s.st_size;
                         check_file (i);
+                        xSemaphoreGive (file_mutex);
                      }
                      buf = NULL;
                   }
@@ -566,6 +594,7 @@ typedef struct plot_s
 {
    gfx_pos_t ox,
      oy;
+   uint8_t invert;
 } plot_t;
 
 static void *
@@ -584,25 +613,25 @@ static const char *
 pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
 {
    plot_t *p = opaque;
-#ifndef	GFX_COLOUR
-   if (gfxinvert)
+   if (p->invert)
    {                            // Gets inverted to reverse before
       r ^= 0xFFFF;
       g ^= 0xFFFF;
       b ^= 0xFFFF;
    }
-#endif
    gfx_pixel_argb (p->ox + x, p->oy + y, ((a >> 8) << 24) | ((r >> 8) << 16) | ((g >> 8) << 8) | (b >> 8));
    return NULL;
 }
 
 void
-plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy)
+plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy, uint8_t invert)
 {
-   plot_t settings = { ox, oy };
+   xSemaphoreTake (file_mutex, portMAX_DELAY);
+   plot_t settings = { ox, oy, invert };
    lwpng_decode_t *p = lwpng_decode (&settings, NULL, &pixel, &my_alloc, &my_free, NULL);
    lwpng_data (p, i->size, i->data);
    const char *e = lwpng_decoded (&p);
+   xSemaphoreGive (file_mutex);
    if (e)
       ESP_LOGE (TAG, "PNG fail %s", e);
 }
@@ -802,7 +831,7 @@ web_frame (httpd_req_t * req)
 
 void
 snmp_tx (void)
-{                               // Send an SNMP if neede
+{                               // Send an SNMP if needed
    if (!*snmphost)
       return;
    uint32_t up = uptime ();
@@ -1234,7 +1263,27 @@ char *
 dollar_time (time_t now, const char *fmt)
 {
    struct tm t;
-   localtime_r (&now, &t);
+   int l = strlen (fmt);
+   if (l >= +5 && (fmt[l - 5] == '-' || fmt[l - 5] == '+') && isdigit ((int) (uint8_t) fmt[l - 4])
+       && isdigit ((int) (uint8_t) fmt[l - 3]) && isdigit ((int) (uint8_t) fmt[l - 2]) && isdigit ((int) (uint8_t) fmt[l - 1]))
+   {
+      uint32_t a = ((fmt[l - 4] - '0') * 10 + fmt[l - 3] - '0') * 3600 + ((fmt[l - 2] - '0') * 10 + fmt[l - 1] - '0') * 60;
+      if (fmt[l - 5] == '-')
+         now -= a;
+      else
+         now += a;
+      fmt = (const char *) strdupa (fmt);
+      ((char *) fmt)[l - 5] = 0;
+      gmtime_r (&now, &t);
+   } else if (l >= 1 && fmt[l - 1] == 'Z')
+   {
+      fmt = (const char *) strdupa (fmt);
+      ((char *) fmt)[l - 1] = 0;
+      gmtime_r (&now, &t);
+   } else
+      localtime_r (&now, &t);
+   if (!*fmt)
+      fmt = hhmm;
    char temp[100];
    *temp = 0;
    strftime (temp, sizeof (temp), fmt, &t);
@@ -1315,13 +1364,7 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    if (!strcasecmp (c, "SEASONS"))
       return strdup (revk_season (time (0)));
    if (!strcasecmp (c, "TIME"))
-      return dollar_time (now, colon ? :
-#ifdef	GFX_EPD
-                          "%H:%M"
-#else
-                          "%T"
-#endif
-         );
+      return dollar_time (now, colon ? : hhmm);
    if (!strcasecmp (c, "DATE"))
       return dollar_time (now, colon ? : "%F");
    if (!strcasecmp (c, "DAY"))
@@ -1333,6 +1376,10 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
          ref = parse_time (refdate, t.tm_year + 1901);  // Counting up, allow for year being next year
       return dollar_diff (ref, now);
    }
+   if (!strcasecmp (c, "ID"))
+      return strdup (revk_id);
+   if (!strcasecmp (c, "HOSTNAME"))
+      return strdup (hostname);
    if (!strcasecmp (c, "SSID"))
       return strdup (*qrssid ? qrssid : wifissid);
    if (!strcasecmp (c, "PASS"))
@@ -1359,11 +1406,9 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    }
 #ifdef	CONFIG_REVK_SOLAR
    if (!strcasecmp (c, "SUNSET") && now && (poslat || poslon))
-      return dollar_time (sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
-                                   (double) poslon / poslon_scale, SUN_DEFAULT), colon ? : "%H:%M");
+      return dollar_time (sunset, colon ? : hhmm);
    if (!strcasecmp (c, "SUNRISE") && now && (poslat || poslon))
-      return dollar_time (sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
-                                    (double) poslon / poslon_scale, SUN_DEFAULT), colon ? : "%H:%M");
+      return dollar_time (sunrise, colon ? : hhmm);
 #endif
    if (!strcasecmp (c, "FULLMOON"))
       return dollar_time (revk_moon_full_next (now), colon ? : "%F %H:%M");
@@ -1550,33 +1595,44 @@ mqttjson_cb (void *arg, const char *topic, jo_t j)
 }
 
 void
-weather_task (void *x)
+reload_task (void *x)
 {
    while (1)
    {
-      if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
-      {                         // Weather
-         uint32_t up = uptime ();
-         char *url;
-         if (*postown)
-            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
-         else
-            asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
-                      (float) poslat / 10000000, (float) poslon / 1000000);
-         file_t *w = download (url, NULL);
-         ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
-         free (url);
-         if (w && w->data && w->json)
-         {
-            if (w->cache > up + 60)
-               w->cache = up + 60;      // 1000000/month accesses on free tariff!
-            jo_t j = jo_parse_mem (w->data, w->size);
-            if (j)
-               json_store (&weather, j);
-         }
-         sleep (60);
-      } else
-         sleep (1);
+      file_t *i;
+      for (i = files; i; i = i->next)
+         if (i->reload)
+            download (i->url, i->suffix, 1);
+      sleep (1);
+   }
+}
+
+void
+weather_get (void)
+{
+   if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
+   {                            // Weather
+      uint32_t up = uptime ();
+      char *url;
+      if (*postown)
+         asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
+      else
+         asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
+                   (float) poslat / 10000000, (float) poslon / 1000000);
+      file_t *w = download (url, NULL, 0);
+      ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
+      free (url);
+      xSemaphoreTake (file_mutex, portMAX_DELAY);
+      if (w && w->data && w->json)
+      {
+         if (w->cache > up + 60)
+            w->cache = up + 60; // 1000000/month accesses on free tariff!
+         jo_t j = jo_parse_mem (w->data, w->size);
+         if (j)
+            json_store (&weather, jo_dup (j));
+         jo_free (&j);
+      }
+      xSemaphoreGive (file_mutex);
    }
 }
 
@@ -1592,6 +1648,8 @@ app_main ()
    xSemaphoreGive (epd_mutex);
    json_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (json_mutex);
+   file_mutex = xSemaphoreCreateMutex ();
+   xSemaphoreGive (file_mutex);
    revk_mqtt_sub (0, "DEFCON/#", defcon_cb, NULL);
    for (int i = 0; i < sizeof (jsonsub) / sizeof (*jsonsub); i++)
       if (*jsonsub[i])
@@ -1631,7 +1689,7 @@ app_main ()
    revk_task ("snmp", snmp_rx_task, NULL, 4);
    if (*solarip)
       revk_task ("solar", solar_task, NULL, 10);
-   revk_task ("weather", weather_task, NULL, 10);
+   revk_task ("reload", reload_task, NULL, 10);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -1705,7 +1763,12 @@ app_main ()
       flash ();
 #endif
    showlights ("");
-   uint32_t last = 0;
+   int16_t lastday = -1;
+   int8_t lasthour = -1;
+   int8_t lastmin = -1;
+#ifndef	GFX_EPD
+   int8_t lastsec = -1;
+#endif
    while (!revk_shutting_down (NULL))
    {
       usleep (10000);
@@ -1718,6 +1781,43 @@ app_main ()
       uint32_t up = uptime ();
       struct tm t;
       localtime_r (&now, &t);
+#ifdef	TIMINGS
+      uint64_t timea = esp_timer_get_time ();
+#endif
+      if (t.tm_yday != lastday)
+      {                         // Daily
+         lastday = t.tm_yday;
+         lasthour = -1;
+#ifdef	CONFIG_REVK_SOLAR
+         struct tm tm;
+         sunrise =
+            sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale, (double) poslon / poslon_scale,
+                      SUN_DEFAULT);
+         localtime_r (&sunrise, &tm);
+         sunrisehhmm = tm.tm_hour * 100 + t.tm_min;
+         sunset =
+            sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale, (double) poslon / poslon_scale,
+                     SUN_DEFAULT);
+         localtime_r (&sunset, &tm);
+         sunsethhmm = tm.tm_hour * 100 + t.tm_min;
+#endif
+      }
+      if (t.tm_hour != lasthour)
+      {                         // Hourly
+         lasthour = t.tm_hour;
+         lastmin = -1;
+      }
+      if (t.tm_min != lastmin)
+      {                         // Per minute
+         lastmin = t.tm_min;
+#ifndef	GFX_EPD
+         lastsec = -1;
+#endif
+#ifndef	ESP_EPD
+         b.redraw = 1;
+#endif
+         weather_get ();
+      }
       if (b.setting)
       {
          b.setting = 0;
@@ -1726,6 +1826,7 @@ app_main ()
       if (b.wificonnect)
       {
          snmp_tx ();
+         weather_get ();
          gfx_refresh ();
          b.redraw = 1;
          b.startup = 1;
@@ -1768,7 +1869,7 @@ app_main ()
                if (len)
                {
                   override = up + (aptime ? : 600);
-                  p += sprintf (p, "[%d] /[%d]WiFi/[_%d|]%.*s/", s, s * 2, s, len, temp);
+                  p += sprintf (p, "[%d] /[%d]Join WiFi/[_%d|]%.*s/", s, s * 2, s, len, temp);
                   if (*appass)
                      asprintf (&qr1, "WIFI:S:%.*s;T:WPA2;P:%s;;", len, temp, appass);
                   else
@@ -1777,7 +1878,7 @@ app_main ()
                      esp_netif_ip_info_t ip;
                      if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
                      {
-                        p += sprintf (p, "[%d] /IPv4/[|]" IPSTR "/ /", IP2STR (&ip.ip), s);
+                        p += sprintf (p, "[%d] /IPv4/[|]" IPSTR "/ /", s * 2, IP2STR (&ip.ip));
                         asprintf (&qr2, "http://" IPSTR "/", IP2STR (&ip.ip));
                      }
                   }
@@ -1794,8 +1895,8 @@ app_main ()
                int max = gfx_height () - gfx_y ();
                if (max > 0)
                {
-                  if (max > gfx_width () / 2)
-                     max = gfx_width () / 2;
+                  if (max > gfx_width () * 9 / 20)
+                     max = gfx_width () * 9 / 20;
                   if (qr1)
                   {
                      gfx_pos (0, gfx_height () - 1, GFX_L | GFX_B);
@@ -1819,13 +1920,19 @@ app_main ()
          overrideimage = NULL;
          if (was)
          {
-            file_t *i = download (was, ".png");
+            file_t *i = download (was, ".png", 0);
             if (i && i->w)
             {
                epd_lock ();
                gfx_clear (0);
                gfx_refresh ();
-               plot (i, gfx_width () / 2 - i->w / 2, gfx_height () / 2 - i->h / 2);
+               plot (i, gfx_width () / 2 - i->w / 2, gfx_height () / 2 - i->h / 2,
+#ifdef	GFX_EPD
+                     gfxinvert
+#else
+                     0
+#endif
+                  );
                epd_unlock ();
                override = up + 60;
             }
@@ -1835,27 +1942,53 @@ app_main ()
       if (override)
       {
          if (override < up)
-            last = override = 0;
-         else
+         {
+            override = 0;
+            b.redraw = 1;
+         } else
             continue;
       }
 #ifdef	GFX_EPD
-      if (!b.startup || (now / 60 == last && !b.redraw))
-         continue;              // Check / update every minute
-      last = now / 60;
-#else
-      if (!b.startup || (now == last && !b.redraw))
+      if (!b.startup || !b.redraw)
          continue;
-      last = now;
+#else
+      if (!b.startup || (t.tm_sec == lastsec && !b.redraw))
+         continue;
+      lastsec = t.tm_sec;
 #endif
       season = *revk_season (now);
       if (*seasoncode)
          season = *seasoncode;
       if (*lights && !b.lightoverride)
       {
+         uint16_t on = lighton,
+            off = lightoff;
+#ifdef	CONFIG_REVK_SOLAR
+         uint16_t ss (uint16_t x)
+         {                      // sun based adjust
+            int16_t d = 0;
+            if (x > 4000 && x < 6000)
+            {
+               d = x - 5000;
+               x = sunrisehhmm;
+            } else if (x > 6000 && x < 8000)
+            {
+               d = x - 7000;
+               x = sunsethhmm;
+            }
+            if (d)
+            {
+               x = (x / 100) * 60 + (x % 100);
+               x += d;
+               x = (x / 60) * 100 + (x % 60);
+            }
+            return x;
+         }
+         on = ss (on);
+         off = ss (off);
+#endif
          int hhmm = t.tm_hour * 100 + t.tm_min;
-         showlights (lighton == lightoff || (lighton < lightoff && lighton <= hhmm && lightoff > hhmm)
-                     || (lightoff < lighton && (lighton <= hhmm || lightoff > hhmm)) ? lights : "");
+         showlights (on == off || (on < off && on <= hhmm && off > hhmm) || (off < on && (on <= hhmm || off > hhmm)) ? lights : "");
       }
       b.redraw = 0;
       // Image
@@ -1875,6 +2008,9 @@ app_main ()
       }
 #endif
       epd_lock ();
+#ifdef	TIMINGS
+      uint64_t timeb = esp_timer_get_time ();
+#endif
       gfx_clear (0);
       uint8_t h = 0,
          v = 0;
@@ -1942,13 +2078,15 @@ app_main ()
             if (*c)
             {
                uint16_t s = widgets[w];
-               uint8_t flags = GFX_TEXT_BLOCKY;
+               uint8_t flags = 0;
                if (s & 0x8000)
                   flags |= GFX_TEXT_DESCENDERS;
                if (s & 0x4000)
                   flags |= GFX_TEXT_LIGHT;
                if (s & 0x2000)
-                  flags |= GFX_TEXT_ITALIC;
+                  flags |= GFX_TEXT_DOTTY;
+               else
+                  flags |= GFX_TEXT_BLOCKY;
                s &= 0xFFF;
                if (!s)
                   s = 4;
@@ -1984,22 +2122,28 @@ app_main ()
                   if (season)
                   {
                      *s = season;
-                     i = download (url, ".png");
+                     i = download (url, ".png", 0);
                   }
                   if (!i || !i->size)
                   {
                      strcpy (s, s + 1);
-                     i = download (url, ".png");
+                     i = download (url, ".png", 0);
                   }
 
                } else
-                  i = download (c, ".png");
+                  i = download (c, ".png", 0);
                if (i && i->size && i->w && i->h)
                {
                   gfx_pos_t ox,
                     oy;
                   gfx_draw (i->w, i->h, 0, 0, &ox, &oy);
-                  plot (i, ox, oy);
+                  plot (i, ox, oy
+#ifndef	GFX_COLOUR
+                        , widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT || widgetk[w] == REVK_SETTINGS_WIDGETK_INVERT
+#else
+                        , 0
+#endif
+                     );
                }
             }
             break;
@@ -2036,7 +2180,15 @@ app_main ()
          if (c != widgetc[w])
             free (c);
       }
+#ifdef	TIMINGS
+      uint64_t timec = esp_timer_get_time ();
+#endif
       epd_unlock ();
+#ifdef	TIMINGS
+      uint64_t timed = esp_timer_get_time ();
+      ESP_LOGE (TAG, "Setup %4lldms, plot %4lldms, update %4lldms", (timeb - timea + 500) / 10000, (timec - timeb + 500) / 1000,
+                (timed - timec + 500) / 1000);
+#endif
       snmp_tx ();
    }
    revk_gpio_set (gfxbl, 0);
@@ -2080,6 +2232,7 @@ revk_web_extra (httpd_req_t * req, int page)
       sprintf (name, "%s%d", tag, page);
       revk_web_setting (req, pre, name);
    }
+   add (NULL, "tab");
    add (NULL, "widgett");
 #ifdef	GFX_COLOUR
    add (NULL, "widgetf");
@@ -2111,10 +2264,10 @@ revk_web_extra (httpd_req_t * req, int page)
       p = "Bins data JSON URL";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_QR)
       p = "QR code content";
-   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE
-       && widgett[page - 1] != REVK_SETTINGS_WIDGETT_CLOCK)
+   else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_CLOCK)
+      p = "Time";
+   if (widgett[page - 1] != REVK_SETTINGS_WIDGETT_VLINE && widgett[page - 1] != REVK_SETTINGS_WIDGETT_HLINE)
       add (p, "widgetc");
-
    // Extra fields
    const char *found;
    if ((found = dollar_check (c, "WEATHER")))
@@ -2137,7 +2290,6 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting (req, NULL, "refdate");
    if (dollar_check (c, "SNMP"))
       revk_web_setting (req, NULL, "snmphost");
-
    // Notes
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");

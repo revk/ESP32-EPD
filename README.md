@@ -18,7 +18,9 @@ This code is much more generic, allowing a number of *widgets* to be applied to 
 
 ## PCBs
 
-A number of PCBs designs are included. The most work on this code as been done using the `EPD75` (mono) display. It will need more work for colour OLED displays and black/white/red e-paper.
+<img size=25% align=right src=https://github.com/user-attachments/assets/1ef1e463-68c8-4b88-aa3e-d03f21327863>
+A number of PCBs designs are included. The most work on this code as been done using the `EPD75` (mono) display, and the `LCD2` and `LCD24` format colour LCD displays. Otehr displays 
+simply need work on the GFX library now as needed, but should work with a range of different display types and models quite easily. 
 
 ## LEDs
 
@@ -38,7 +40,7 @@ The *content* for any widget can contain `$` expanded fields, this can be `$vari
 
 Using `${variable}` you can append the variable name with.
 
-- `:format` for any time based variables, for `strftime` formatting, e.g. `${TIME:%a %:%M}` may show `Wed 10:15`
+- `:format` for any time based variables, for `strftime` formatting, e.g. `${TIME:%a %:%M}` may show `Wed 10:15`, and optionally ending with `+HHMM` or `-HHMM` or `Z` to set time zone
 - `.fields` for any JSON based variables, allows the JSON field, e.g. `${WEATHER.current.condition.code}`
 - `.field:format` will allow some formatting of fields from JSON based variables.
 
@@ -50,6 +52,8 @@ Using `${variable}` you can append the variable name with.
 |`SEASON`|Seasonal character code, e.g. `E` for Easter - is the primary season code at current time|
 |`SEASONS`|Seasonal character codes, as occasionally there may be more than one active|
 |`COUNTDOWN`|Countdown/up from `refdate`, not a `refdate` with year `0000` means countdown to date/time specified in current/next year|
+|`ID`|Device ID|
+|`HOSTNAME`|Hostname|
 |`SSID`|Current WiFi SSID (can be configured or use the WiFi settings)|
 |`PASS`|Current WiFi passphrase (can be configured or use the WiFi settings)|
 |`WIFI`|QR code formatted current WiFi details `$SSID` and `$PASS` info|
@@ -83,7 +87,7 @@ Numeric JSON value formats
 
 ### Text
 
-This is one of the simplest widgets, and allows simple multi line text to be displayed. The font size defines the text size, with `1` being one pixel per 5x9 matrix image. The system uses a vector based font, and the *size* has modifers for allowing space below for decenders, and light weight vector lines.
+This is one of the simplest widgets, and allows simple multi line text to be displayed. The font size defines the text size, with `1` being one pixel per 5x9 matrix image. The system uses a vector based font, and the *size* has modifers for allowing space below for descenders, and light weight vector lines.
 
 Note that text is normally fixed space font with a small number of exceptions (`.`, `:`, `|`, `!`). Options may be added to force fixed space and maybe allow more proportional spaced characters at some point.
 
@@ -96,12 +100,18 @@ Extra flags can be added to the size.
 |Flag|Meaning|
 |----|-------|
 |`_`|Allow space for descenders|
-|`|`|Lighter stroke|
+|`\|`|Lighter stroke|
 |`/`|Italic (this is best when using colour displays as anti-aliased)|
 
 ### Blocky
 
 Same as `text` but blocky (pixel based) characters.
+
+|Flag|Meaning|
+|----|-------|
+|`_`|Allow space for descenders|
+|`\|`|Smaller spaced out squares|
+|`/`|Dots not squares|
 
 ### Digits
 
@@ -123,14 +133,14 @@ Extra flags can be added to the size.
 |Flag|Meaning|
 |----|-------|
 |`_`|Smaller digits after `.`|
-|`|`|Smaller digits after `:`|
+|`\|`|Smaller digits after `:`|
 |`/`|Italic (this is best when using colour displays as anti-aliased)|
 
 Note that with `_` a trailing `C` or `F` is handled as superscript for temperatures.
 
 ### Image
 
-This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting) cutting for e-paper at 50% brightness (does not dither, etc). It can include *alpha* channel to control if plotted.
+This can be `http://` URL serving a PNG image, or just the end appended to `baseurl`. It is recommended that this is 1 bit indexed, but can be any valid PNG (memory permitting). It can include *alpha* channel to control if plotted (cuts at 50%.
 
 The image is typically stored in SD card if present as a backup. If the image is not a URL, then the SD card is checked anyway.
 
@@ -147,7 +157,7 @@ Extra flags can be added to the size. The size is normally total pixel size and 
 |Flag|Meaning|
 |----|-------|
 |`_`|Size is unit size not overall size|
-|`|`|Plot without quiet zone|
+|`\|`|Plot without quiet zone|
 |`/`|Special (non standard) QR with dots - better when larger QR|
 
 ### HLine/VLine
@@ -155,6 +165,8 @@ Extra flags can be added to the size. The size is normally total pixel size and 
 Draws a single pixel horizontal or virtial line based on size and alignment.
 
 ### Bins
+
+![frame](https://github.com/user-attachments/assets/6356e30c-e7ef-4a07-8ea5-5fb59a148bad)
 
 This allows display of bin collection. This is based on a JSON file, the content is the URL to fetch the JSON. A script `monmouthire.cgi` is defined for now. The *size* is font size for the bin collection day or week (or `TODAY`/`TOMORROW`) which is shown along with icons.
 
@@ -196,12 +208,12 @@ Example.
 
 ### Clock
 
-Simple analogue clock face
+Simple analogue clock face - default is current time,. but you can specify HH:MM or HH:MM:SS in content, e.g. using `$SUNSET` etc.
 
 |Flag|Meaning|
 |----|-------|
 |`_`|Circle around clock and fill background|
-|`|`|Tick marks on hour|
+|`\|`|Tick marks on hour|
 |`/`|Numbers on hour|
 
 ### More

@@ -13,6 +13,16 @@ widget_clock (uint16_t s, const char *c)
       return;
    struct tm t;
    localtime_r (&now, &t);
+#ifdef	GFX_EPD
+   uint8_t hands = 2;
+#else
+   uint8_t hands = 3;
+#endif
+   int H = t.tm_hour,
+      M = t.tm_min,
+      S = t.tm_sec;
+   if (*c)
+      hands = sscanf (c, "%d:%d:%d", &H, &M, &S);
    uint8_t surround = 0,
       ticks = 0,
       numbers = 0;
@@ -57,13 +67,17 @@ widget_clock (uint16_t s, const char *c)
          gfx_line2 (cx + isin (a, s * 19 / 20), cy - icos (a, s * 19 / 20), cx + isin (a, s - s / 50), cy - icos (a, s - s / 50),
                     s / 50 ? : 1);
    // Hands
-   uint32_t sec = t.tm_hour * 3600 + t.tm_min * 60 + t.tm_sec;
-#ifndef	GFX_EPD
-   a = sec * 6;
-   gfx_line2 (cx, cy, cx + isin (a, s), cy - icos (a, s), s / 40 ? : 1);
-#endif
-   a = (sec + 5) / 10;
-   gfx_line2 (cx, cy, cx + isin (a, s * 7 / 10), cy - icos (a, s * 7 / 10), s / 30 ? : 1);
+   uint32_t sec = H * 3600 + M * 60 + S;
+   if (hands > 2)
+   {
+      a = sec * 6;
+      gfx_line2 (cx, cy, cx + isin (a, s), cy - icos (a, s), s / 40 ? : 1);
+   }
+   if (hands > 1)
+   {
+      a = (sec + 5) / 10;
+      gfx_line2 (cx, cy, cx + isin (a, s * 7 / 10), cy - icos (a, s * 7 / 10), s / 30 ? : 1);
+   }
    a = (sec + 60) / 120;
    gfx_line2 (cx, cy, cx + isin (a, s * 5 / 10), cy - icos (a, s * 5 / 10), s / 15 ? : 1);
    gfx_pos (nx, ny, na);
