@@ -75,6 +75,7 @@ jo_t weather = NULL;
 jo_t solar = NULL;
 jo_t veml6040 = NULL;
 jo_t mcp9808 = NULL;
+jo_t gzp6816d = NULL;
 
 struct
 {
@@ -307,6 +308,27 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       return log_json (&veml6040);
    if (!strcasecmp (suffix, "mcp9808"))
       return log_json (&mcp9808);
+   if (!strcasecmp (suffix, "gzp6816d"))
+      return log_json (&gzp6816d);
+   if (!strcmp (suffix, "setting"))
+   {
+      b.setting = 1;
+      snmp.lasttx = 0;          // Force re-lookup
+      return "";
+   }
+   if (!strcmp (suffix, "connect"))
+   {
+      return "";
+   }
+   if (!strcmp (suffix, "shutdown"))
+   {
+      if (card)
+      {
+         esp_vfs_fat_sdcard_unmount (sd_mount, card);
+         card = NULL;
+      }
+      return "";
+   }
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -1202,7 +1224,7 @@ i2c_task (void *x)
    // Init
    if (veml6040i2c)
    {
-      if (i2c_read_16lh (veml6040i2c, 0) < 0)
+      if (i2c_read_16lh (veml6040i2c, 0) < 0 && i2c_read_16lh (veml6040i2c, 0) < 0)
          fail (veml6040i2c, "VEML6040");
       else
       {
@@ -1216,6 +1238,20 @@ i2c_task (void *x)
          fail (mcp9808i2c, "MCP9808");
       else
          mcp9808 = jo_object_alloc ();
+   }
+   if (gzp6816di2c)
+   {
+      uint8_t v = 0;
+      i2c_cmd_handle_t t = i2c_cmd_link_create ();
+      i2c_master_start (t);
+      i2c_master_write_byte (t, (gzp6816di2c << 1)|I2C_MASTER_READ, true);
+      i2c_master_read_byte (t, &v, I2C_MASTER_LAST_NACK);
+      i2c_master_stop (t);
+      esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+      i2c_cmd_link_delete (t);
+      ESP_LOGE (TAG, "err=%d v=%02X", err, v);
+      if (!err)
+         gzp6816d = jo_object_alloc ();
    }
    // Poll
    while (1)
@@ -1234,10 +1270,57 @@ i2c_task (void *x)
       }
       if (mcp9808)
       {
-         int16_t t = (i2c_read_16hl (mcp9808i2c, 5) << 3);
+         static int16_t last1 = 0,
+            last2 = 0,
+            last3 = 0;
+         int16_t t = (i2c_read_16hl (mcp9808i2c, 5) << 3),
+            a = (last1 + last2 + last3 + t) / 4;
+         last3 = last2;
+         last2 = last1;
+         last1 = t;
          jo_t j = jo_object_alloc ();
-         jo_litf (j, "c", "%.2f", (float) t / 128 + (float) mcp9808dt / mcp9808dt_scale);
+         jo_litf (j, "c", "%.2f", (float) a / 128 + (float) mcp9808dt / mcp9808dt_scale);
          json_store (&mcp9808, j);
+      }
+      if (gzp6816d)
+      {
+         uint8_t s,
+           p1,
+           p2,
+           p3,
+           t1,
+           t2;
+         i2c_cmd_handle_t t = i2c_cmd_link_create ();
+         i2c_master_start (t);
+         i2c_master_write_byte (t, (gzp6816di2c << 1) | I2C_MASTER_WRITE, true);
+         i2c_master_write_byte (t, 0xAC, false);
+         i2c_master_stop (t);
+         esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+         i2c_cmd_link_delete (t);
+         if (!err)
+         {
+            ESP_LOGE (TAG, "gzp6816d %02X", s);
+            usleep (250000);
+            t = i2c_cmd_link_create ();
+            i2c_master_start (t);
+            i2c_master_write_byte (t, (gzp6816di2c << 1) | I2C_MASTER_READ, true);
+            i2c_master_read_byte (t, &s, I2C_MASTER_ACK);
+            i2c_master_read_byte (t, &p1, I2C_MASTER_ACK);
+            i2c_master_read_byte (t, &p2, I2C_MASTER_ACK);
+            i2c_master_read_byte (t, &p3, I2C_MASTER_ACK);
+            i2c_master_read_byte (t, &t1, I2C_MASTER_ACK);
+            i2c_master_read_byte (t, &t2, I2C_MASTER_LAST_NACK);
+            i2c_master_stop (t);
+            err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+            i2c_cmd_link_delete (t);
+            if (!err && !(s & 0x20))
+            {
+               jo_t j = jo_object_alloc ();
+               jo_litf (j, "c", "%.2f", (float) ((t1 << 8) | t2) * 190 / 65536 - 40 + (float) gzp6816ddt / gzp6816ddt_scale);
+	       jo_litf(j,"p","%.4f",(float) 80 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 20);
+               json_store (&gzp6816d, j);
+            }
+         }
       }
       sleep (1);
    }
@@ -1650,6 +1733,8 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       return dollar_json (&veml6040, dot, colon);
    if (!strcasecmp (c, "MCP9808"))
       return dollar_json (&mcp9808, dot, colon);
+   if (!strcasecmp (c, "GZP6816D"))
+      return dollar_json (&gzp6816d, dot, colon);
    if (!strncasecmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && !c[5] && c[4] > '0'
        && c[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
       return dollar_json (&mqttjson[c[4] - '1'], dot, colon);
@@ -2519,4 +2604,6 @@ revk_state_extra (jo_t j)
       jo_json (j, "veml6040", veml6040);
    if (mcp9808)
       jo_json (j, "mcp9808", mcp9808);
+   if (gzp6816d)
+      jo_json (j, "gzp6816d", gzp6816d);
 }
