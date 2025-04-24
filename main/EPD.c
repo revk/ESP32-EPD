@@ -78,6 +78,7 @@ jo_t mcp9808 = NULL;
 jo_t gzp6816d = NULL;
 jo_t t6793 = NULL;
 jo_t scd41 = NULL;
+uint32_t scd41_serial = 0;
 jo_t tmp1075 = NULL;
 
 struct
@@ -1125,14 +1126,14 @@ i2c_read_16lh (uint8_t addr, uint8_t cmd)
    i2c_cmd_link_delete (t);
    if (err)
    {
-      ESP_LOGE (TAG, "I2C %02X %02X fail", addr & 0x7F, cmd);
+      ESP_LOGE (TAG, "I2C %02X %02X fail %s", addr & 0x7F, cmd, esp_err_to_name (err));
       return -1;
    }
    ESP_LOGD (TAG, "I2C %02X %02X %02X%02X OK", addr & 0x7F, cmd, h, l);
    return (h << 8) + l;
 }
 
-static void
+static esp_err_t
 i2c_write_16lh (uint8_t addr, uint8_t cmd, uint16_t val)
 {
    i2c_cmd_handle_t t = i2c_cmd_link_create ();
@@ -1142,8 +1143,9 @@ i2c_write_16lh (uint8_t addr, uint8_t cmd, uint16_t val)
    i2c_master_write_byte (t, val & 0xFF, true);
    i2c_master_write_byte (t, val >> 8, true);
    i2c_master_stop (t);
-   i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
    i2c_cmd_link_delete (t);
+   return err;
 }
 
 static int32_t
@@ -1164,25 +1166,11 @@ i2c_read_16hl (uint8_t addr, uint8_t cmd)
    i2c_cmd_link_delete (t);
    if (err)
    {
-      ESP_LOGE (TAG, "I2C %02X %02X fail", addr & 0x7F, cmd);
+      ESP_LOGE (TAG, "I2C %02X %02X fail %s", addr & 0x7F, cmd, esp_err_to_name (err));
       return -1;
    }
    ESP_LOGD (TAG, "I2C %02X %02X %02X%02X OK", addr & 0x7F, cmd, h, l);
    return (h << 8) + l;
-}
-
-static void
-i2c_write_16hl (uint8_t addr, uint8_t cmd, uint16_t val)
-{
-   i2c_cmd_handle_t t = i2c_cmd_link_create ();
-   i2c_master_start (t);
-   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_WRITE, true);
-   i2c_master_write_byte (t, cmd, true);
-   i2c_master_write_byte (t, val >> 8, true);
-   i2c_master_write_byte (t, val & 0xFF, true);
-   i2c_master_stop (t);
-   i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
-   i2c_cmd_link_delete (t);
 }
 
 static int32_t
@@ -1211,7 +1199,7 @@ i2c_modbus_read (uint8_t addr, uint16_t a)
    i2c_cmd_link_delete (t);
    if (err)
    {
-      ESP_LOGE (TAG, "I2C %02X %04X fail", addr & 0x7F, a);
+      ESP_LOGE (TAG, "I2C %02X %04X fail %s", addr & 0x7F, a, esp_err_to_name (err));
       return -1;
    }
    if (s != 4 || b != 2)
@@ -1221,6 +1209,62 @@ i2c_modbus_read (uint8_t addr, uint16_t a)
    }
    ESP_LOGD (TAG, "I2C %02X %04X %02X %02X %02X%02X OK", addr & 0x7F, a, s, b, h, l);
    return (h << 8) + l;
+}
+
+static uint8_t
+scd41_crc (uint8_t b1, uint8_t b2)
+{
+   uint8_t crc = 0xFF;
+   void b (uint8_t v)
+   {
+      crc ^= v;
+      uint8_t n = 8;
+      while (n--)
+      {
+         if (crc & 0x80)
+            crc = (crc << 1) ^ 0x31;
+         else
+            crc <<= 1;
+      }
+   }
+   b (b1);
+   b (b2);
+   return crc;
+}
+
+static esp_err_t
+scd41_command (uint16_t c)
+{
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (scd41i2c << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, c >> 8, true);
+   i2c_master_write_byte (t, c, true);
+   i2c_master_stop (t);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 100 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+   if (err)
+      ESP_LOGE (TAG, "I2C %02X %04X fail %s", scd41i2c & 0x7F, c, esp_err_to_name (err));
+   return err;
+}
+
+static esp_err_t
+scd41_read (uint16_t c, int8_t len, uint8_t * buf)
+{
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (scd41i2c << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, c >> 8, true);
+   i2c_master_write_byte (t, c, true);
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (scd41i2c << 1) + I2C_MASTER_READ, true);
+   i2c_master_read (t, buf, len, I2C_MASTER_LAST_NACK);
+   i2c_master_stop (t);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 100 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+   if (err)
+      ESP_LOGE (TAG, "I2C %02X %d fail %s", scd41i2c & 0x7F, len, esp_err_to_name (err));
+   return err;
 }
 
 void
@@ -1253,7 +1297,8 @@ i2c_task (void *x)
          jo_int (j, "scl", scl.num);
          revk_error ("I2C", &j);
          i2cport = -1;
-      } else i2c_set_timeout (i2cport, 4);
+      } else
+         i2c_set_timeout (i2cport, 31);
    }
    if (i2cport < 0)
       vTaskDelete (NULL);
@@ -1307,9 +1352,44 @@ i2c_task (void *x)
    }
    if (scd41i2c)
    {
+      esp_err_t err = 0;
+      uint8_t try = 10;
+      while (try--)
+      {
+         err = scd41_command (0x3F86);  /* Stop measurement(SCD41) */
+         if (!err)
+         {
+            usleep (500000);
+            err = scd41_command (0x3646);       /* Reinit */
+         }
+         if (!err)
+         {
+            usleep (20000);
+            break;
+         }
+         sleep (1);
+      }
+      uint8_t buf[9];
+      if (err || scd41_read (0x3682, 9, buf))
+         fail (scd41i2c, "SCD41");
+      else
+      {
+         if (scd41_crc (buf[0], buf[1]) == buf[2] && scd41_crc (buf[3], buf[4]) == buf[5] && scd41_crc (buf[6], buf[7]) == buf[8])
+         {
+            scd41_serial =
+               ((unsigned long long) buf[0] << 40) + ((unsigned long long) buf[1] << 32) +
+               ((unsigned long long) buf[3] << 24) + ((unsigned long long) buf[4] << 16) +
+               ((unsigned long long) buf[6] << 8) + ((unsigned long long) buf[7]);
+            if (!scd41_command (0x21B1))
+               scd41 = jo_object_alloc ();
+         } else
+            ESP_LOGE (TAG, "SCD41 CRC bad %02X %02X %02X %02X %02X %02X %02X %02X %02X", buf[0], buf[1], buf[2], buf[3], buf[4],
+                      buf[5], buf[6], buf[7], buf[8]);
+      }
    }
    if (tmp1075i2c)
    {
+      // TODO
    }
    // Poll
    while (1)
@@ -1391,9 +1471,26 @@ i2c_task (void *x)
       }
       if (scd41)
       {
+         uint8_t buf[9];
+         if (!scd41_read (0xE4B8, 3, buf) && scd41_crc (buf[0], buf[1]) == buf[2] && ((buf[0] & 0x7) || buf[1]) &&
+             !scd41_read (0xEC05, sizeof (buf), buf))
+         {
+            if (scd41_crc (buf[0], buf[1]) == buf[2] && scd41_crc (buf[3], buf[4]) == buf[5]
+                && scd41_crc (buf[6], buf[7]) == buf[8])
+            {
+               jo_t j = jo_object_alloc ();
+               jo_litf (j, "serial", "%u", scd41_serial);
+               jo_litf (j, "ppm", "%u", (buf[0] << 8) + buf[1]);
+               jo_litf (j, "C", "%.2f", -45.0 + 175.0 * (float) ((buf[3] << 8) + buf[4]) / 65536.0);
+               jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
+               json_store (&scd41, j);
+            } else
+               ESP_LOGE (TAG, "SCD41 bad CRC");
+         }
       }
       if (tmp1075)
       {
+         // TODO
       }
       sleep (1);
    }
