@@ -1125,10 +1125,10 @@ i2c_read_16lh (uint8_t addr, uint8_t cmd)
    i2c_cmd_link_delete (t);
    if (err)
    {
-      ESP_LOGE (TAG, "I2C %02X %02X fail", addr, cmd);
+      ESP_LOGE (TAG, "I2C %02X %02X fail", addr & 0x7F, cmd);
       return -1;
    }
-   ESP_LOGD (TAG, "I2C %02X %02X %02X%02X OK", addr, cmd, h, l);
+   ESP_LOGD (TAG, "I2C %02X %02X %02X%02X OK", addr & 0x7F, cmd, h, l);
    return (h << 8) + l;
 }
 
@@ -1164,10 +1164,10 @@ i2c_read_16hl (uint8_t addr, uint8_t cmd)
    i2c_cmd_link_delete (t);
    if (err)
    {
-      ESP_LOGE (TAG, "I2C %02X %02X fail", addr, cmd);
+      ESP_LOGE (TAG, "I2C %02X %02X fail", addr & 0x7F, cmd);
       return -1;
    }
-   ESP_LOGD (TAG, "I2C %02X %02X %02X%02X OK", addr, cmd, h, l);
+   ESP_LOGD (TAG, "I2C %02X %02X %02X%02X OK", addr & 0x7F, cmd, h, l);
    return (h << 8) + l;
 }
 
@@ -1211,12 +1211,15 @@ i2c_modbus_read (uint8_t addr, uint16_t a)
    i2c_cmd_link_delete (t);
    if (err)
    {
-      ESP_LOGE (TAG, "I2C %02X %04X fail", addr, a);
+      ESP_LOGE (TAG, "I2C %02X %04X fail", addr & 0x7F, a);
       return -1;
    }
    if (s != 4 || b != 2)
+   {
+      ESP_LOGE (TAG, "I2C %02X %04X %02X %02X %02X%02X Bad", addr & 0x7F, a, s, b, h, l);
       return -1;
-   ESP_LOGD (TAG, "I2C %02X %04X %02X %02X %02X%02X OK", addr, s, s, b, h, l);
+   }
+   ESP_LOGD (TAG, "I2C %02X %04X %02X %02X %02X%02X OK", addr & 0x7F, a, s, b, h, l);
    return (h << 8) + l;
 }
 
@@ -1250,8 +1253,7 @@ i2c_task (void *x)
          jo_int (j, "scl", scl.num);
          revk_error ("I2C", &j);
          i2cport = -1;
-      } else
-         i2c_set_timeout (i2cport, 80000 * 5);  /* 5 ms ? allow for clock stretching */
+      } else i2c_set_timeout (i2cport, 4);
    }
    if (i2cport < 0)
       vTaskDelete (NULL);
@@ -1293,7 +1295,6 @@ i2c_task (void *x)
       i2c_master_stop (t);
       esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
       i2c_cmd_link_delete (t);
-      ESP_LOGE (TAG, "err=%d v=%02X", err, v);
       if (!err)
          gzp6816d = jo_object_alloc ();
    }
