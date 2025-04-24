@@ -1972,7 +1972,12 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       if (t6793)
          return dollar_json (&t6793, dot ? : "ppm", colon);
    }
-   if (!strncasecmp (c, "DS18B20", 7)) // allow for [0] directly with no dot
+   if (!strcasecmp (c, "HUMIDITY"))
+   {
+      if (scd41)
+         return dollar_json (&scd41, dot ? : "RH", colon);
+   }
+   if (!strncasecmp (c, "DS18B20", 7))  // allow for [0] directly with no dot
       return dollar_json (&ds18b20s, dot ? : "[0].C", colon);
    if (tmp1075 && !strcasecmp (c, "TMP1075"))
       return dollar_json (&tmp1075, dot ? : "C", colon);
