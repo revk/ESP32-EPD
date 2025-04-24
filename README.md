@@ -72,7 +72,23 @@ Using `${variable}` you can append the variable name with.
 |`SOLAR`|Extract a field from SolareEdge MODBUS TCP collection generated JSON|
 |`MQTTn`|Extract a field from JSON payload payload on subscribed MQTT (`jsonsub`)|
 
-Numeric JSON value formats
+#### Sensors
+
+The code supports a number of sensors which can be configured on I2C (or one wire bus). These provide values as follows as JSON values (also MQTT logged in `status`). As default field is defined as well, e.g. `$MCPA9808.C`, or `$MCP9808`, or `$TEMPERATURE.C`, or `$TEMPERATURE` will all give current Celsius temperature if you are using an `MCP9808`.
+
+|Variable|Meaning|
+|--------|-------|
+|`MCP9808`|`C` Celsius|
+|`TMP1075`|`C` Celsius|
+|`DS18B20`|`[0].C` is Celsius for first sensor, `[n].serial` is serial number of sensor|
+|`SCD41`|`ppm` is CO₂, ,`C` is Celsius, `RH` is humidity|
+|`T6793`|`ppm` is CO₂|
+|`GZP6818D` or `PRESSURE`|`kPa` is pressure, `C` is Celsius|
+|`VEML6040` or `LIGHT`|`W` is white, `R` is red, `G` is green, `B` is blue, values in lux|
+|`TEMPERATURE`|Picks `SCD41`, `DS18B20`, `MCP9808` or `TMP1075`|
+|`CO2` or `CO₂`|Picks `SCD41` or `T6793`|
+
+#### Numeric JSON value formats
 
 |Tag|Meaning|
 |---|-------|

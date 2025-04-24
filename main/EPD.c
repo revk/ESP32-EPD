@@ -24,6 +24,7 @@ static const char TAG[] = "EPD";
 #include <ds18b20.h>
 #include <lwpng.h>
 #include "EPD.h"
+#include <math.h>
 
 #define	LEFT	0x80            // Flags on font size
 #define	RIGHT	0x40
@@ -80,6 +81,7 @@ jo_t t6793 = NULL;
 jo_t scd41 = NULL;
 uint32_t scd41_serial = 0;
 jo_t tmp1075 = NULL;
+jo_t ds18b20s = NULL;
 
 struct
 {
@@ -320,6 +322,8 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       return log_json (&scd41);
    if (!strcasecmp (suffix, "tmp1075"))
       return log_json (&tmp1075);
+   if (!strcasecmp (suffix, "ds18b20"))
+      return log_json (&ds18b20s);
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -1098,16 +1102,6 @@ btn_task (void *x)
    }
 }
 
-void
-ds18b20_task (void *x)
-{
-   while (1)
-   {
-      usleep (10000);
-      // TODO
-   }
-}
-
 static int32_t
 i2c_read_16lh (uint8_t addr, uint8_t cmd)
 {
@@ -1481,7 +1475,8 @@ i2c_task (void *x)
                jo_t j = jo_object_alloc ();
                jo_litf (j, "serial", "%u", scd41_serial);
                jo_litf (j, "ppm", "%u", (buf[0] << 8) + buf[1]);
-               jo_litf (j, "C", "%.2f", -45.0 + 175.0 * (float) ((buf[3] << 8) + buf[4]) / 65536.0);
+               jo_litf (j, "C", "%.2f",
+                        -45.0 + 175.0 * (float) ((buf[3] << 8) + buf[4]) / 65536.0 + (float) scd41dt / scd41dt_scale);
                jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
                json_store (&scd41, j);
             } else
@@ -1493,6 +1488,66 @@ i2c_task (void *x)
          // TODO
       }
       sleep (1);
+   }
+}
+
+void
+ds18b20_task (void *x)
+{
+   uint8_t num_ds18b20 = 0;
+   ds18b20_device_handle_t adr_ds18b20[10];
+   uint64_t id[sizeof (adr_ds18b20) / sizeof (*adr_ds18b20)];
+   onewire_bus_config_t bus_config = { ds18b20.num };
+   onewire_bus_rmt_config_t rmt_config = { 20 };
+   onewire_bus_handle_t bus_handle = { 0 };
+   REVK_ERR_CHECK (onewire_new_bus_rmt (&bus_config, &rmt_config, &bus_handle));
+   void init (void)
+   {
+      onewire_device_iter_handle_t iter = { 0 };
+      REVK_ERR_CHECK (onewire_new_device_iter (bus_handle, &iter));
+      onewire_device_t dev = { };
+      while (!onewire_device_iter_get_next (iter, &dev) && num_ds18b20 < sizeof (adr_ds18b20) / sizeof (*adr_ds18b20))
+      {
+         id[num_ds18b20] = dev.address;
+         ds18b20_config_t config = { };
+         REVK_ERR_CHECK (ds18b20_new_device (&dev, &config, &adr_ds18b20[num_ds18b20]));
+         REVK_ERR_CHECK (ds18b20_set_resolution (adr_ds18b20[num_ds18b20], DS18B20_RESOLUTION_12B));
+         num_ds18b20++;
+      }
+   }
+   init ();
+   if (!num_ds18b20)
+   {
+      usleep (100000);
+      init ();
+   }
+   if (!num_ds18b20)
+   {
+      jo_t j = jo_object_alloc ();
+      jo_string (j, "error", "No DS18B20 devices");
+      jo_int (j, "port", ds18b20.num);
+      revk_error ("temp", &j);
+      ESP_LOGE (TAG, "No DS18B20 port %d", ds18b20.num);
+      vTaskDelete (NULL);
+      return;
+   }
+   while (1)
+   {
+      usleep (250000);
+      jo_t j = jo_create_alloc ();
+      jo_array (j, NULL);
+      float c[num_ds18b20];
+      for (int i = 0; i < num_ds18b20; ++i)
+      {
+         REVK_ERR_CHECK (ds18b20_trigger_temperature_conversion (adr_ds18b20[i]));
+         REVK_ERR_CHECK (ds18b20_get_temperature (adr_ds18b20[i], &c[i]));
+         jo_object (j, NULL);
+         jo_stringf (j, "serial", "%016llX", id[i]);
+         if (!isnan (c[i]))
+            jo_litf (j, "C", "%.2f", c[i]);
+         jo_close (j);
+      }
+      json_store (&ds18b20s, j);
    }
 }
 
@@ -1899,18 +1954,38 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    }
    if (!strcasecmp (c, "SOLAR"))
       return dollar_json (&solar, dot, colon);
-   if (!strcasecmp (c, "VEML6040"))
-      return dollar_json (&veml6040, dot, colon);
-   if (!strcasecmp (c, "MCP9808"))
-      return dollar_json (&mcp9808, dot, colon);
-   if (!strcasecmp (c, "GZP6816D"))
-      return dollar_json (&gzp6816d, dot, colon);
-   if (!strcasecmp (c, "T6793"))
-      return dollar_json (&t6793, dot, colon);
-   if (!strcasecmp (c, "SCD41"))
-      return dollar_json (&scd41, dot, colon);
-   if (!strcasecmp (c, "TMP1075"))
-      return dollar_json (&tmp1075, dot, colon);
+   if (!strcasecmp (c, "TEMPERATURE"))
+   {
+      if (ds18b20s)
+         return dollar_json (&ds18b20s, dot ? : "[0].C", colon);
+      if (scd41)
+         return dollar_json (&scd41, dot ? : "C", colon);
+      if (tmp1075)
+         return dollar_json (&tmp1075, dot ? : "C", colon);
+      if (mcp9808)
+         return dollar_json (&mcp9808, dot ? : "C", colon);
+   }
+   if (!strcasecmp (c, "CO2") || !strcasecmp (c, "CO₂"))
+   {
+      if (scd41)
+         return dollar_json (&scd41, dot ? : "ppm", colon);
+      if (t6793)
+         return dollar_json (&t6793, dot ? : "ppm", colon);
+   }
+   if (!strncasecmp (c, "DS18B20", 7)) // allow for [0] directly with no dot
+      return dollar_json (&ds18b20s, dot ? : "[0].C", colon);
+   if (tmp1075 && !strcasecmp (c, "TMP1075"))
+      return dollar_json (&tmp1075, dot ? : "C", colon);
+   if (mcp9808 && !strcasecmp (c, "MCP9808"))
+      return dollar_json (&mcp9808, dot ? : "C", colon);
+   if (gzp6816d && (!strcasecmp (c, "GZP6816D") || !strcasecmp (c, "PRESSURE")))
+      return dollar_json (&gzp6816d, dot ? : "kPa", colon);
+   if (scd41 && !strcasecmp (c, "SCD41"))
+      return dollar_json (&scd41, dot ? : "ppm", colon);
+   if (t6793 && !strcasecmp (c, "T6793"))
+      return dollar_json (&t6793, dot ? : "ppm", colon);
+   if (veml6040 && (!strcasecmp (c, "VEML6040") || !strcasecmp (c, "LIGHT")))
+      return dollar_json (&veml6040, dot ? : "W", colon);
    if (!strncasecmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && !c[5] && c[4] > '0'
        && c[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
       return dollar_json (&mqttjson[c[4] - '1'], dot, colon);
@@ -2017,9 +2092,10 @@ dollars (char *c, time_t now)
                   colon = dot;
                   *colon++ = 0;
                   dot = NULL;
-               } else if (*dot == '.')
+               } else if (*dot == '.' || *dot == '[')
                {
-                  *dot++ = 0;
+                  if (*dot == '.')
+                     *dot++ = 0;
                   colon = dot;
                   while (*colon && *colon != ':')
                      colon++;
@@ -2776,6 +2852,7 @@ revk_web_extra (httpd_req_t * req, int page)
 void
 revk_state_extra (jo_t j)
 {
+   xSemaphoreTake (json_mutex, portMAX_DELAY);
    if (veml6040)
       jo_json (j, "veml6040", veml6040);
    if (mcp9808)
@@ -2788,4 +2865,7 @@ revk_state_extra (jo_t j)
       jo_json (j, "scd41", scd41);
    if (tmp1075)
       jo_json (j, "tmp1075", tmp1075);
+   if (ds18b20s)
+      jo_json (j, "ds18b20", ds18b20s);
+   xSemaphoreGive (json_mutex);
 }
