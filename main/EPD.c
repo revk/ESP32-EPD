@@ -76,6 +76,9 @@ jo_t solar = NULL;
 jo_t veml6040 = NULL;
 jo_t mcp9808 = NULL;
 jo_t gzp6816d = NULL;
+jo_t t6793 = NULL;
+jo_t scd41 = NULL;
+jo_t tmp1075 = NULL;
 
 struct
 {
@@ -310,6 +313,12 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       return log_json (&mcp9808);
    if (!strcasecmp (suffix, "gzp6816d"))
       return log_json (&gzp6816d);
+   if (!strcasecmp (suffix, "t6793"))
+      return log_json (&t6793);
+   if (!strcasecmp (suffix, "scd41"))
+      return log_json (&scd41);
+   if (!strcasecmp (suffix, "tmp1075"))
+      return log_json (&tmp1075);
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -1176,6 +1185,41 @@ i2c_write_16hl (uint8_t addr, uint8_t cmd, uint16_t val)
    i2c_cmd_link_delete (t);
 }
 
+static int32_t
+i2c_modbus_read (uint8_t addr, uint16_t a)
+{
+   uint8_t s = 0,
+      b = 0,
+      h = 0,
+      l = 0;
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, 0x04, true);
+   i2c_master_write_byte (t, a >> 8, true);
+   i2c_master_write_byte (t, a, true);
+   i2c_master_write_byte (t, 0x00, true);
+   i2c_master_write_byte (t, 0x01, true);
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_READ, true);
+   i2c_master_read_byte (t, &s, I2C_MASTER_ACK);
+   i2c_master_read_byte (t, &b, I2C_MASTER_ACK);
+   i2c_master_read_byte (t, &h, I2C_MASTER_ACK);
+   i2c_master_read_byte (t, &l, I2C_MASTER_LAST_NACK);
+   i2c_master_stop (t);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+   if (err)
+   {
+      ESP_LOGE (TAG, "I2C %02X %04X fail", addr, a);
+      return -1;
+   }
+   if (s != 4 || b != 2)
+      return -1;
+   ESP_LOGD (TAG, "I2C %02X %04X %02X %02X %02X%02X OK", addr, s, s, b, h, l);
+   return (h << 8) + l;
+}
+
 void
 i2c_task (void *x)
 {
@@ -1244,7 +1288,7 @@ i2c_task (void *x)
       uint8_t v = 0;
       i2c_cmd_handle_t t = i2c_cmd_link_create ();
       i2c_master_start (t);
-      i2c_master_write_byte (t, (gzp6816di2c << 1)|I2C_MASTER_READ, true);
+      i2c_master_write_byte (t, (gzp6816di2c << 1) | I2C_MASTER_READ, true);
       i2c_master_read_byte (t, &v, I2C_MASTER_LAST_NACK);
       i2c_master_stop (t);
       esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
@@ -1253,17 +1297,41 @@ i2c_task (void *x)
       if (!err)
          gzp6816d = jo_object_alloc ();
    }
+   if (t6793i2c)
+   {
+      if (i2c_modbus_read (t6793i2c, 0x1389) < 0)
+         fail (t6793i2c, "T6793");
+      else
+         t6793 = jo_object_alloc ();
+   }
+   if (scd41i2c)
+   {
+   }
+   if (tmp1075i2c)
+   {
+   }
    // Poll
    while (1)
    {
+      if (gzp6816d)
+      {
+         i2c_cmd_handle_t t = i2c_cmd_link_create ();
+         i2c_master_start (t);
+         i2c_master_write_byte (t, (gzp6816di2c << 1) | I2C_MASTER_WRITE, true);
+         i2c_master_write_byte (t, 0xAC, false);
+         i2c_master_stop (t);
+         i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+         i2c_cmd_link_delete (t);
+      }
+      usleep (500000);
       if (veml6040)
       {                         // Scale to lux
          float w;
          jo_t j = jo_object_alloc ();
-         jo_litf (j, "r", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x08) * 1031 / 65535);
-         jo_litf (j, "g", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x09) * 1031 / 65535);
-         jo_litf (j, "b", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x0A) * 1031 / 65535);
-         jo_litf (j, "w", "%.2f", w = (float) i2c_read_16lh (veml6040i2c, 0x0B) * 1031 / 65535);
+         jo_litf (j, "R", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x08) * 1031 / 65535);
+         jo_litf (j, "G", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x09) * 1031 / 65535);
+         jo_litf (j, "B", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x0A) * 1031 / 65535);
+         jo_litf (j, "W", "%.2f", w = (float) i2c_read_16lh (veml6040i2c, 0x0B) * 1031 / 65535);
          json_store (&veml6040, j);
          if (veml6040dark && gfxbl.set)
             revk_gpio_set (gfxbl, w < veml6040dark ? 0 : 1);
@@ -1279,7 +1347,7 @@ i2c_task (void *x)
          last2 = last1;
          last1 = t;
          jo_t j = jo_object_alloc ();
-         jo_litf (j, "c", "%.2f", (float) a / 128 + (float) mcp9808dt / mcp9808dt_scale);
+         jo_litf (j, "C", "%.2f", (float) a / 128 + (float) mcp9808dt / mcp9808dt_scale);
          json_store (&mcp9808, j);
       }
       if (gzp6816d)
@@ -1292,35 +1360,39 @@ i2c_task (void *x)
            t2;
          i2c_cmd_handle_t t = i2c_cmd_link_create ();
          i2c_master_start (t);
-         i2c_master_write_byte (t, (gzp6816di2c << 1) | I2C_MASTER_WRITE, true);
-         i2c_master_write_byte (t, 0xAC, false);
+         i2c_master_write_byte (t, (gzp6816di2c << 1) | I2C_MASTER_READ, true);
+         i2c_master_read_byte (t, &s, I2C_MASTER_ACK);
+         i2c_master_read_byte (t, &p1, I2C_MASTER_ACK);
+         i2c_master_read_byte (t, &p2, I2C_MASTER_ACK);
+         i2c_master_read_byte (t, &p3, I2C_MASTER_ACK);
+         i2c_master_read_byte (t, &t1, I2C_MASTER_ACK);
+         i2c_master_read_byte (t, &t2, I2C_MASTER_LAST_NACK);
          i2c_master_stop (t);
          esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
          i2c_cmd_link_delete (t);
-         if (!err)
+         if (!err && !(s & 0x20))
          {
-            ESP_LOGE (TAG, "gzp6816d %02X", s);
-            usleep (250000);
-            t = i2c_cmd_link_create ();
-            i2c_master_start (t);
-            i2c_master_write_byte (t, (gzp6816di2c << 1) | I2C_MASTER_READ, true);
-            i2c_master_read_byte (t, &s, I2C_MASTER_ACK);
-            i2c_master_read_byte (t, &p1, I2C_MASTER_ACK);
-            i2c_master_read_byte (t, &p2, I2C_MASTER_ACK);
-            i2c_master_read_byte (t, &p3, I2C_MASTER_ACK);
-            i2c_master_read_byte (t, &t1, I2C_MASTER_ACK);
-            i2c_master_read_byte (t, &t2, I2C_MASTER_LAST_NACK);
-            i2c_master_stop (t);
-            err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
-            i2c_cmd_link_delete (t);
-            if (!err && !(s & 0x20))
-            {
-               jo_t j = jo_object_alloc ();
-               jo_litf (j, "c", "%.2f", (float) ((t1 << 8) | t2) * 190 / 65536 - 40 + (float) gzp6816ddt / gzp6816ddt_scale);
-	       jo_litf(j,"p","%.4f",(float) 80 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 20);
-               json_store (&gzp6816d, j);
-            }
+            jo_t j = jo_object_alloc ();
+            jo_litf (j, "C", "%.2f", (float) ((t1 << 8) | t2) * 190 / 65536 - 40 + (float) gzp6816ddt / gzp6816ddt_scale);
+            jo_litf (j, "kPa", "%.4f", (float) 80 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 20);
+            json_store (&gzp6816d, j);
          }
+      }
+      if (t6793)
+      {
+         int32_t v = i2c_modbus_read (t6793i2c, 0x138B);
+         if (v > 0)
+         {
+            jo_t j = jo_object_alloc ();
+            jo_litf (j, "ppm", "%ld", v);
+            json_store (&t6793, j);
+         }
+      }
+      if (scd41)
+      {
+      }
+      if (tmp1075)
+      {
       }
       sleep (1);
    }
@@ -1735,6 +1807,12 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       return dollar_json (&mcp9808, dot, colon);
    if (!strcasecmp (c, "GZP6816D"))
       return dollar_json (&gzp6816d, dot, colon);
+   if (!strcasecmp (c, "T6793"))
+      return dollar_json (&t6793, dot, colon);
+   if (!strcasecmp (c, "SCD41"))
+      return dollar_json (&scd41, dot, colon);
+   if (!strcasecmp (c, "TMP1075"))
+      return dollar_json (&tmp1075, dot, colon);
    if (!strncasecmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && !c[5] && c[4] > '0'
        && c[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
       return dollar_json (&mqttjson[c[4] - '1'], dot, colon);
@@ -2606,4 +2684,10 @@ revk_state_extra (jo_t j)
       jo_json (j, "mcp9808", mcp9808);
    if (gzp6816d)
       jo_json (j, "gzp6816d", gzp6816d);
+   if (t6793)
+      jo_json (j, "t6793", t6793);
+   if (scd41)
+      jo_json (j, "scd41", scd41);
+   if (tmp1075)
+      jo_json (j, "tmp1075", tmp1075);
 }
