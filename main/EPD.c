@@ -1449,7 +1449,7 @@ i2c_task (void *x)
          {
             jo_t j = jo_object_alloc ();
             jo_litf (j, "C", "%.2f", (float) ((t1 << 8) | t2) * 190 / 65536 - 40 + (float) gzp6816ddt / gzp6816ddt_scale);
-            jo_litf (j, "hPa", "%.4f", (80.0 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 20) * 10);
+            jo_litf (j, "hPa", "%.2f", (80.0 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 20) * 10);
             json_store (&gzp6816d, j);
          }
       }
