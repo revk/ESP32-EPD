@@ -1449,7 +1449,7 @@ i2c_task (void *x)
          {
             jo_t j = jo_object_alloc ();
             jo_litf (j, "C", "%.2f", (float) ((t1 << 8) | t2) * 190 / 65536 - 40 + (float) gzp6816ddt / gzp6816ddt_scale);
-            jo_litf (j, "kPa", "%.4f", (float) 80 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 20);
+            jo_litf (j, "hPa", "%.4f", (80.0 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 20) * 10);
             json_store (&gzp6816d, j);
          }
       }
@@ -1984,7 +1984,7 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    if (mcp9808 && !strcasecmp (c, "MCP9808"))
       return dollar_json (&mcp9808, dot ? : "C", colon);
    if (gzp6816d && (!strcasecmp (c, "GZP6816D") || !strcasecmp (c, "PRESSURE")))
-      return dollar_json (&gzp6816d, dot ? : "kPa", colon);
+      return dollar_json (&gzp6816d, dot ? : "hPa", colon);
    if (scd41 && !strcasecmp (c, "SCD41"))
       return dollar_json (&scd41, dot ? : "ppm", colon);
    if (t6793 && !strcasecmp (c, "T6793"))

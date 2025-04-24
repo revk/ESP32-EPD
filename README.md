@@ -83,7 +83,7 @@ The code supports a number of sensors which can be configured on I2C (or one wir
 |`DS18B20`|`[0].C` is Celsius for first sensor, `[n].serial` is serial number of sensor|
 |`SCD41`|`ppm` is CO₂, ,`C` is Celsius, `RH` is humidity|
 |`T6793`|`ppm` is CO₂|
-|`GZP6818D` or `PRESSURE`|`kPa` is pressure, `C` is Celsius|
+|`GZP6818D` or `PRESSURE`|`hPa` is pressure, `C` is Celsius|
 |`VEML6040` or `LIGHT`|`W` is white, `R` is red, `G` is green, `B` is blue, values in lux|
 |`TEMPERATURE`|Picks `SCD41`, `DS18B20`, `MCP9808` or `TMP1075`|
 |`CO2` or `CO₂`|Picks `SCD41` or `T6793`|
