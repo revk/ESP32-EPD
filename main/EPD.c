@@ -1233,7 +1233,7 @@ scd41_command (uint16_t c)
    i2c_master_start (t);
    i2c_master_write_byte (t, (scd41i2c << 1) | I2C_MASTER_WRITE, true);
    i2c_master_write_byte (t, c >> 8, true);
-   i2c_master_write_byte (t, c, true);
+   i2c_master_write_byte (t, c, false);
    i2c_master_stop (t);
    esp_err_t err = i2c_master_cmd_begin (i2cport, t, 100 / portTICK_PERIOD_MS);
    i2c_cmd_link_delete (t);
@@ -1386,7 +1386,7 @@ i2c_task (void *x)
       // TODO
    }
    // Poll
-   while (1)
+   while (!revk_shutting_down (NULL))
    {
       if (gzp6816d)
       {
@@ -1409,7 +1409,7 @@ i2c_task (void *x)
          jo_litf (j, "W", "%.2f", w = (float) i2c_read_16lh (veml6040i2c, 0x0B) * 1031 / 65535);
          json_store (&veml6040, j);
          if (veml6040dark && gfxbl.set)
-            revk_gpio_set (gfxbl, w < veml6040dark ? 0 : 1);
+            revk_gpio_set (gfxbl, w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
       }
       if (mcp9808)
       {
@@ -1449,7 +1449,7 @@ i2c_task (void *x)
          {
             jo_t j = jo_object_alloc ();
             jo_litf (j, "C", "%.2f", (float) ((t1 << 8) | t2) * 190 / 65536 - 40 + (float) gzp6816ddt / gzp6816ddt_scale);
-            jo_litf (j, "hPa", "%.2f", (80.0 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 20) * 10);
+            jo_litf (j, "hPa", "%.3f", (float) 800 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 300);
             json_store (&gzp6816d, j);
          }
       }
@@ -1489,6 +1489,7 @@ i2c_task (void *x)
       }
       sleep (1);
    }
+   vTaskDelete (NULL);
 }
 
 void
@@ -1531,7 +1532,7 @@ ds18b20_task (void *x)
       vTaskDelete (NULL);
       return;
    }
-   while (1)
+   while (!revk_shutting_down (NULL))
    {
       usleep (250000);
       jo_t j = jo_create_alloc ();
@@ -1549,6 +1550,7 @@ ds18b20_task (void *x)
       }
       json_store (&ds18b20s, j);
    }
+   vTaskDelete (NULL);
 }
 
 void
