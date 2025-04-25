@@ -25,6 +25,7 @@ static const char TAG[] = "EPD";
 #include <lwpng.h>
 #include "EPD.h"
 #include <math.h>
+#include <halib.h>
 
 #define	LEFT	0x80            // Flags on font size
 #define	RIGHT	0x40
@@ -50,6 +51,7 @@ static struct
    uint8_t setting:1;
    uint8_t lightoverride:1;
    uint8_t startup:1;
+   uint8_t ha:1;
    uint8_t defcon:3;
 } volatile b = { 0 };
 
@@ -332,25 +334,7 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    }
    if (!strcmp (suffix, "connect"))
    {
-      return "";
-   }
-   if (!strcmp (suffix, "shutdown"))
-   {
-      if (card)
-      {
-         esp_vfs_fat_sdcard_unmount (sd_mount, card);
-         card = NULL;
-      }
-      return "";
-   }
-   if (!strcmp (suffix, "setting"))
-   {
-      b.setting = 1;
-      snmp.lasttx = 0;          // Force re-lookup
-      return "";
-   }
-   if (!strcmp (suffix, "connect"))
-   {
+      b.ha = 1;
       return "";
    }
    if (!strcmp (suffix, "shutdown"))
@@ -1385,8 +1369,9 @@ i2c_task (void *x)
    {
       // TODO
    }
+   b.ha = 1;
    // Poll
-   while (!revk_shutting_down (NULL))
+   while (!b.die)
    {
       if (gzp6816d)
       {
@@ -1532,7 +1517,8 @@ ds18b20_task (void *x)
       vTaskDelete (NULL);
       return;
    }
-   while (!revk_shutting_down (NULL))
+   b.ha = 1;
+   while (!b.die)
    {
       usleep (250000);
       jo_t j = jo_create_alloc ();
@@ -1728,11 +1714,6 @@ solar_task (void *x)
          }
          addvalue ("today", total - solarsod, total_scale - 3); // kWh
          json_store (&solar, j);
-         if (solarlog)
-         {
-            jo_t j = jo_copy (solar);
-            revk_info ("solar", &j);
-         }
          sleep (10);
       }
       if (er)
@@ -2183,6 +2164,27 @@ weather_get (void)
 }
 
 void
+ha_config (void)
+{
+   b.ha = 0;
+   if (!haannounce)
+      return;
+ ha_config_sensor ("veml6040W", name: "VEML6040-White", type: "illuminance", unit: "lx", field: "veml6040.W", delete:!veml6040);
+ ha_config_sensor ("veml6040R", name: "VEML6040-Red", type: "illuminance", unit: "lx", field: "veml6040.R", delete:!veml6040);
+ ha_config_sensor ("veml6040G", name: "VEML6040-Green", type: "illuminance", unit: "lx", field: "veml6040.G", delete:!veml6040);
+ ha_config_sensor ("veml6040B", name: "VEML6040-Blue", type: "illuminance", unit: "lx", field: "veml6040.B", delete:!veml6040);
+ ha_config_sensor ("mcp9808T", name: "MCP9808", type: "temperature", unit: "C", field: "mcp9808.C", delete:!mcp9808);
+ ha_config_sensor ("tmp1075T", name: "TMP1075", type: "temperature", unit: "C", field: "tmp1075.C", delete:!tmp1075);
+ ha_config_sensor ("ds18b200T", name: "DS18B20-0", type: "temperature", unit: "C", field: "ds18b20[0].C", delete:!ds18b20s);
+ ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
+ ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
+ ha_config_sensor ("scd41C", name: "SCD41-CO₂", type: "carbon_dioxide", unit: "ppm", field: "scd41.ppm", delete:!scd41);
+ ha_config_sensor ("scd41T", name: "SCD41-Temp", type: "temperature", unit: "C", field: "scd41.C", delete:!scd41);
+ ha_config_sensor ("scd41H", name: "SCD41-Humidity", type: "humidity", unit: "%", field: "scd41.RH", delete:!scd41);
+ ha_config_sensor ("t6793C", name: "T6793-CO₂", type: "carbon_dioxide", unit: "ppm", field: "t6793.ppm", delete:!scd41);
+}
+
+void
 app_main ()
 {
    b.defcon = 7;
@@ -2325,6 +2327,8 @@ app_main ()
    while (!revk_shutting_down (NULL))
    {
       usleep (10000);
+      if (b.ha)
+         ha_config ();
       time_t now = time (0);
 #ifdef	GFX_EPD
       now += 2;                 // Slow update
@@ -2749,8 +2753,8 @@ app_main ()
 #endif
       snmp_tx ();
    }
-   revk_gpio_set (gfxbl, 0);
    b.die = 1;
+   revk_gpio_set (gfxbl, 0);
 }
 
 void
@@ -2874,5 +2878,7 @@ revk_state_extra (jo_t j)
       jo_json (j, "tmp1075", tmp1075);
    if (ds18b20s)
       jo_json (j, "ds18b20", ds18b20s);
+   if (solar)
+      jo_json (j, "solar", solar);
    xSemaphoreGive (json_mutex);
 }

@@ -75,11 +75,12 @@ s	weather.api		.live			// API key for weatherapi.com
 s	solar.ip					// SolarEdge IP address
 u32	solar.sod		.live	.hide		// SolarEdge start of day kWh
 u32	solar.day		.live	.hide		// SolarEdge date for sod
-bit	solar.log		.live			// SolarEdge log to mqtt
 c1	seasoncode		.live			// Override season for testing
 s	refdate			.live			// Reference date/time (YYYY-MM-DD HH:MM:SS)
 s	snmphost		.live			// Hostname for SNMP poll
 s	json.sub		.array=5 .old="mqttsub"		// Subscriptions for JSON payload $MQTTn
+
+bit	ha.announce	1					// Home Assistant announce
 
 u16	reporting	60	.unit="s"		// Report interval
 
