@@ -84,6 +84,7 @@ jo_t scd41 = NULL;
 uint32_t scd41_serial = 0;
 jo_t tmp1075 = NULL;
 jo_t ds18b20s = NULL;
+uint8_t ds18b20_num = 0;
 
 struct
 {
@@ -1480,7 +1481,6 @@ i2c_task (void *x)
 void
 ds18b20_task (void *x)
 {
-   uint8_t num_ds18b20 = 0;
    ds18b20_device_handle_t adr_ds18b20[10];
    uint64_t id[sizeof (adr_ds18b20) / sizeof (*adr_ds18b20)];
    onewire_bus_config_t bus_config = { ds18b20.num };
@@ -1492,22 +1492,22 @@ ds18b20_task (void *x)
       onewire_device_iter_handle_t iter = { 0 };
       REVK_ERR_CHECK (onewire_new_device_iter (bus_handle, &iter));
       onewire_device_t dev = { };
-      while (!onewire_device_iter_get_next (iter, &dev) && num_ds18b20 < sizeof (adr_ds18b20) / sizeof (*adr_ds18b20))
+      while (!onewire_device_iter_get_next (iter, &dev) && ds18b20_num < sizeof (adr_ds18b20) / sizeof (*adr_ds18b20))
       {
-         id[num_ds18b20] = dev.address;
+         id[ds18b20_num] = dev.address;
          ds18b20_config_t config = { };
-         REVK_ERR_CHECK (ds18b20_new_device (&dev, &config, &adr_ds18b20[num_ds18b20]));
-         REVK_ERR_CHECK (ds18b20_set_resolution (adr_ds18b20[num_ds18b20], DS18B20_RESOLUTION_12B));
-         num_ds18b20++;
+         REVK_ERR_CHECK (ds18b20_new_device (&dev, &config, &adr_ds18b20[ds18b20_num]));
+         REVK_ERR_CHECK (ds18b20_set_resolution (adr_ds18b20[ds18b20_num], DS18B20_RESOLUTION_12B));
+         ds18b20_num++;
       }
    }
    init ();
-   if (!num_ds18b20)
+   if (!ds18b20_num)
    {
       usleep (100000);
       init ();
    }
-   if (!num_ds18b20)
+   if (!ds18b20_num)
    {
       jo_t j = jo_object_alloc ();
       jo_string (j, "error", "No DS18B20 devices");
@@ -1523,8 +1523,8 @@ ds18b20_task (void *x)
       usleep (250000);
       jo_t j = jo_create_alloc ();
       jo_array (j, NULL);
-      float c[num_ds18b20];
-      for (int i = 0; i < num_ds18b20; ++i)
+      float c[ds18b20_num];
+      for (int i = 0; i < ds18b20_num; ++i)
       {
          REVK_ERR_CHECK (ds18b20_trigger_temperature_conversion (adr_ds18b20[i]));
          REVK_ERR_CHECK (ds18b20_get_temperature (adr_ds18b20[i], &c[i]));
@@ -2176,12 +2176,16 @@ ha_config (void)
  ha_config_sensor ("mcp9808T", name: "MCP9808", type: "temperature", unit: "C", field: "mcp9808.C", delete:!mcp9808);
  ha_config_sensor ("tmp1075T", name: "TMP1075", type: "temperature", unit: "C", field: "tmp1075.C", delete:!tmp1075);
  ha_config_sensor ("ds18b200T", name: "DS18B20-0", type: "temperature", unit: "C", field: "ds18b20[0].C", delete:!ds18b20s);
+ ha_config_sensor ("ds18b201T", name: "DS18B20-1", type: "temperature", unit: "C", field: "ds18b20[1].C", delete:!ds18b20s || ds18b20_num < 2);
  ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
  ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
  ha_config_sensor ("scd41C", name: "SCD41-CO₂", type: "carbon_dioxide", unit: "ppm", field: "scd41.ppm", delete:!scd41);
  ha_config_sensor ("scd41T", name: "SCD41-Temp", type: "temperature", unit: "C", field: "scd41.C", delete:!scd41);
  ha_config_sensor ("scd41H", name: "SCD41-Humidity", type: "humidity", unit: "%", field: "scd41.RH", delete:!scd41);
- ha_config_sensor ("t6793C", name: "T6793-CO₂", type: "carbon_dioxide", unit: "ppm", field: "t6793.ppm", delete:!scd41);
+ ha_config_sensor ("t6793C", name: "T6793-CO₂", type: "carbon_dioxide", unit: "ppm", field: "t6793.ppm", delete:!t6793);
+ ha_config_sensor ("solarV", name: "Solar-Voltage", type: "voltage", unit: "V", field: "solar.voltage", delete:!solar);
+ ha_config_sensor ("solarF", name: "Solar-Frequency", type: "frequency", unit: "Hz", field: "solar.frequency", delete:!solar);
+ ha_config_sensor ("solarP", name: "Solar-Power", type: "power", unit: "W", field: "solar.power", delete:!solar);
 }
 
 void
