@@ -729,7 +729,7 @@ web_root (httpd_req_t * req)
    revk_web_send (req, "</p><p><a href=/>Reload</a></p>");
 #endif
    return revk_web_foot (req, 0, 1, NULL);
-}
+
 
 #ifdef	GFX_COLOUR
 static gfx_colour_t
@@ -1461,8 +1461,9 @@ i2c_task (void *x)
                jo_t j = jo_object_alloc ();
                jo_litf (j, "serial", "%u", scd41_serial);
                jo_litf (j, "ppm", "%u", (buf[0] << 8) + buf[1]);
-               jo_litf (j, "C", "%.2f",
-                        -45.0 + 175.0 * (float) ((buf[3] << 8) + buf[4]) / 65536.0 + (float) scd41dt / scd41dt_scale);
+               if (uptime () > 30)
+                  jo_litf (j, "C", "%.2f",
+                           -45.0 + 175.0 * (float) ((buf[3] << 8) + buf[4]) / 65536.0 + (float) scd41dt / scd41dt_scale);
                jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
                json_store (&scd41, j);
             } else
@@ -2176,7 +2177,8 @@ ha_config (void)
  ha_config_sensor ("mcp9808T", name: "MCP9808", type: "temperature", unit: "C", field: "mcp9808.C", delete:!mcp9808);
  ha_config_sensor ("tmp1075T", name: "TMP1075", type: "temperature", unit: "C", field: "tmp1075.C", delete:!tmp1075);
  ha_config_sensor ("ds18b200T", name: "DS18B20-0", type: "temperature", unit: "C", field: "ds18b20[0].C", delete:!ds18b20s);
- ha_config_sensor ("ds18b201T", name: "DS18B20-1", type: "temperature", unit: "C", field: "ds18b20[1].C", delete:!ds18b20s || ds18b20_num < 2);
+ ha_config_sensor ("ds18b201T", name: "DS18B20-1", type: "temperature", unit: "C", field: "ds18b20[1].C", delete:!ds18b20s || ds18b20_num <
+                     2);
  ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
  ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
  ha_config_sensor ("scd41C", name: "SCD41-CO₂", type: "carbon_dioxide", unit: "ppm", field: "scd41.ppm", delete:!scd41);
@@ -2197,7 +2199,6 @@ app_main ()
    revk_start ();
    revk_gpio_output (gfxbl, 0);
    epd_mutex = xSemaphoreCreateMutex ();
-   xSemaphoreGive (epd_mutex);
    json_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (json_mutex);
    file_mutex = xSemaphoreCreateMutex ();
@@ -2218,6 +2219,19 @@ app_main ()
       register_get_uri ("/frame.png", web_frame);
 #endif
       revk_web_settings_add (webserver);
+   }
+   {
+    const char *e = gfx_init (pwr: gfxpwr.num, bl: gfxbl.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
+      if (e)
+      {
+         ESP_LOGE (TAG, "gfx %s", e);
+         jo_t j = jo_object_alloc ();
+         jo_string (j, "error", "Failed to start");
+         jo_string (j, "description", e);
+         revk_error ("gfx", &j);
+      }
+      revk_gfx_init(startup);
+   xSemaphoreGive (epd_mutex);
    }
 
    if (leds && rgb.set)
@@ -2253,17 +2267,6 @@ app_main ()
       gpio_reset_pin (gfxena.num);
       gpio_set_direction (gfxena.num, GPIO_MODE_OUTPUT);
       gpio_set_level (gfxena.num, gfxena.invert);       // Enable
-   }
-   {
-    const char *e = gfx_init (pwr: gfxpwr.num, bl: gfxbl.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
-      if (e)
-      {
-         ESP_LOGE (TAG, "gfx %s", e);
-         jo_t j = jo_object_alloc ();
-         jo_string (j, "error", "Failed to start");
-         jo_string (j, "description", e);
-         revk_error ("gfx", &j);
-      }
    }
    if (sdcmd.set)
    {
@@ -2397,88 +2400,6 @@ app_main ()
          b.redraw = 1;
          b.startup = 1;
          b.wificonnect = 0;
-         if (startup)
-         {
-            char msg[1000];
-            char *p = msg;
-            char temp[32];
-            char *qr1 = NULL,
-               *qr2 = NULL;
-            uint8_t s = gfx_width () / 160 ? : 1;
-            p +=
-               sprintf (p, "[_%d]%.16s/%.16s/[%d]%s %s/", s * 2, appname, hostname, s, revk_version,
-                        revk_build_date (temp) ? : "?");
-            if (sta_netif)
-            {
-               wifi_ap_record_t ap = {
-               };
-               esp_wifi_sta_get_ap_info (&ap);
-               if (*ap.ssid)
-               {
-                  override = up + startup;
-                  p +=
-                     sprintf (p, "[%d] /[%d]WiFi/[_|]%.32s/[%d] /Channel %d/RSSI %d/", s, s * 2, (char *) ap.ssid, s, ap.primary,
-                              ap.rssi);
-                  char ip[40];
-                  if (revk_ipv4 (ip))
-                  {
-                     p += sprintf (p, "[%d] /IPv4/[|]%s/", s * 2, ip);
-                     asprintf (&qr2, "http://%s/", ip);
-                  }
-                  if (revk_ipv6 (ip))
-                     p += sprintf (p, "[%d] /IPv6/[%d|]%s/", s * 2, s - 1 ? : 1, ip);
-               }
-            }
-            if (!override && ap_netif)
-            {
-               uint8_t len = revk_wifi_is_ap (temp);
-               if (len)
-               {
-                  override = up + (aptime ? : 600);
-                  p += sprintf (p, "[%d] /[%d]Join WiFi/[_%d|]%.*s/", s, s * 2, s, len, temp);
-                  if (*appass)
-                     asprintf (&qr1, "WIFI:S:%.*s;T:WPA2;P:%s;;", len, temp, appass);
-                  else
-                     asprintf (&qr1, "WIFI:S:%.*s;;", len, temp);
-                  {
-                     esp_netif_ip_info_t ip;
-                     if (!esp_netif_get_ip_info (ap_netif, &ip) && ip.ip.addr)
-                     {
-                        p += sprintf (p, "[%d] /IPv4/[|]" IPSTR "/ /", s * 2, IP2STR (&ip.ip));
-                        asprintf (&qr2, "http://" IPSTR "/", IP2STR (&ip.ip));
-                     }
-                  }
-               }
-            }
-            if (override)
-            {
-               if (sdsize)
-                  p += sprintf (p, "/ /[%d]SD free %lluG of %lluG/", s - 1 ? : 1, sdfree / 1000000000ULL, sdsize / 1000000000ULL);
-               p += sprintf (p, "[%d] /", s);
-               ESP_LOGE (TAG, "%s", msg);
-               epd_lock ();
-               gfx_message (msg);
-               int max = gfx_height () - gfx_y ();
-               if (max > 0)
-               {
-                  if (max > gfx_width () * 9 / 20)
-                     max = gfx_width () * 9 / 20;
-                  if (qr1)
-                  {
-                     gfx_pos (0, gfx_height () - 1, GFX_L | GFX_B);
-                     gfx_qr (qr1, max | 0x4000);
-                  }
-                  if (qr2)
-                  {
-                     gfx_pos (gfx_width () - 1, gfx_height () - 1, GFX_R | GFX_B);
-                     gfx_qr (qr2, max | 0x4000);
-                  }
-               }
-               epd_unlock ();
-            }
-            free (qr1);
-            free (qr2);
-         }
       }
       if (overrideimage)
       {
