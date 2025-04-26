@@ -729,7 +729,7 @@ web_root (httpd_req_t * req)
    revk_web_send (req, "</p><p><a href=/>Reload</a></p>");
 #endif
    return revk_web_foot (req, 0, 1, NULL);
-
+}
 
 #ifdef	GFX_COLOUR
 static gfx_colour_t
