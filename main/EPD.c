@@ -2230,8 +2230,8 @@ app_main ()
          jo_string (j, "description", e);
          revk_error ("gfx", &j);
       }
-      revk_gfx_init(startup);
-   xSemaphoreGive (epd_mutex);
+      revk_gfx_init (startup);
+      xSemaphoreGive (epd_mutex);
    }
 
    if (leds && rgb.set)
@@ -2320,8 +2320,6 @@ app_main ()
       gfx_refresh ();
       epd_unlock ();
    }
-   if (gfxflash)
-      flash ();
 #endif
    showlights ("");
    int16_t lastday = -1;

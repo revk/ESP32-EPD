@@ -20,7 +20,6 @@ gpio	gfx.busy	35				// Display BUSY
 u8	gfx.flip	6				// Display Flip
 #ifdef	GFX_EPD
 bit	gfx.invert	1				// Display invert
-bit	gfx.flash	1				// Display startup flashy
 bit	gfx.night	1	.live			// Display overnight refresh
 u32	refresh		86400	.live .unit="s"		// Full refresh time
 #endif
