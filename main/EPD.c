@@ -1249,13 +1249,20 @@ scd41_read (uint16_t c, int8_t len, uint8_t * buf)
 void
 i2c_task (void *x)
 {
-   if (i2c_driver_install (i2cport, I2C_MODE_MASTER, 0, 0, 0))
+   void fail (uint8_t addr, const char *e)
    {
+      ESP_LOGE (TAG, "I2C fail %02X: %s", addr & 0x7F, e);
       jo_t j = jo_object_alloc ();
-      jo_string (j, "error", "Install fail");
+      jo_string (j, "error", e);
       jo_int (j, "sda", sda.num);
       jo_int (j, "scl", scl.num);
+      if (addr)
+         jo_stringf (j, "addr", "%02X", addr & 0x7F);
       revk_error ("I2C", &j);
+   }
+   if (i2c_driver_install (i2cport, I2C_MODE_MASTER, 0, 0, 0))
+   {
+      fail (0, "Install fail");
       i2cport = -1;
    } else
    {
@@ -1270,27 +1277,13 @@ i2c_task (void *x)
       if (i2c_param_config (i2cport, &config))
       {
          i2c_driver_delete (i2cport);
-         jo_t j = jo_object_alloc ();
-         jo_string (j, "error", "Config fail");
-         jo_int (j, "sda", sda.num);
-         jo_int (j, "scl", scl.num);
-         revk_error ("I2C", &j);
+         fail (0, "Config fail");
          i2cport = -1;
       } else
          i2c_set_timeout (i2cport, 31);
    }
    if (i2cport < 0)
       vTaskDelete (NULL);
-   void fail (uint8_t addr, const char *e)
-   {
-      ESP_LOGE (TAG, "I2C fail %02X: %s", addr & 0x7F, e);
-      jo_t j = jo_object_alloc ();
-      jo_string (j, "error", e);
-      jo_int (j, "sda", sda.num);
-      jo_int (j, "scl", scl.num);
-      jo_stringf (j, "addr", "%02X", addr & 0x7F);
-      revk_error ("I2C", &j);
-   }
    // Init
    if (veml6040i2c)
    {
