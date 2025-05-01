@@ -1478,7 +1478,7 @@ i2c_task (void *x)
          if (v >= 0)
          {
             jo_t j = jo_object_alloc ();
-            jo_litf (j, "C", "%.2f", (float) ((int16_t) v) / 256);
+            jo_litf (j, "C", "%.2f", (float) ((int16_t) v) / 256 - (float) tmp1075dt / tmp1075dt_scale);
             json_store (&tmp1075, j);
          }
       }
