@@ -1474,10 +1474,13 @@ i2c_task (void *x)
       }
       if (tmp1075)
       {
-         int16_t v = i2c_read_16hl (tmp1075i2c, 0);
-         jo_t j = jo_object_alloc ();
-         jo_litf (j, "C", "%.2f", (float) v / 256);
-         json_store (&tmp1075, j);
+         int32_t v = i2c_read_16hl (tmp1075i2c, 0);
+         if (v >= 0)
+         {
+            jo_t j = jo_object_alloc ();
+            jo_litf (j, "C", "%.2f", (float) ((int16_t) v) / 256);
+            json_store (&tmp1075, j);
+         }
       }
       sleep (1);
    }
