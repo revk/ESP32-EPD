@@ -83,12 +83,6 @@ bit	ha.announce	1					// Home Assistant announce
 
 u16	reporting	60	.unit="s"		// Report interval
 
-gpio	btn.n						// Button N
-gpio	btn.s						// Button S
-gpio	btn.e						// Button E
-gpio	btn.w						// Button W
-gpio	btn.p						// Button P
-
 gpio	scl						// I2C SCL
 gpio	sda						// I2C SDA
 

@@ -1077,16 +1077,6 @@ led_task (void *x)
    vTaskDelete (NULL);
 }
 
-void
-btn_task (void *x)
-{
-   while (1)
-   {
-      usleep (10000);
-      // TODO
-   }
-}
-
 static int32_t
 i2c_read_16lh (uint8_t addr, uint8_t cmd)
 {
@@ -1151,6 +1141,22 @@ i2c_read_16hl (uint8_t addr, uint8_t cmd)
    ESP_LOGD (TAG, "I2C %02X %02X %02X%02X OK", addr & 0x7F, cmd, h, l);
    return (h << 8) + l;
 }
+
+static esp_err_t
+i2c_write_16hl (uint8_t addr, uint8_t cmd, uint16_t val)
+{
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (addr << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, cmd, true);
+   i2c_master_write_byte (t, val >> 8, true);
+   i2c_master_write_byte (t, val & 0xFF, true);
+   i2c_master_stop (t);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+   return err;
+}
+
 
 static int32_t
 i2c_modbus_read (uint8_t addr, uint16_t a)
@@ -1361,7 +1367,10 @@ i2c_task (void *x)
    }
    if (tmp1075i2c)
    {
-      // TODO
+      if (i2c_read_16hl (tmp1075i2c, 0x0F) != 0x7500 || i2c_write_16hl (tmp1075i2c, 1, 0x60FF))
+         fail (tmp1075i2c, "TMP1075");
+      else
+         tmp1075 = jo_object_alloc ();
    }
    b.ha = 1;
    // Poll
@@ -1465,7 +1474,10 @@ i2c_task (void *x)
       }
       if (tmp1075)
       {
-         // TODO
+         int16_t v = i2c_read_16hl (tmp1075i2c, 0);
+         jo_t j = jo_object_alloc ();
+         jo_litf (j, "C", "%.2f", (float) v / 256);
+         json_store (&tmp1075, j);
       }
       sleep (1);
    }
@@ -2253,8 +2265,6 @@ app_main ()
    revk_task ("reload", reload_task, NULL, 10);
    if (sda.set && scl.set)
       revk_task ("i2c", i2c_task, NULL, 10);
-   if (btnn.set || btns.set || btne.set || btnw.set || btnp.set)
-      revk_task ("btn", btn_task, NULL, 10);
    if (ds18b20.set)
       revk_task ("18b20", ds18b20_task, NULL, 10);
    if (gfxena.set)
