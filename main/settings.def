@@ -104,4 +104,3 @@ u8	veml6040.i2c		.set .hex		// VEML6040 Light sensor
 u16	veml6040.dark		.live .decimal=1 .unit="lux"	// Level below which we turn off display
 
 u8	t6793.i2c		.set .hex		// T6793 CO2 sensor
-s16	t6793.dt		.live .decimal=2	// T6793 Temp offset
