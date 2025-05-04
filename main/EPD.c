@@ -698,7 +698,10 @@ web_root (httpd_req_t * req)
 {
    if (revk_link_down ())
       return revk_web_settings (req);   // Direct to web set up
-   revk_web_head (req, *hostname ? hostname : appname);
+   revk_web_head (req, hostname);
+   char *qs = NULL;
+   revk_web_send (req, "<h1>%s</h1>", revk_web_safe (&qs, hostname));
+   free (qs);
 #ifdef	CONFIG_LWPNG_ENCODE
    revk_web_send (req, "<p>");
    int32_t w = gfx_width ();
