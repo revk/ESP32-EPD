@@ -1251,9 +1251,42 @@ scd41_read (uint16_t c, int8_t len, uint8_t * buf)
    esp_err_t err = i2c_master_cmd_begin (i2cport, t, 100 / portTICK_PERIOD_MS);
    i2c_cmd_link_delete (t);
    if (err)
-      ESP_LOGE (TAG, "I2C %02X %d fail %s", scd41i2c & 0x7F, len, esp_err_to_name (err));
+      ESP_LOGE (TAG, "I2C read %02X %04X %d fail %s", scd41i2c & 0x7F, c, len, esp_err_to_name (err));
+   if (!err)
+   {                            // CRC checks
+      int p = 0;
+      while (p < len && !err)
+      {
+         if (scd41_crc (buf[p], buf[p + 1]) != buf[p + 2])
+         {
+            ESP_LOGE (TAG, "SCD41 CRC fail on read %02x", c);
+            err = ESP_FAIL;
+         }
+         p += 3;
+      }
+   }
    return err;
 }
+
+static esp_err_t
+scd41_write (uint16_t c, uint16_t v)
+{
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (scd41i2c << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, c >> 8, true);
+   i2c_master_write_byte (t, c, true);
+   i2c_master_write_byte (t, v >> 8, true);
+   i2c_master_write_byte (t, v, true);
+   i2c_master_write_byte (t, scd41_crc (v >> 8, v), true);
+   i2c_master_stop (t);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 100 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+   if (err)
+      ESP_LOGE (TAG, "SCD41 write %02X %04X %04X fail %s", scd41i2c & 0x7F, c, v, esp_err_to_name (err));
+   return err;
+}
+
 
 void
 i2c_task (void *x)
@@ -1355,17 +1388,12 @@ i2c_task (void *x)
          fail (scd41i2c, "SCD41");
       else
       {
-         if (scd41_crc (buf[0], buf[1]) == buf[2] && scd41_crc (buf[3], buf[4]) == buf[5] && scd41_crc (buf[6], buf[7]) == buf[8])
-         {
-            scd41_serial =
-               ((unsigned long long) buf[0] << 40) + ((unsigned long long) buf[1] << 32) +
-               ((unsigned long long) buf[3] << 24) + ((unsigned long long) buf[4] << 16) +
-               ((unsigned long long) buf[6] << 8) + ((unsigned long long) buf[7]);
-            if (!scd41_command (0x21B1))
-               scd41 = jo_object_alloc ();
-         } else
-            ESP_LOGE (TAG, "SCD41 CRC bad %02X %02X %02X %02X %02X %02X %02X %02X %02X", buf[0], buf[1], buf[2], buf[3], buf[4],
-                      buf[5], buf[6], buf[7], buf[8]);
+         scd41_serial =
+            ((unsigned long long) buf[0] << 40) + ((unsigned long long) buf[1] << 32) +
+            ((unsigned long long) buf[3] << 24) + ((unsigned long long) buf[4] << 16) +
+            ((unsigned long long) buf[6] << 8) + ((unsigned long long) buf[7]);
+         if (!scd41_command (0x21B1))
+            scd41 = jo_object_alloc ();
       }
    }
    if (tmp1075i2c)
@@ -1376,6 +1404,7 @@ i2c_task (void *x)
          tmp1075 = jo_object_alloc ();
    }
    b.ha = 1;
+   sleep (5);
    // Poll
    while (!b.die)
    {
@@ -1416,6 +1445,7 @@ i2c_task (void *x)
          jo_litf (j, "C", "%.2f", (float) a / 128 + (float) mcp9808dt / mcp9808dt_scale);
          json_store (&mcp9808, j);
       }
+      uint16_t hpa = 0;
       if (gzp6816d)
       {
          uint8_t s,
@@ -1440,8 +1470,10 @@ i2c_task (void *x)
          {
             jo_t j = jo_object_alloc ();
             jo_litf (j, "C", "%.2f", (float) ((t1 << 8) | t2) * 190 / 65536 - 40 + (float) gzp6816ddt / gzp6816ddt_scale);
-            jo_litf (j, "hPa", "%.3f", (float) 800 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 300);
+            float p = (float) 800 * (((p1 << 16) | (p2 << 8) | p3) - 1677722) / 13421772 + 300;
+            jo_litf (j, "hPa", "%.3f", p);
             json_store (&gzp6816d, j);
+            hpa = p;
          }
       }
       if (t6793)
@@ -1457,8 +1489,7 @@ i2c_task (void *x)
       if (scd41)
       {
          uint8_t buf[9];
-         if (!scd41_read (0xE4B8, 3, buf) && scd41_crc (buf[0], buf[1]) == buf[2] && ((buf[0] & 0x7) || buf[1]) &&
-             !scd41_read (0xEC05, sizeof (buf), buf))
+         if (!scd41_read (0xE4B8, 3, buf) && ((buf[0] & 0x7) || buf[1]) && !scd41_read (0xEC05, sizeof (buf), buf))
          {
             if (scd41_crc (buf[0], buf[1]) == buf[2] && scd41_crc (buf[3], buf[4]) == buf[5]
                 && scd41_crc (buf[6], buf[7]) == buf[8])
@@ -1466,11 +1497,13 @@ i2c_task (void *x)
                jo_t j = jo_object_alloc ();
                jo_litf (j, "serial", "%u", scd41_serial);
                jo_litf (j, "ppm", "%u", (buf[0] << 8) + buf[1]);
-               if (uptime () > 30)
+               if (uptime () > 180)
                   jo_litf (j, "C", "%.2f",
                            -45.0 + 175.0 * (float) ((buf[3] << 8) + buf[4]) / 65536.0 + (float) scd41dt / scd41dt_scale);
                jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
                json_store (&scd41, j);
+               if (hpa)
+                  scd41_write (0x0E000, hpa);
             } else
                ESP_LOGE (TAG, "SCD41 bad CRC");
          }
@@ -1485,7 +1518,11 @@ i2c_task (void *x)
             json_store (&tmp1075, j);
          }
       }
-      sleep (1);
+      {                         // Next second
+         struct timeval tv;
+         gettimeofday (&tv, NULL);
+         usleep (1000000 - tv.tv_usec);
+      }
    }
    vTaskDelete (NULL);
 }
