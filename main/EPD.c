@@ -1384,7 +1384,11 @@ i2c_task (void *x)
          sleep (1);
       }
       uint8_t buf[9];
-      if (err || scd41_read (0x3682, 9, buf))
+      if (!err)
+         err = scd41_write (0x241D, (uint32_t) scd41to * 65536 / scd41to_scale / 175);
+      if (!err)
+         err = scd41_read (0x3682, 9, buf);
+      if (err)
          fail (scd41i2c, "SCD41");
       else
       {
