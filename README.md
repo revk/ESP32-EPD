@@ -10,11 +10,11 @@ This code works with many E-paper panels, but I have bought up some really nice 
 
 ## Environmental monitoring
 
-This code also has sensors for `TMP1075`, `MCP9808`, `GZP6818D`, `VEML6040`, `T6793`, `SCD41`, and multiple `DS18B20` (more may be added later). These can be used for display but also logging (MQTT) and polling (http). This makes it idea for a display and monitor.
+This code also has sensors for `TMP1075`, `MCP9808`, `GZP6818D`, `VEML6040`, `T6793`, `SCD41`, and multiple `DS18B20` (more may be added later). These can be used for display but also logging (MQTT) and polling (http). This makes it idea for a display and monitor. The [FaikinRemote][https://remote.revk.uk] project has an ideal colour display with many sensors for this purpose.
 
 # ESP32-EPD
 
-<img src='PCB/EPD75/EPD75.png' align=right width=25%>This uses my [ESP32-GFX](https://github.com/revk/ESP32-GFX) library and provides a general E-paper, OLED, and LCD, sign with a configurable selection of *widgets*.
+<img src='PCB/EPD75/EPD75.png' align=right width=25%>This uses my [ESP32-GFX](https://gfx.revk.uk/) library and provides a general E-paper, OLED, and LCD, sign with a configurable selection of *widgets*.
 
 *This is the new version of my `EPDSign` code which had a few options (clock, date, day, wifi and QR, background images, etc). Please upgrade to this as EPD-SIGN is no longer maintained.*
 
