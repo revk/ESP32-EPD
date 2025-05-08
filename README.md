@@ -93,6 +93,8 @@ The code supports a number of sensors which can be configured on I2C (or one wir
 |`CO2` or `CO₂`|Picks `SCD41` or `T6793`|
 |`HUMIDITY`|Picks `SCD41`|
 
+All sensors are included in MQTT `state` message, and can be fetched by web from `/status`.
+
 #### Numeric JSON value formats
 
 |Tag|Meaning|

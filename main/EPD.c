@@ -74,6 +74,8 @@ const char hhmm[] = "%T";
 static int8_t i2cport = 0;
 jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
 
+void revk_state_extra (jo_t j);
+
 jo_t weather = NULL;
 jo_t solar = NULL;
 jo_t veml6040 = NULL;
@@ -122,7 +124,7 @@ json_store (jo_t * jp, jo_t j)
 const char *
 gfx_qr (const char *value, uint16_t max)
 {
-#ifndef	CONFIG_GFX_NONE
+#ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    unsigned int width = 0;
    uint8_t *qr = qr_encode (strlen (value), value,.widthp = &width,.noquiet = (max & 0x4000 ? 1 : 0));
    if (!qr)
@@ -692,6 +694,17 @@ register_get_uri (const char *uri, esp_err_t (*handler) (httpd_req_t * r))
       .handler = handler,
    };
    register_uri (&uri_struct);
+}
+
+static esp_err_t
+web_status (httpd_req_t * req)
+{
+   jo_t j = jo_object_alloc ();
+   revk_state_extra (j);
+   char *js = jo_finisha (&j);
+   httpd_resp_set_type (req, "application/json");
+   httpd_resp_send (req, js, strlen (js));
+   return ESP_OK;
 }
 
 static esp_err_t
@@ -2240,8 +2253,16 @@ ha_config (void)
  ha_config_sensor ("veml6040B", name: "VEML6040-Blue", type: "illuminance", unit: "lx", field: "veml6040.B", delete:!veml6040);
  ha_config_sensor ("mcp9808T", name: "MCP9808", type: "temperature", unit: "C", field: "mcp9808.C", delete:!mcp9808);
  ha_config_sensor ("tmp1075T", name: "TMP1075", type: "temperature", unit: "C", field: "tmp1075.C", delete:!tmp1075);
- ha_config_sensor ("ds18b200T", name: "DS18B20-0", type: "temperature", unit: "C", field: "ds18b20[0].C", delete:ds18b20_num < 1);
- ha_config_sensor ("ds18b201T", name: "DS18B20-1", type: "temperature", unit: "C", field: "ds18b20[1].C", delete:ds18b20_num < 2);
+   for (int i = 0; i < ds18b20_num; i++)
+   {
+      char id[20],
+        name[20],
+        js[20];
+      sprintf (id, "ds18b20%dT", i);
+      sprintf (name, "DS18B20-%d", i);
+      sprintf (js, "ds18b20[%d].C", i);
+    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field:js);
+   }
  ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
  ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
  ha_config_sensor ("scd41C", name: "SCD41-CO₂", type: "carbon_dioxide", unit: "ppm", field: "scd41.ppm", delete:!scd41);
@@ -2275,15 +2296,17 @@ app_main ()
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.stack_size += 1024 * 4;
    config.lru_purge_enable = true;
-   config.max_uri_handlers = 2 + revk_num_web_handlers ();
+   config.max_uri_handlers = 3 + revk_num_web_handlers ();
    if (!httpd_start (&webserver, &config))
    {
       register_get_uri ("/", web_root);
+      register_get_uri ("/status", web_status);
 #ifdef	CONFIG_LWPNG_ENCODE
       register_get_uri ("/frame.png", web_frame);
 #endif
       revk_web_settings_add (webserver);
    }
+#ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    {
     const char *e = gfx_init (pwr: gfxpwr.num, bl: gfxbl.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
       if (e)
@@ -2298,6 +2321,7 @@ app_main ()
       revk_gfx_init (startup);
       xSemaphoreGive (epd_mutex);
    }
+#endif
 
    if (leds && rgb.set)
    {
@@ -2555,6 +2579,7 @@ app_main ()
          b.redraw = 1;
       }
 #endif
+#ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
       epd_lock ();
 #ifdef	TIMINGS
       uint64_t timeb = esp_timer_get_time ();
@@ -2732,6 +2757,7 @@ app_main ()
       uint64_t timec = esp_timer_get_time ();
 #endif
       epd_unlock ();
+#endif
 #ifdef	TIMINGS
       uint64_t timed = esp_timer_get_time ();
       ESP_LOGE (TAG, "Setup %4lldms, plot %4lldms, update %4lldms", (timeb - timea + 500) / 10000, (timec - timeb + 500) / 1000,
