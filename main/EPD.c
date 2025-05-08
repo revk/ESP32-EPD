@@ -81,6 +81,7 @@ jo_t mcp9808 = NULL;
 jo_t gzp6816d = NULL;
 jo_t t6793 = NULL;
 jo_t scd41 = NULL;
+uint16_t scd41to = 0;
 uint32_t scd41_serial = 0;
 jo_t tmp1075 = NULL;
 jo_t ds18b20s = NULL;
@@ -1385,7 +1386,11 @@ i2c_task (void *x)
       }
       uint8_t buf[9];
       if (!err)
-         err = scd41_write (0x241D, (uint32_t) scd41to * 65536 / scd41to_scale / 175);
+         err = scd41_write (0x241D, (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536 / scd41dt_scale / 175);
+      if (!err)
+         err = scd41_read (0x2318, 3, buf);
+      if (!err)
+         ESP_LOGE (TAG, "SCD41 TO %04X", scd41to = (buf[0] << 8) + buf[1]);
       if (!err)
          err = scd41_read (0x3682, 9, buf);
       if (err)
@@ -1502,9 +1507,12 @@ i2c_task (void *x)
                jo_litf (j, "serial", "%u", scd41_serial);
                jo_litf (j, "ppm", "%u", (buf[0] << 8) + buf[1]);
                if (uptime () > 180)
+               {
                   jo_litf (j, "C", "%.2f",
-                           -45.0 + 175.0 * (float) ((buf[3] << 8) + buf[4]) / 65536.0 + (float) scd41dt / scd41dt_scale);
-               jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
+                           -45.0 + 175.0 * (float) (((uint32_t) ((buf[3] << 8) + buf[4])) + scd41to) / 65536.0 +
+                           (float) scd41dt / scd41dt_scale);
+                  jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
+               }
                json_store (&scd41, j);
                if (hpa)
                   scd41_write (0x0E000, hpa);
@@ -1573,7 +1581,6 @@ ds18b20_task (void *x)
    b.ha = 1;
    while (!b.die)
    {
-      usleep (250000);
       jo_t j = jo_create_alloc ();
       jo_array (j, NULL);
       float c[ds18b20_num];
@@ -1588,6 +1595,11 @@ ds18b20_task (void *x)
          jo_close (j);
       }
       json_store (&ds18b20s, j);
+      {                         // Next second
+         struct timeval tv;
+         gettimeofday (&tv, NULL);
+         usleep (1000000 - tv.tv_usec);
+      }
    }
    vTaskDelete (NULL);
 }
