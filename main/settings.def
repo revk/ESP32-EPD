@@ -88,19 +88,19 @@ gpio	sda						// I2C SDA
 
 gpio	ds18b20						// DS18B20 Temp sensors
 
-u8	mcp9808.i2c		.set .hex		// MCP9808 Temp sensor
+u8	mcp9808.i2c		.set .hex .fix		// MCP9808 Temp sensor
 s16	mcp9808.dt		.live .decimal=2 .unit="°C"	// MCP9808 Temp offset
 
-u8	tmp1075.i2c		.set .hex		// TMP1075 Temp sensor
+u8	tmp1075.i2c		.set .hex .fix		// TMP1075 Temp sensor
 s16	tmp1075.dt		.live .decimal=2 .unit="°C"	// TMP1075 Temp offset
 
-u8	scd41.i2c		.set .hex		// SCD41 CO2 sensor
+u8	scd41.i2c		.set .hex .fix		// SCD41 CO2 sensor
 s16	scd41.dt	0	.live .decimal=2 .unit="°C"	// SCD41 Temp offset
 
-u8	gzp6816d.i2c		.set .hex		// GZP6816D Pressure sensor
+u8	gzp6816d.i2c		.set .hex .fix		// GZP6816D Pressure sensor
 s16	gzp6816d.dt		.live .decimal=2 .unit="°C"	// GZP6816D Temp offset
 
-u8	veml6040.i2c		.set .hex		// VEML6040 Light sensor
+u8	veml6040.i2c		.set .hex .fix		// VEML6040 Light sensor
 u16	veml6040.dark		.live .decimal=1 .unit="lux"	// Level below which we turn off display
 
-u8	t6793.i2c		.set .hex		// T6793 CO2 sensor
+u8	t6793.i2c		.set .hex .fix		// T6793 CO2 sensor
