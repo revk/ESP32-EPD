@@ -73,6 +73,7 @@ const char hhmm[] = "%T";
 
 static int8_t i2cport = 0;
 jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
+
 void revk_state_extra (jo_t j);
 
 jo_t weather = NULL;
@@ -2252,8 +2253,16 @@ ha_config (void)
  ha_config_sensor ("veml6040B", name: "VEML6040-Blue", type: "illuminance", unit: "lx", field: "veml6040.B", delete:!veml6040);
  ha_config_sensor ("mcp9808T", name: "MCP9808", type: "temperature", unit: "C", field: "mcp9808.C", delete:!mcp9808);
  ha_config_sensor ("tmp1075T", name: "TMP1075", type: "temperature", unit: "C", field: "tmp1075.C", delete:!tmp1075);
- ha_config_sensor ("ds18b200T", name: "DS18B20-0", type: "temperature", unit: "C", field: "ds18b20[0].C", delete:ds18b20_num < 1);
- ha_config_sensor ("ds18b201T", name: "DS18B20-1", type: "temperature", unit: "C", field: "ds18b20[1].C", delete:ds18b20_num < 2);
+   for (int i = 0; i < ds18b20_num; i++)
+   {
+      char id[20],
+        name[20],
+        js[20];
+      sprintf (id, "ds18b20%dT", i);
+      sprintf (name, "DS18B20-%d", i);
+      sprintf (js, "ds18b20[%d].C", i);
+    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field:js);
+   }
  ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
  ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
  ha_config_sensor ("scd41C", name: "SCD41-CO₂", type: "carbon_dioxide", unit: "ppm", field: "scd41.ppm", delete:!scd41);
