@@ -20,6 +20,7 @@ typedef struct icon_s
 void
 widget_bins (uint16_t s, const char *c)
 {
+#ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    time_t now = time (0);
    if (!c || !*c || now < 1000000000)
       return;
@@ -293,4 +294,5 @@ widget_bins (uint16_t s, const char *c)
       }
       free (jbins);
    }
+#endif
 }

@@ -2579,6 +2579,7 @@ app_main ()
          b.redraw = 1;
       }
 #endif
+#ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
       epd_lock ();
 #ifdef	TIMINGS
       uint64_t timeb = esp_timer_get_time ();
@@ -2756,6 +2757,7 @@ app_main ()
       uint64_t timec = esp_timer_get_time ();
 #endif
       epd_unlock ();
+#endif
 #ifdef	TIMINGS
       uint64_t timed = esp_timer_get_time ();
       ESP_LOGE (TAG, "Setup %4lldms, plot %4lldms, update %4lldms", (timeb - timea + 500) / 10000, (timec - timeb + 500) / 1000,
