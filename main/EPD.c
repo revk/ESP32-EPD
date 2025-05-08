@@ -73,6 +73,7 @@ const char hhmm[] = "%T";
 
 static int8_t i2cport = 0;
 jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
+void revk_state_extra (jo_t j);
 
 jo_t weather = NULL;
 jo_t solar = NULL;
@@ -692,6 +693,17 @@ register_get_uri (const char *uri, esp_err_t (*handler) (httpd_req_t * r))
       .handler = handler,
    };
    register_uri (&uri_struct);
+}
+
+static esp_err_t
+web_status (httpd_req_t * req)
+{
+   jo_t j = jo_object_alloc ();
+   revk_state_extra (j);
+   char *js = jo_finisha (&j);
+   httpd_resp_set_type (req, "application/json");
+   httpd_resp_send (req, js, strlen (js));
+   return ESP_OK;
 }
 
 static esp_err_t
@@ -2275,10 +2287,11 @@ app_main ()
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.stack_size += 1024 * 4;
    config.lru_purge_enable = true;
-   config.max_uri_handlers = 2 + revk_num_web_handlers ();
+   config.max_uri_handlers = 3 + revk_num_web_handlers ();
    if (!httpd_start (&webserver, &config))
    {
       register_get_uri ("/", web_root);
+      register_get_uri ("/status", web_status);
 #ifdef	CONFIG_LWPNG_ENCODE
       register_get_uri ("/frame.png", web_frame);
 #endif
