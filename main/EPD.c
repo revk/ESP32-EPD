@@ -124,7 +124,7 @@ json_store (jo_t * jp, jo_t j)
 const char *
 gfx_qr (const char *value, uint16_t max)
 {
-#ifndef	CONFIG_GFX_NONE
+#ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    unsigned int width = 0;
    uint8_t *qr = qr_encode (strlen (value), value,.widthp = &width,.noquiet = (max & 0x4000 ? 1 : 0));
    if (!qr)
@@ -2306,6 +2306,7 @@ app_main ()
 #endif
       revk_web_settings_add (webserver);
    }
+#ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    {
     const char *e = gfx_init (pwr: gfxpwr.num, bl: gfxbl.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
       if (e)
@@ -2320,6 +2321,7 @@ app_main ()
       revk_gfx_init (startup);
       xSemaphoreGive (epd_mutex);
    }
+#endif
 
    if (leds && rgb.set)
    {
