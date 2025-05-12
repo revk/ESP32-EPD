@@ -9,7 +9,7 @@ if("$1" != "") then
 	set d=($1)
 	shift
 else
-	set d=(/dev/cu.usbmodem* /dev/ttyACM*)
+	set d=(`ls -t /dev/*usb* /dev/ttyACM*|head -1`)
 endif
 
 if($#d == 0) then
