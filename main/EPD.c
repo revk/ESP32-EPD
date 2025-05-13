@@ -89,8 +89,7 @@ uint32_t scd41_serial = 0;
 jo_t tmp1075 = NULL;
 jo_t ds18b20s = NULL;
 uint8_t ds18b20_num = 0;
-jo_t bles=NULL;
-uint8_t bles_num = 0;
+jo_t bles = NULL;
 
 struct
 {
@@ -710,6 +709,33 @@ web_status (httpd_req_t * req)
    httpd_resp_set_type (req, "application/json");
    httpd_resp_send (req, js, strlen (js));
    return ESP_OK;
+}
+
+static void
+settings_ble (httpd_req_t * req, int i)
+{
+   revk_web_send (req, "<tr><td>BLE%d</td><td>" //
+                  "<select name=blesensor%d>", i + 1, i + 1);
+   revk_web_send (req, "<option value=\"\">-- None --");
+   char found = 0;
+   for (bleenv_t * e = bleenv; e; e = e->next)
+   {
+      revk_web_send (req, "<option value=\"%s\"", e->name);
+      if (*blesensor[i] && !strcmp (blesensor[i], e->name))
+      {
+         revk_web_send (req, " selected");
+         found = 1;
+      }
+      revk_web_send (req, ">%s", e->name);
+      if (!e->missing && e->rssi)
+         revk_web_send (req, " %ddB", e->rssi);
+      if (!e->missing && e->tempset)
+         revk_web_send (req, " %.2f°", (float) e->temp / 100);
+   }
+   if (!found && *blesensor[i])
+      revk_web_send (req, "<option selected value=\"%s\">%s", blesensor[i], blesensor[i]);
+   revk_web_send (req, "</select>");
+   revk_web_send (req, "</td><td>External BLE temperature reference</td></tr>");
 }
 
 static esp_err_t
@@ -1548,6 +1574,39 @@ i2c_task (void *x)
             json_store (&tmp1075, j);
          }
       }
+      // Do BLE checks here too
+      if (bleenable)
+      {
+         jo_t j = jo_create_alloc ();
+         jo_array (j, NULL);
+         for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
+         {
+            jo_object (j, NULL);
+            if (*blesensor[i])
+            {
+               jo_string (j, "name", blesensor[i]);
+               bleenv_t *e;
+               for (e = bleenv; e; e = e->next)
+                  if (!strcmp (e->name, blesensor[i]))
+                     break;
+               if (e)
+               {
+                  if (e->tempset)
+                     jo_litf (j, "temp", "%.2f", e->temp / 100.0);
+                  if (e->humset)
+                     jo_litf (j, "hum", "%.2f", e->hum / 100.0);
+                  if (e->batset)
+                     jo_int (j, "bat", e->bat);
+                  if (e->voltset)
+                     jo_litf (j, "volt", "%.3f", e->volt / 1000.0);
+               }
+            }
+            jo_close (j);
+         }
+         jo_close (j);
+         json_store (&bles, j);
+      }
+
       {                         // Next second
          struct timeval tv;
          gettimeofday (&tv, NULL);
@@ -2047,7 +2106,7 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    }
    if (!strncasecmp (c, "DS18B20", 7))  // allow for [0] directly with no dot
       return dollar_json (&ds18b20s, dot ? : "[0].C", colon);
-   if (!strncasecmp (c, "BLE", 3))  // allow for [0] directly with no dot
+   if (!strncasecmp (c, "BLE", 3))      // allow for [0] directly with no dot
       return dollar_json (&bles, dot ? : "[0].C", colon);
    if (tmp1075 && !strcasecmp (c, "TMP1075"))
       return dollar_json (&tmp1075, dot ? : "C", colon);
@@ -2272,7 +2331,7 @@ ha_config (void)
       sprintf (js, "ds18b20[%d].C", i);
     ha_config_sensor (id, name: name, type: "temperature", unit: "C", field:js);
    }
-   for (int i = 0; i < bles_num; i++)
+   for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
    {
       char id[20],
         name[20],
@@ -2280,7 +2339,7 @@ ha_config (void)
       sprintf (id, "ble%dT", i);
       sprintf (name, "BLE-%d", i);
       sprintf (js, "ble[%d].C", i);
-    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field:js);
+    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field: js, delete:*blesensor ? 0 : 1);
    }
  ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
  ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
@@ -2810,6 +2869,12 @@ revk_web_extra (httpd_req_t * req, int page)
          revk_web_setting (req, "Light pattern", "lights");
          revk_web_setting (req, "Light on", "lighton");
          revk_web_setting (req, "Light off", "lightoff");
+      }
+      if (bleenable)
+      {
+         revk_web_setting_title (req, "BLE sensors");
+         for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
+            settings_ble (req, i);
       }
       return;
    }
