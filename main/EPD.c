@@ -720,8 +720,8 @@ settings_ble (httpd_req_t * req, int i)
    char found = 0;
    for (bleenv_t * e = bleenv; e; e = e->next)
    {
-      revk_web_send (req, "<option value=\"%s\"", e->name);
-      if (*blesensor[i] && !strcmp (blesensor[i], e->name))
+      revk_web_send (req, "<option value=\"%s\"", e->mac);
+      if (*blesensor[i] && (!strcmp (blesensor[i], e->name) || !strcmp (blesensor[i], e->mac)))
       {
          revk_web_send (req, " selected");
          found = 1;
@@ -1597,13 +1597,15 @@ ble_task (void *x)
             jo_object (j, NULL);
             if (*blesensor[i])
             {
-               jo_string (j, "name", blesensor[i]);
                bleenv_t *e;
                for (e = bleenv; e; e = e->next)
-                  if (!strcmp (e->name, blesensor[i]))
+                  if (!strcmp (e->name, blesensor[i]) || !strcmp (e->mac, blesensor[i]))
                      break;
                if (e)
                {
+                  jo_string (j, "mac", e->mac);
+                  if (strcmp (e->mac, e->name))
+                     jo_string (j, "name", e->name);
                   if (e->tempset)
                      jo_litf (j, "C", "%.2f", e->temp / 100.0);
                   if (e->humset)
@@ -1614,7 +1616,8 @@ ble_task (void *x)
                      jo_litf (j, "V", "%.3f", e->volt / 1000.0);
                   if (e->co2set)
                      jo_int (j, "ppm", e->co2);
-               }
+               } else
+                  jo_string (j, "name", blesensor[i]);
             }
             jo_close (j);
          }
