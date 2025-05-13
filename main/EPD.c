@@ -1574,45 +1574,57 @@ i2c_task (void *x)
             json_store (&tmp1075, j);
          }
       }
-      // Do BLE checks here too
-      if (bleenable)
-      {
-         jo_t j = jo_create_alloc ();
-         jo_array (j, NULL);
-         for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
-         {
-            jo_object (j, NULL);
-            if (*blesensor[i])
-            {
-               jo_string (j, "name", blesensor[i]);
-               bleenv_t *e;
-               for (e = bleenv; e; e = e->next)
-                  if (!strcmp (e->name, blesensor[i]))
-                     break;
-               if (e)
-               {
-                  if (e->tempset)
-                     jo_litf (j, "temp", "%.2f", e->temp / 100.0);
-                  if (e->humset)
-                     jo_litf (j, "hum", "%.2f", e->hum / 100.0);
-                  if (e->batset)
-                     jo_int (j, "bat", e->bat);
-                  if (e->voltset)
-                     jo_litf (j, "volt", "%.3f", e->volt / 1000.0);
-               }
-            }
-            jo_close (j);
-         }
-         jo_close (j);
-         json_store (&bles, j);
-      }
-
       {                         // Next second
          struct timeval tv;
          gettimeofday (&tv, NULL);
          usleep (1000000 - tv.tv_usec);
       }
    }
+   vTaskDelete (NULL);
+}
+
+void
+ble_task (void *x)
+{
+      bleenv_run (0);
+      while (!b.die)
+      {
+         {                      // Next second
+            jo_t j = jo_create_alloc ();
+            jo_array (j, NULL);
+            for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
+            {
+               jo_object (j, NULL);
+               if (*blesensor[i])
+               {
+                  jo_string (j, "name", blesensor[i]);
+                  bleenv_t *e;
+                  for (e = bleenv; e; e = e->next)
+                     if (!strcmp (e->name, blesensor[i]))
+                        break;
+                  if (e)
+                  {
+                     if (e->tempset)
+                        jo_litf (j, "C", "%.2f", e->temp / 100.0);
+                     if (e->humset)
+                        jo_litf (j, "RH", "%.2f", e->hum / 100.0);
+                     if (e->batset)
+                        jo_int (j, "bat", e->bat);
+                     if (e->voltset)
+                        jo_litf (j, "V", "%.3f", e->volt / 1000.0);
+                     if (e->co2set)
+                        jo_int (j, "ppm", e->co2);
+                  }
+               }
+               jo_close (j);
+            }
+            jo_close (j);
+            json_store (&bles, j);
+            struct timeval tv;
+            gettimeofday (&tv, NULL);
+            usleep (1000000 - tv.tv_usec);
+         }
+      }
    vTaskDelete (NULL);
 }
 
@@ -2434,7 +2446,7 @@ app_main ()
       gpio_set_level (gfxena.num, gfxena.invert);       // Enable
    }
    if (bleenable)
-      bleenv_run ();
+      revk_task ("ble", ble_task, NULL, 10);
    if (sdcmd.set)
    {
       revk_gpio_input (sdcd);
