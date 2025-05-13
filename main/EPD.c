@@ -26,6 +26,7 @@ static const char TAG[] = "EPD";
 #include "EPD.h"
 #include <math.h>
 #include <halib.h>
+#include "bleenv.h"
 
 #define	LEFT	0x80            // Flags on font size
 #define	RIGHT	0x40
@@ -88,6 +89,8 @@ uint32_t scd41_serial = 0;
 jo_t tmp1075 = NULL;
 jo_t ds18b20s = NULL;
 uint8_t ds18b20_num = 0;
+jo_t bles=NULL;
+uint8_t bles_num = 0;
 
 struct
 {
@@ -330,6 +333,8 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       return log_json (&tmp1075);
    if (!strcasecmp (suffix, "ds18b20"))
       return log_json (&ds18b20s);
+   if (!strcasecmp (suffix, "ble"))
+      return log_json (&bles);
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -2019,6 +2024,8 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    {
       if (ds18b20s)
          return dollar_json (&ds18b20s, dot ? : "[0].C", colon);
+      if (bles)
+         return dollar_json (&bles, dot ? : "[0].C", colon);
       if (scd41)
          return dollar_json (&scd41, dot ? : "C", colon);
       if (tmp1075)
@@ -2040,6 +2047,8 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    }
    if (!strncasecmp (c, "DS18B20", 7))  // allow for [0] directly with no dot
       return dollar_json (&ds18b20s, dot ? : "[0].C", colon);
+   if (!strncasecmp (c, "BLE", 3))  // allow for [0] directly with no dot
+      return dollar_json (&bles, dot ? : "[0].C", colon);
    if (tmp1075 && !strcasecmp (c, "TMP1075"))
       return dollar_json (&tmp1075, dot ? : "C", colon);
    if (mcp9808 && !strcasecmp (c, "MCP9808"))
@@ -2263,6 +2272,16 @@ ha_config (void)
       sprintf (js, "ds18b20[%d].C", i);
     ha_config_sensor (id, name: name, type: "temperature", unit: "C", field:js);
    }
+   for (int i = 0; i < bles_num; i++)
+   {
+      char id[20],
+        name[20],
+        js[20];
+      sprintf (id, "ble%dT", i);
+      sprintf (name, "BLE-%d", i);
+      sprintf (js, "ble[%d].C", i);
+    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field:js);
+   }
  ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
  ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
  ha_config_sensor ("scd41C", name: "SCD41-CO₂", type: "carbon_dioxide", unit: "ppm", field: "scd41.ppm", delete:!scd41);
@@ -2355,6 +2374,8 @@ app_main ()
       gpio_set_direction (gfxena.num, GPIO_MODE_OUTPUT);
       gpio_set_level (gfxena.num, gfxena.invert);       // Enable
    }
+   if (bleenable)
+      bleenv_run ();
    if (sdcmd.set)
    {
       revk_gpio_input (sdcd);
@@ -2892,5 +2913,7 @@ revk_state_extra (jo_t j)
       jo_json (j, "ds18b20", ds18b20s);
    if (solar)
       jo_json (j, "solar", solar);
+   if (bles)
+      jo_json (j, "ble", bles);
    xSemaphoreGive (json_mutex);
 }
