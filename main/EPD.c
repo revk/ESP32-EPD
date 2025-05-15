@@ -1553,10 +1553,13 @@ i2c_task (void *x)
                jo_t j = jo_object_alloc ();
                jo_litf (j, "serial", "%u", scd41_serial);
                jo_litf (j, "ppm", "%u", (buf[0] << 8) + buf[1]);
-               jo_litf (j, "C", "%.2f",
-                        -45.0 + 175.0 * (float) (((uint32_t) ((buf[3] << 8) + buf[4])) + scd41to) / 65536.0 +
-                        (float) scd41dt / scd41dt_scale);
-               jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
+               if (uptime () >= scd41startup)
+               {
+                  jo_litf (j, "C", "%.2f",
+                           -45.0 + 175.0 * (float) (((uint32_t) ((buf[3] << 8) + buf[4])) + scd41to) / 65536.0 +
+                           (float) scd41dt / scd41dt_scale);
+                  jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
+               }
                json_store (&scd41, j);
                if (hpa)
                   scd41_write (0x0E000, hpa);
