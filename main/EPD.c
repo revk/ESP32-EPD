@@ -1150,6 +1150,15 @@ i2c_read_16lh (uint8_t addr, uint8_t cmd)
    return (h << 8) + l;
 }
 
+static int32_t
+i2c_read_16lh2 (uint8_t addr, uint8_t cmd)
+{                               // try twice
+   int32_t v = i2c_read_16lh (addr, cmd);
+   if (v < 0)
+      v = i2c_read_16lh (addr, cmd);
+   return v;
+}
+
 static esp_err_t
 i2c_write_16lh (uint8_t addr, uint8_t cmd, uint16_t val)
 {
@@ -1374,7 +1383,7 @@ i2c_task (void *x)
    // Init
    if (veml6040i2c)
    {
-      if (i2c_read_16lh (veml6040i2c, 0) < 0 && i2c_read_16lh (veml6040i2c, 0) < 0)
+      if (i2c_read_16lh2 (veml6040i2c, 0) < 0)
          fail (veml6040i2c, "VEML6040");
       else
       {
@@ -1435,8 +1444,6 @@ i2c_task (void *x)
                err = scd41_command (0x3615);    // persist
             usleep (800000);
          }
-         if (!err)
-            ESP_LOGE (TAG, "SCD41 TO %04X", to);
       }
       if (!err)
          err = scd41_read (0x3682, 9, buf);     // Get serial
@@ -1479,10 +1486,10 @@ i2c_task (void *x)
       {                         // Scale to lux
          float w;
          jo_t j = jo_object_alloc ();
-         jo_litf (j, "R", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x08) * 1031 / 65535);
-         jo_litf (j, "G", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x09) * 1031 / 65535);
-         jo_litf (j, "B", "%.2f", (float) i2c_read_16lh (veml6040i2c, 0x0A) * 1031 / 65535);
-         jo_litf (j, "W", "%.2f", w = (float) i2c_read_16lh (veml6040i2c, 0x0B) * 1031 / 65535);
+         jo_litf (j, "R", "%.2f", (float) i2c_read_16lh2 (veml6040i2c, 0x08) * 1031 / 65535);
+         jo_litf (j, "G", "%.2f", (float) i2c_read_16lh2 (veml6040i2c, 0x09) * 1031 / 65535);
+         jo_litf (j, "B", "%.2f", (float) i2c_read_16lh2 (veml6040i2c, 0x0A) * 1031 / 65535);
+         jo_litf (j, "W", "%.2f", w = (float) i2c_read_16lh2 (veml6040i2c, 0x0B) * 1031 / 65535);
          json_store (&veml6040, j);
          if (veml6040dark && gfxbl.set)
             revk_gpio_set (gfxbl, w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
