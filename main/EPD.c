@@ -1412,31 +1412,34 @@ i2c_task (void *x)
    if (scd41i2c)
    {
       esp_err_t err = 0;
-      uint8_t try = 10;
+      uint8_t try = 5;
       while (try--)
       {
-         err = scd41_command (0x3F86);  /* Stop measurement(SCD41) */
+         err = scd41_command (0x3F86);  // Stop periodic
          if (!err)
          {
             usleep (500000);
-            err = scd41_command (0x3646);       /* Reinit */
-         }
-         if (!err)
-         {
-            usleep (20000);
             break;
          }
          sleep (1);
       }
       uint8_t buf[9];
+      {
+         uint16_t to = (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536 / scd41dt_scale / 175;   // Temp offset
+         if (!err)
+            err = scd41_read (0x2318, 3, buf);  // get offset
+         if (!err && to != (buf[0] << 8) + buf[1])
+         {
+            err = scd41_write (0x241D, to);     // set offset
+            if (!err)
+               err = scd41_command (0x3615);    // persist
+            usleep (800000);
+         }
+         if (!err)
+            ESP_LOGE (TAG, "SCD41 TO %04X", to);
+      }
       if (!err)
-         err = scd41_write (0x241D, (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536 / scd41dt_scale / 175);
-      if (!err)
-         err = scd41_read (0x2318, 3, buf);
-      if (!err)
-         ESP_LOGE (TAG, "SCD41 TO %04X", scd41to = (buf[0] << 8) + buf[1]);
-      if (!err)
-         err = scd41_read (0x3682, 9, buf);
+         err = scd41_read (0x3682, 9, buf);     // Get serial
       if (err)
          fail (scd41i2c, "SCD41");
       else
@@ -1445,7 +1448,7 @@ i2c_task (void *x)
             ((unsigned long long) buf[0] << 40) + ((unsigned long long) buf[1] << 32) +
             ((unsigned long long) buf[3] << 24) + ((unsigned long long) buf[4] << 16) +
             ((unsigned long long) buf[6] << 8) + ((unsigned long long) buf[7]);
-         if (!scd41_command (0x21B1))
+         if (!scd41_command (0x21B1))   // Start periodic
             scd41 = jo_object_alloc ();
       }
    }
@@ -1550,13 +1553,10 @@ i2c_task (void *x)
                jo_t j = jo_object_alloc ();
                jo_litf (j, "serial", "%u", scd41_serial);
                jo_litf (j, "ppm", "%u", (buf[0] << 8) + buf[1]);
-               if (uptime () > 180)
-               {
-                  jo_litf (j, "C", "%.2f",
-                           -45.0 + 175.0 * (float) (((uint32_t) ((buf[3] << 8) + buf[4])) + scd41to) / 65536.0 +
-                           (float) scd41dt / scd41dt_scale);
-                  jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
-               }
+               jo_litf (j, "C", "%.2f",
+                        -45.0 + 175.0 * (float) (((uint32_t) ((buf[3] << 8) + buf[4])) + scd41to) / 65536.0 +
+                        (float) scd41dt / scd41dt_scale);
+               jo_litf (j, "RH", "%.2f", 100.0 * (float) ((buf[6] << 8) + buf[7]) / 65536.0);
                json_store (&scd41, j);
                if (hpa)
                   scd41_write (0x0E000, hpa);
