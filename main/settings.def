@@ -18,6 +18,8 @@ gpio	gfx.rst		36				// Display RST
 gpio	gfx.bl						// Display Backlight
 gpio	gfx.busy	35				// Display BUSY
 u8	gfx.flip	6				// Display Flip
+u8	gfx.low		0	.live .unit="%"		// Display low level (e.g. dark mode)
+u8	gfx.high	100	.live .unit="%"		// Display high level (e.g. light mode)
 #ifdef	GFX_EPD
 bit	gfx.invert	1				// Display invert
 bit	gfx.night	1	.live			// Display overnight refresh

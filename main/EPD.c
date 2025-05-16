@@ -1561,7 +1561,7 @@ i2c_task (void *x)
             if (l != b.bl)
             {
                b.bl = l;
-               bl = l * 100;
+               bl = (l ? gfxhigh : gfxlow);
             }
          }
       }
@@ -2065,14 +2065,14 @@ suffix_number (long double v, uint8_t digits, const char *tag)
          while (*tag >= '0' && *tag <= '9')
             target = target * 10 + *tag++ - '0';
          target *= s;
-	 continue;
+         continue;
       } else if (*tag == 0xC2 && tag[1] == 0xB1)        // ±
       {                         // margin for target
          tag += 2;
          margin = 0;
          while (*tag >= '0' && *tag <= '9')
             margin = margin * 10 + *tag++ - '0';
-	 continue;
+         continue;
       }
       tag++;
    }
@@ -2541,7 +2541,7 @@ app_main ()
    }
    if (gfxbl.set)
       revk_task ("BL", bl_task, NULL, 4);
-   bl = 100;
+   bl = gfxhigh;
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    {
     const char *e = gfx_init (pwr: gfxpwr.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
@@ -3003,7 +3003,7 @@ app_main ()
       snmp_tx ();
    }
    b.die = 1;
-   bl = 0;
+   bl = gfxlow;
 }
 
 void
