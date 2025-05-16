@@ -1661,6 +1661,8 @@ i2c_task (void *x)
          usleep (1000000 - tv.tv_usec);
       }
    }
+   if (scd41)
+      scd41_command (0x3F86);   // Stop periodic
    vTaskDelete (NULL);
 }
 
