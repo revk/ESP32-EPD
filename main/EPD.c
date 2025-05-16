@@ -15,6 +15,7 @@ static const char TAG[] = "EPD";
 #include "esp_crt_bundle.h"
 #include "esp_vfs_fat.h"
 #include <driver/sdmmc_host.h>
+#include <driver/mcpwm_prelude.h>
 #include "gfx.h"
 #include "iec18004.h"
 #include <hal/spi_types.h>
@@ -27,6 +28,7 @@ static const char TAG[] = "EPD";
 #include <math.h>
 #include <halib.h>
 #include "bleenv.h"
+
 
 #define	LEFT	0x80            // Flags on font size
 #define	RIGHT	0x40
@@ -53,11 +55,16 @@ static struct
    uint8_t lightoverride:1;
    uint8_t startup:1;
    uint8_t ha:1;
+   uint8_t bl:1;
    uint8_t defcon:3;
 } volatile b = { 0 };
 
 volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
+
+#define BL_TIMEBASE_RESOLUTION_HZ 1000000       // 1MHz, 1us per tick
+#define BL_TIMEBASE_PERIOD        1000
+uint8_t bl = 0;
 
 #ifdef	CONFIG_REVK_SOLAR
 time_t sunrise = 0,
@@ -334,6 +341,11 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       return log_json (&ds18b20s);
    if (!strcasecmp (suffix, "ble"))
       return log_json (&bles);
+   if (!strcmp (suffix, "bl"))
+   {
+      bl = atoi (value);
+      return "";
+   }
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -974,6 +986,59 @@ snmp_tx (void)
 }
 
 void
+bl_task (void *x)
+{
+   mcpwm_cmpr_handle_t comparator = NULL;
+   mcpwm_timer_handle_t bltimer = NULL;
+   mcpwm_timer_config_t timer_config = {
+      .group_id = 0,
+      .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
+      .resolution_hz = BL_TIMEBASE_RESOLUTION_HZ,
+      .period_ticks = BL_TIMEBASE_PERIOD,
+      .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
+   };
+   mcpwm_new_timer (&timer_config, &bltimer);
+   mcpwm_oper_handle_t oper = NULL;
+   mcpwm_operator_config_t operator_config = {
+      .group_id = 0,            // operator must be in the same group to the timer
+   };
+   mcpwm_new_operator (&operator_config, &oper);
+   mcpwm_operator_connect_timer (oper, bltimer);
+   mcpwm_comparator_config_t comparator_config = {
+      .flags.update_cmp_on_tez = true,
+   };
+   mcpwm_new_comparator (oper, &comparator_config, &comparator);
+   mcpwm_gen_handle_t generator = NULL;
+   mcpwm_generator_config_t generator_config = {
+      .gen_gpio_num = gfxbl.num,
+      .flags.invert_pwm = gfxbl.invert,
+   };
+   mcpwm_new_generator (oper, &generator_config, &generator);
+   mcpwm_comparator_set_compare_value (comparator, 0);
+   mcpwm_generator_set_action_on_timer_event (generator,
+                                              MCPWM_GEN_TIMER_EVENT_ACTION (MCPWM_TIMER_DIRECTION_UP,
+                                                                            MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
+   mcpwm_generator_set_action_on_compare_event
+      (generator, MCPWM_GEN_COMPARE_EVENT_ACTION (MCPWM_TIMER_DIRECTION_UP, comparator, MCPWM_GEN_ACTION_LOW));
+   mcpwm_timer_enable (bltimer);
+   mcpwm_timer_start_stop (bltimer, MCPWM_TIMER_START_NO_STOP);
+   int b = 0;
+   while (1)
+   {
+      if (b != bl)
+      {
+         if (bl > b && (b += 10) > bl)
+            b = bl;
+         else if (bl < b && (b -= 10) < bl)
+            b = bl;
+         mcpwm_comparator_set_compare_value (comparator, b * BL_TIMEBASE_PERIOD / 100);
+         ESP_LOGE (TAG, "Bl %d", b * BL_TIMEBASE_PERIOD / 100);
+      }
+      usleep (100000);
+   }
+}
+
+void
 snmp_rx_task (void *x)
 {                               // Get SNMP responses
    while (!b.die)
@@ -1492,7 +1557,14 @@ i2c_task (void *x)
          jo_litf (j, "W", "%.2f", w = (float) i2c_read_16lh2 (veml6040i2c, 0x0B) * 1031 / 65535);
          json_store (&veml6040, j);
          if (veml6040dark && gfxbl.set)
-            revk_gpio_set (gfxbl, w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
+	 {
+		 uint8_t l=(w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
+		 if(l!=b.bl)
+		 {
+			 b.bl=l;
+			 bl=l*100;
+		 }
+	 }
       }
       if (mcp9808)
       {
@@ -2411,7 +2483,6 @@ app_main ()
    snmp.sock = -1;
    revk_boot (&app_callback);
    revk_start ();
-   revk_gpio_output (gfxbl, 0);
    epd_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (epd_mutex);
    json_mutex = xSemaphoreCreateMutex ();
@@ -2436,9 +2507,14 @@ app_main ()
 #endif
       revk_web_settings_add (webserver);
    }
+   if (gfxbl.set)
+      revk_task ("BL", bl_task, NULL, 10);
+   bl = 100;
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    {
-    const char *e = gfx_init (pwr: gfxpwr.num, bl: gfxbl.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
+    const char *e = gfx_init (pwr:gfxpwr.num,
+                                // bl: gfxbl.num,
+    ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
       if (e)
       {
          ESP_LOGE (TAG, "gfx %s", e);
@@ -2452,7 +2528,6 @@ app_main ()
       xSemaphoreGive (epd_mutex);
    }
 #endif
-
    if (leds && rgb.set)
    {
       led_strip_config_t strip_config = {
@@ -2898,7 +2973,7 @@ app_main ()
       snmp_tx ();
    }
    b.die = 1;
-   revk_gpio_set (gfxbl, 0);
+   bl = 0;
 }
 
 void
