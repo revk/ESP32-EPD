@@ -1613,6 +1613,11 @@ ble_task (void *x)
                      break;
                if (e)
                {
+                  if (e->changed)
+                  {             // name update
+                     e->changed = 0;
+                     b.ha = 1;
+                  }
                   jo_string (j, "mac", e->mac);
                   if (strcmp (e->mac, e->name))
                      jo_string (j, "name", e->name);
@@ -2358,13 +2363,35 @@ ha_config (void)
    }
    for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
    {
+      bleenv_t *e = NULL;
+      if (*blesensor[i])
+         for (e = bleenv; e; e = e->next)
+            if (!strcmp (e->mac, blesensor[i]) || !strcmp (e->name, blesensor[i]))
+               break;
       char id[20],
-        name[20],
+        name[50],
         js[20];
       sprintf (id, "ble%dT", i);
-      sprintf (name, "BLE-%d", i);
+      if (e)
+         sprintf (name, "BLE-Temp-%s", e->name);
+      else
+         sprintf (name, "BLE-Temp-%d", i + 1);
       sprintf (js, "ble[%d].C", i);
-    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field: js, delete:*blesensor ? 0 : 1);
+    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field: js, delete:*blesensor[i] ? 0 : 1);
+      sprintf (id, "ble%dR", i);
+      if (e)
+         sprintf (name, "BLE-RH-%s", e->name);
+      else
+         sprintf (name, "BLE-RH-%d", i + 1);
+      sprintf (js, "ble[%d].RH", i);
+    ha_config_sensor (id, name: name, type: "humidity", unit: "%", field: js, delete:*blesensor[i] ? 0 : 1);
+      sprintf (id, "ble%dB", i);
+      if (e)
+         sprintf (name, "BLE-Bat-%s", e->name);
+      else
+         sprintf (name, "BLE-Bat-%d", i + 1);
+      sprintf (js, "ble[%d].bat", i);
+    ha_config_sensor (id, name: name, type: "battery", unit: "%", field: js, delete:*blesensor[i] ? 0 : 1);
    }
  ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
  ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
