@@ -2512,9 +2512,7 @@ app_main ()
    bl = 100;
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    {
-    const char *e = gfx_init (pwr:gfxpwr.num,
-                                // bl: gfxbl.num,
-    ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
+    const char *e = gfx_init (pwr:gfxpwr.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
       if (e)
       {
          ESP_LOGE (TAG, "gfx %s", e);
