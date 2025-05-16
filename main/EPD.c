@@ -1556,14 +1556,14 @@ i2c_task (void *x)
          jo_litf (j, "W", "%.2f", w = (float) i2c_read_16lh2 (veml6040i2c, 0x0B) * 1031 / 65535);
          json_store (&veml6040, j);
          if (veml6040dark && gfxbl.set)
-	 {
-		 uint8_t l=(w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
-		 if(l!=b.bl)
-		 {
-			 b.bl=l;
-			 bl=l*100;
-		 }
-	 }
+         {
+            uint8_t l = (w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
+            if (l != b.bl)
+            {
+               b.bl = l;
+               bl = l * 100;
+            }
+         }
       }
       if (mcp9808)
       {
@@ -2025,6 +2025,8 @@ dollar_time (time_t now, const char *fmt)
 char *
 suffix_number (long double v, uint8_t digits, const char *tag)
 {
+   int target = INT_MIN;
+   int margin = 0;
    char *r = NULL;
    while (*tag)
    {
@@ -2050,9 +2052,40 @@ suffix_number (long double v, uint8_t digits, const char *tag)
          v = (v + 40) * 1.8 - 40;
       else if (*tag == 'C')
          v = (v + 40) / 1.8 - 40;
+      else if (*tag == '=')
+      {                         // target number, no decimal
+         tag++;
+         target = 0;
+         int8_t s = 1;
+         if (*tag == '-')
+         {
+            s = -1;
+            tag++;
+         }
+         while (*tag >= '0' && *tag <= '9')
+            target = target * 10 + *tag++ - '0';
+         target *= s;
+	 continue;
+      } else if (*tag == 0xC2 && tag[1] == 0xB1)        // ±
+      {                         // margin for target
+         tag += 2;
+         margin = 0;
+         while (*tag >= '0' && *tag <= '9')
+            margin = margin * 10 + *tag++ - '0';
+	 continue;
+      }
       tag++;
    }
    asprintf (&r, "%.*Lf", digits, v);
+   if (target != INT_MIN)
+   {                            // Colour override if out of range
+      if (!margin)
+         margin = 5;            // default
+      if (v < target - margin)
+         gfx_foreground (0x0000FF);
+      else if (v > target + margin)
+         gfx_foreground (0xFF0000);
+   }
    return r;
 }
 
@@ -2511,7 +2544,7 @@ app_main ()
    bl = 100;
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    {
-    const char *e = gfx_init (pwr:gfxpwr.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
+    const char *e = gfx_init (pwr: gfxpwr.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
       if (e)
       {
          ESP_LOGE (TAG, "gfx %s", e);
