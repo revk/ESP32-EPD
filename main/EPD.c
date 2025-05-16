@@ -1032,7 +1032,6 @@ bl_task (void *x)
          else if (bl < b && (b -= 10) < bl)
             b = bl;
          mcpwm_comparator_set_compare_value (comparator, b * BL_TIMEBASE_PERIOD / 100);
-         ESP_LOGE (TAG, "Bl %d", b * BL_TIMEBASE_PERIOD / 100);
       }
       usleep (100000);
    }
