@@ -2507,7 +2507,7 @@ app_main ()
       revk_web_settings_add (webserver);
    }
    if (gfxbl.set)
-      revk_task ("BL", bl_task, NULL, 10);
+      revk_task ("BL", bl_task, NULL, 4);
    bl = 100;
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    {
@@ -2548,9 +2548,9 @@ app_main ()
       revk_task ("solar", solar_task, NULL, 10);
    revk_task ("reload", reload_task, NULL, 10);
    if (sda.set && scl.set)
-      revk_task ("i2c", i2c_task, NULL, 10);
+      revk_task ("i2c", i2c_task, NULL, 4);
    if (ds18b20.set)
-      revk_task ("18b20", ds18b20_task, NULL, 10);
+      revk_task ("18b20", ds18b20_task, NULL, 4);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -2558,7 +2558,7 @@ app_main ()
       gpio_set_level (gfxena.num, gfxena.invert);       // Enable
    }
    if (bleenable)
-      revk_task ("ble", ble_task, NULL, 10);
+      revk_task ("ble", ble_task, NULL, 4);
    if (sdcmd.set)
    {
       revk_gpio_input (sdcd);
