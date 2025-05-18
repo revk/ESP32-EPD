@@ -92,8 +92,13 @@ The code supports a number of sensors which can be configured on I2C (or one wir
 |`TEMPERATURE`|Picks `SCD41`, `DS18B20`, `MCP9808` or `TMP1075`|
 |`CO2` or `CO₂`|Picks `SCD41` or `T6793`|
 |`HUMIDITY`|Picks `SCD41`|
+|`BLE`|BLE tracking sensors (enable BLE to allow a number of sensors to be added)|
 
 All sensors are included in MQTT `state` message, and can be fetched by web from `/status`.
+
+#### Buttons
+
+Buttons can be added as inputs, and these are used as HA triggers.
 
 #### Numeric JSON value formats
 
