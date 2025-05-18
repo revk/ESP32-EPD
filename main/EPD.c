@@ -59,6 +59,8 @@ static struct
    uint8_t defcon:3;
 } volatile b = { 0 };
 
+const char * const btns[] = { "up", "down", "left", "right" };
+
 volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
 
@@ -2416,6 +2418,56 @@ reload_task (void *x)
    }
 }
 
+
+void
+btn_task (void *x)
+{
+   // We accept one button at a time
+   revk_gpio_t btng[] = { btnu, btnd, btnl, btnr };
+   uint8_t b;
+   for (b = 0; b < 4; b++)
+      revk_gpio_input (btng[b]);
+   while (1)
+   {
+      // Wait for a button press
+      for (b = 0; b < 4 && !revk_gpio_get (btng[b]); b++);
+      if (b == 4)
+      {
+         usleep (10000);
+         continue;
+      }
+      uint8_t c = 0;
+      while (revk_gpio_get (btng[b]))
+      {
+         if (c < 255)
+            c++;
+         if (c == 5)
+         {                      // Press
+            jo_t j = jo_object_alloc ();
+            jo_bool (j, btns[b], 1);
+            revk_state ("button", &j);
+         }
+         usleep (10000);
+      }
+      {                         // Unpresss
+         jo_t j = jo_object_alloc ();
+         jo_bool (j, btns[b], 0);
+         revk_state ("button", &j);
+      }
+      // Wait all clear
+      c = 0;
+      while (1)
+      {
+         for (b = 0; b < 4 && !revk_gpio_get (btng[b]); b++);
+         if (b < 4)
+            c = 0;
+         if (++c == 5)
+            break;
+         usleep (10000);
+      }
+   }
+}
+
 void
 weather_get (void)
 {
@@ -2543,6 +2595,8 @@ app_main ()
    }
    if (gfxbl.set)
       revk_task ("BL", bl_task, NULL, 4);
+   if (btnu.set || btnd.set || btnl.set || btnr.set)
+      revk_task ("btn", btn_task, NULL, 4);
    bl = gfxhigh;
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    {
