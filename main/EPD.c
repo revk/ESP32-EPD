@@ -62,6 +62,8 @@ static struct
 const char *const btns[] = { "up", "down", "left", "right", "push" };
 revk_gpio_t btng[sizeof (btns) / sizeof (*btns)] = { 0 };
 
+#define LONG_PRESS	200
+
 volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
 
@@ -2446,13 +2448,19 @@ btn_task (void *x)
       {
          if (c < 255)
             c++;
-         if (c == 5 || c == 200)
+         if (c == LONG_PRESS)
          {
             jo_t j = jo_create_alloc ();
-            jo_string (j, NULL, c == 5 ? "short" : "long");
+            jo_string (j, NULL, "long");
             revk_info (btns[b], &j);
          }
          usleep (10000);
+      }
+      if (c >= 5)
+      {
+         jo_t j = jo_create_alloc ();
+         jo_string (j, NULL, c < LONG_PRESS ? "short" : "release");
+         revk_info (btns[b], &j);
       }
       // Wait all clear
       c = 0;
