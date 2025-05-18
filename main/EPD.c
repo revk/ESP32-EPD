@@ -2448,7 +2448,7 @@ btn_task (void *x)
          if (c == 5 || c == 200)
          {
             jo_t j = jo_create_alloc ();
-            jo_string (j, c == 5 ? "short" : "long");
+            jo_string (j, NULL, c == 5 ? "short" : "long");
             revk_info (btns[b], &j);
          }
          usleep (10000);
