@@ -2574,9 +2574,13 @@ ha_config (void)
       sprintf (t, "/%s", btns[b]);
       char st[10];
       sprintf (st, "button_%d", b + 1);
-    ha_config_trigger (btns[b], name: btns[b], info: t, subtype: st, payload: "short", delete:!btng[b].set);
-    ha_config_trigger (btns[b], name: btns[b], info: t, subtype: st, payload: "long", type: "button_long_press", delete:!btng[b].set);
-    ha_config_trigger (btns[b], name: btns[b], info: t, subtype: st, payload: "release", type: "button_long_release", delete:!btng[b].set);
+      char n[10];
+      sprintf (n, "S%s", btns[b]);
+    ha_config_trigger (n, info: t, subtype: btns[b], payload: "short", delete:!btng[b].set);
+      sprintf (n, "L%s", btns[b]);
+    ha_config_trigger (n, info: t, subtype: btns[b], payload: "long", type: "button_long_press", delete:!btng[b].set);
+      sprintf (n, "R%s", btns[b]);
+    ha_config_trigger (n, info: t, subtype: btns[b], payload: "release", type: "button_long_release", delete:!btng[b].set);
    }
 }
 
