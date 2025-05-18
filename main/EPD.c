@@ -2570,8 +2570,13 @@ ha_config (void)
  ha_config_sensor ("solarP", name: "Solar-Power", type: "power", unit: "W", field: "solar.power", delete:!solar);
    for (int b = 0; b < sizeof (btns) / sizeof (*btns); b++)
    {
-    ha_config_trigger (btns[b], name: btns[b], stat: btns[b], field: "short", delete:!btng[b].set);
-    ha_config_trigger (btns[b], name: btns[b], stat: btns[b], field: "long", type: "long_button_press", delete:!btng[b].set);
+      char t[10];
+      sprintf (t, "/%s", btns[b]);
+      char st[10];
+      sprintf (st, "button_%d", b + 1);
+    ha_config_trigger (btns[b], name: btns[b], info: t, subtype: st, payload: "short", delete:!btng[b].set);
+    ha_config_trigger (btns[b], name: btns[b], info: t, subtype: st, payload: "long", type: "button_long_press", delete:!btng[b].set);
+    ha_config_trigger (btns[b], name: btns[b], info: t, subtype: st, payload: "release", type: "button_long_release", delete:!btng[b].set);
    }
 }
 
