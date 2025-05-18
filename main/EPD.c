@@ -2446,17 +2446,8 @@ btn_task (void *x)
          if (c < 255)
             c++;
          if (c == 5)
-         {                      // Press
-            jo_t j = jo_object_alloc ();
-            jo_bool (j, btns[b], 1);
-            revk_state ("button", &j);
-         }
+            revk_state (btns[b],NULL); // TODO maybe long press later
          usleep (10000);
-      }
-      {                         // Unpresss
-         jo_t j = jo_object_alloc ();
-         jo_bool (j, btns[b], 0);
-         revk_state ("button", &j);
       }
       // Wait all clear
       c = 0;
@@ -2565,7 +2556,7 @@ ha_config (void)
  ha_config_sensor ("solarF", name: "Solar-Frequency", type: "frequency", unit: "Hz", field: "solar.frequency", delete:!solar);
  ha_config_sensor ("solarP", name: "Solar-Power", type: "power", unit: "W", field: "solar.power", delete:!solar);
    for (int b = 0; b < 4; b++)
-    ha_config_trigger (btns[b], name: btns[b], stat: "button", field: btns[b], delete:!btng[b].set);
+    ha_config_trigger (btns[b], name: btns[b], stat: btns[b], delete:!btng[b].set);
 }
 
 void
