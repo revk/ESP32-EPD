@@ -59,7 +59,8 @@ static struct
    uint8_t defcon:3;
 } volatile b = { 0 };
 
-const char * const btns[] = { "up", "down", "left", "right" };
+const char *const btns[] = { "up", "down", "left", "right" };
+revk_gpio_t btng[4] = { 0 };
 
 volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
@@ -2422,8 +2423,11 @@ reload_task (void *x)
 void
 btn_task (void *x)
 {
+   btng[0] = btnu;
+   btng[1] = btnd;
+   btng[2] = btnl;
+   btng[3] = btnr;
    // We accept one button at a time
-   revk_gpio_t btng[] = { btnu, btnd, btnl, btnr };
    uint8_t b;
    for (b = 0; b < 4; b++)
       revk_gpio_input (btng[b]);
@@ -2560,6 +2564,8 @@ ha_config (void)
  ha_config_sensor ("solarV", name: "Solar-Voltage", type: "voltage", unit: "V", field: "solar.voltage", delete:!solar);
  ha_config_sensor ("solarF", name: "Solar-Frequency", type: "frequency", unit: "Hz", field: "solar.frequency", delete:!solar);
  ha_config_sensor ("solarP", name: "Solar-Power", type: "power", unit: "W", field: "solar.power", delete:!solar);
+   for (int b = 0; b < 4; b++)
+    ha_config_trigger (btns[b], name: btns[b], stat: "button", field: btns[b], delete:!btng[b].set);
 }
 
 void
