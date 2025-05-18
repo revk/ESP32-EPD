@@ -2427,6 +2427,7 @@ btn_task (void *x)
    btng[1] = btnd;
    btng[2] = btnl;
    btng[3] = btnr;
+   btng[4] = btnp;
    // We accept one button at a time
    uint8_t b;
    for (b = 0; b < sizeof (btns) / sizeof (*btns); b++)
