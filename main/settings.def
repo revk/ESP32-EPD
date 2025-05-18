@@ -32,6 +32,7 @@ gpio	btn.u						// Button up (reports to HA)
 gpio	btn.d						// Button down (reports to HA)
 gpio	btn.l						// Button left (reports to HA)
 gpio	btn.r						// Button right (reports to HA)
+gpio	btn.p						// Button push (reports to HA)
 
 gpio    sd.dat2                         	// MicroSD DAT2
 gpio    sd.dat3         3	.old="sdss"     // MicroSD DAT3 / SS

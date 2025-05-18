@@ -59,8 +59,8 @@ static struct
    uint8_t defcon:3;
 } volatile b = { 0 };
 
-const char *const btns[] = { "up", "down", "left", "right" };
-revk_gpio_t btng[4] = { 0 };
+const char *const btns[] = { "up", "down", "left", "right", "push" };
+revk_gpio_t btng[sizeof (btns) / sizeof (*btns)] = { 0 };
 
 volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
@@ -2429,13 +2429,13 @@ btn_task (void *x)
    btng[3] = btnr;
    // We accept one button at a time
    uint8_t b;
-   for (b = 0; b < 4; b++)
+   for (b = 0; b < sizeof (btns) / sizeof (*btns); b++)
       revk_gpio_input (btng[b]);
    while (1)
    {
       // Wait for a button press
-      for (b = 0; b < 4 && !revk_gpio_get (btng[b]); b++);
-      if (b == 4)
+      for (b = 0; b < sizeof (btns) / sizeof (*btns) && !revk_gpio_get (btng[b]); b++);
+      if (b == sizeof (btns) / sizeof (*btns))
       {
          usleep (10000);
          continue;
@@ -2445,16 +2445,20 @@ btn_task (void *x)
       {
          if (c < 255)
             c++;
-         if (c == 5)
-            revk_info (btns[b],NULL); // TODO maybe long press later
+         if (c == 5 || c == 200)
+         {
+            jo_t j = jo_create_alloc ();
+            jo_string (j, c == 5 ? "short" : "long");
+            revk_info (btns[b], &j);
+         }
          usleep (10000);
       }
       // Wait all clear
       c = 0;
       while (1)
       {
-         for (b = 0; b < 4 && !revk_gpio_get (btng[b]); b++);
-         if (b < 4)
+         for (b = 0; b < sizeof (btns) / sizeof (*btns) && !revk_gpio_get (btng[b]); b++);
+         if (b < sizeof (btns) / sizeof (*btns))
             c = 0;
          if (++c == 5)
             break;
@@ -2555,8 +2559,11 @@ ha_config (void)
  ha_config_sensor ("solarV", name: "Solar-Voltage", type: "voltage", unit: "V", field: "solar.voltage", delete:!solar);
  ha_config_sensor ("solarF", name: "Solar-Frequency", type: "frequency", unit: "Hz", field: "solar.frequency", delete:!solar);
  ha_config_sensor ("solarP", name: "Solar-Power", type: "power", unit: "W", field: "solar.power", delete:!solar);
-   for (int b = 0; b < 4; b++)
-    ha_config_trigger (btns[b], name: btns[b], stat: btns[b], delete:!btng[b].set);
+   for (int b = 0; b < sizeof (btns) / sizeof (*btns); b++)
+   {
+    ha_config_trigger (btns[b], name: btns[b], stat: btns[b], field: "short", delete:!btng[b].set);
+    ha_config_trigger (btns[b], name: btns[b], stat: btns[b], field: "long", type: "long_button_press", delete:!btng[b].set);
+   }
 }
 
 void
