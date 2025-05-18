@@ -107,6 +107,10 @@ All sensors are included in MQTT `state` message, and can be fetched by web from
 |`K`|Change Celsius to Kelvin|
 |`F`|Change Celsius to Fahrenheit|
 |`C`|Change Fahrenheit Celsius|
+|`=`n|Set a target value n (digits)|
+|`±`n|Set a margin for target (default 5)|
+
+Setting a target overrides foreground colour to red if over target+margin or blue if below target-margin, else unchanged from settings for widget
 
 ### Text
 

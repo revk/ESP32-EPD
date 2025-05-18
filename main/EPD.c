@@ -15,6 +15,7 @@ static const char TAG[] = "EPD";
 #include "esp_crt_bundle.h"
 #include "esp_vfs_fat.h"
 #include <driver/sdmmc_host.h>
+#include <driver/mcpwm_prelude.h>
 #include "gfx.h"
 #include "iec18004.h"
 #include <hal/spi_types.h>
@@ -27,6 +28,7 @@ static const char TAG[] = "EPD";
 #include <math.h>
 #include <halib.h>
 #include "bleenv.h"
+
 
 #define	LEFT	0x80            // Flags on font size
 #define	RIGHT	0x40
@@ -53,11 +55,19 @@ static struct
    uint8_t lightoverride:1;
    uint8_t startup:1;
    uint8_t ha:1;
+   uint8_t bl:1;
    uint8_t defcon:3;
 } volatile b = { 0 };
 
+const char *const btns[] = { "up", "down", "left", "right" };
+revk_gpio_t btng[4] = { 0 };
+
 volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
+
+#define BL_TIMEBASE_RESOLUTION_HZ 1000000       // 1MHz, 1us per tick
+#define BL_TIMEBASE_PERIOD        1000
+uint8_t bl = 0;
 
 #ifdef	CONFIG_REVK_SOLAR
 time_t sunrise = 0,
@@ -334,6 +344,11 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       return log_json (&ds18b20s);
    if (!strcasecmp (suffix, "ble"))
       return log_json (&bles);
+   if (!strcmp (suffix, "bl"))
+   {
+      bl = atoi (value);
+      return "";
+   }
    if (!strcmp (suffix, "setting"))
    {
       b.setting = 1;
@@ -974,6 +989,58 @@ snmp_tx (void)
 }
 
 void
+bl_task (void *x)
+{
+   mcpwm_cmpr_handle_t comparator = NULL;
+   mcpwm_timer_handle_t bltimer = NULL;
+   mcpwm_timer_config_t timer_config = {
+      .group_id = 0,
+      .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
+      .resolution_hz = BL_TIMEBASE_RESOLUTION_HZ,
+      .period_ticks = BL_TIMEBASE_PERIOD,
+      .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
+   };
+   mcpwm_new_timer (&timer_config, &bltimer);
+   mcpwm_oper_handle_t oper = NULL;
+   mcpwm_operator_config_t operator_config = {
+      .group_id = 0,            // operator must be in the same group to the timer
+   };
+   mcpwm_new_operator (&operator_config, &oper);
+   mcpwm_operator_connect_timer (oper, bltimer);
+   mcpwm_comparator_config_t comparator_config = {
+      .flags.update_cmp_on_tez = true,
+   };
+   mcpwm_new_comparator (oper, &comparator_config, &comparator);
+   mcpwm_gen_handle_t generator = NULL;
+   mcpwm_generator_config_t generator_config = {
+      .gen_gpio_num = gfxbl.num,
+      .flags.invert_pwm = gfxbl.invert,
+   };
+   mcpwm_new_generator (oper, &generator_config, &generator);
+   mcpwm_comparator_set_compare_value (comparator, 0);
+   mcpwm_generator_set_action_on_timer_event (generator,
+                                              MCPWM_GEN_TIMER_EVENT_ACTION (MCPWM_TIMER_DIRECTION_UP,
+                                                                            MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
+   mcpwm_generator_set_action_on_compare_event
+      (generator, MCPWM_GEN_COMPARE_EVENT_ACTION (MCPWM_TIMER_DIRECTION_UP, comparator, MCPWM_GEN_ACTION_LOW));
+   mcpwm_timer_enable (bltimer);
+   mcpwm_timer_start_stop (bltimer, MCPWM_TIMER_START_NO_STOP);
+   int b = 0;
+   while (1)
+   {
+      if (b != bl)
+      {
+         if (bl > b && (b += 10) > bl)
+            b = bl;
+         else if (bl < b && (b -= 10) < bl)
+            b = bl;
+         mcpwm_comparator_set_compare_value (comparator, b * BL_TIMEBASE_PERIOD / 100);
+      }
+      usleep (100000);
+   }
+}
+
+void
 snmp_rx_task (void *x)
 {                               // Get SNMP responses
    while (!b.die)
@@ -1492,7 +1559,14 @@ i2c_task (void *x)
          jo_litf (j, "W", "%.2f", w = (float) i2c_read_16lh2 (veml6040i2c, 0x0B) * 1031 / 65535);
          json_store (&veml6040, j);
          if (veml6040dark && gfxbl.set)
-            revk_gpio_set (gfxbl, w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
+         {
+            uint8_t l = (w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
+            if (l != b.bl)
+            {
+               b.bl = l;
+               bl = (l ? gfxhigh : gfxlow);
+            }
+         }
       }
       if (mcp9808)
       {
@@ -1580,7 +1654,7 @@ i2c_task (void *x)
          if (v >= 0)
          {
             jo_t j = jo_object_alloc ();
-            jo_litf (j, "C", "%.2f", (float) ((int16_t) v) / 256 - (float) tmp1075dt / tmp1075dt_scale);
+            jo_litf (j, "C", "%.2f", (float) ((int16_t) v) / 256 + (float) tmp1075dt / tmp1075dt_scale);
             json_store (&tmp1075, j);
          }
       }
@@ -1590,6 +1664,8 @@ i2c_task (void *x)
          usleep (1000000 - tv.tv_usec);
       }
    }
+   if (scd41)
+      scd41_command (0x3F86);   // Stop periodic
    vTaskDelete (NULL);
 }
 
@@ -1613,6 +1689,11 @@ ble_task (void *x)
                      break;
                if (e)
                {
+                  if (e->changed)
+                  {             // name update
+                     e->changed = 0;
+                     b.ha = 1;
+                  }
                   jo_string (j, "mac", e->mac);
                   if (strcmp (e->mac, e->name))
                      jo_string (j, "name", e->name);
@@ -1949,6 +2030,8 @@ dollar_time (time_t now, const char *fmt)
 char *
 suffix_number (long double v, uint8_t digits, const char *tag)
 {
+   int target = INT_MIN;
+   int margin = 0;
    char *r = NULL;
    while (*tag)
    {
@@ -1974,9 +2057,40 @@ suffix_number (long double v, uint8_t digits, const char *tag)
          v = (v + 40) * 1.8 - 40;
       else if (*tag == 'C')
          v = (v + 40) / 1.8 - 40;
+      else if (*tag == '=')
+      {                         // target number, no decimal
+         tag++;
+         target = 0;
+         int8_t s = 1;
+         if (*tag == '-')
+         {
+            s = -1;
+            tag++;
+         }
+         while (*tag >= '0' && *tag <= '9')
+            target = target * 10 + *tag++ - '0';
+         target *= s;
+         continue;
+      } else if (*tag == 0xC2 && tag[1] == 0xB1)        // ±
+      {                         // margin for target
+         tag += 2;
+         margin = 0;
+         while (*tag >= '0' && *tag <= '9')
+            margin = margin * 10 + *tag++ - '0';
+         continue;
+      }
       tag++;
    }
    asprintf (&r, "%.*Lf", digits, v);
+   if (target != INT_MIN)
+   {                            // Colour override if out of range
+      if (!margin)
+         margin = 5;            // default
+      if (v < target - margin)
+         gfx_foreground (0x0000FF);
+      else if (v > target + margin)
+         gfx_foreground (0xFF0000);
+   }
    return r;
 }
 
@@ -2305,6 +2419,50 @@ reload_task (void *x)
    }
 }
 
+
+void
+btn_task (void *x)
+{
+   btng[0] = btnu;
+   btng[1] = btnd;
+   btng[2] = btnl;
+   btng[3] = btnr;
+   // We accept one button at a time
+   uint8_t b;
+   for (b = 0; b < 4; b++)
+      revk_gpio_input (btng[b]);
+   while (1)
+   {
+      // Wait for a button press
+      for (b = 0; b < 4 && !revk_gpio_get (btng[b]); b++);
+      if (b == 4)
+      {
+         usleep (10000);
+         continue;
+      }
+      uint8_t c = 0;
+      while (revk_gpio_get (btng[b]))
+      {
+         if (c < 255)
+            c++;
+         if (c == 5)
+            revk_info (btns[b],NULL); // TODO maybe long press later
+         usleep (10000);
+      }
+      // Wait all clear
+      c = 0;
+      while (1)
+      {
+         for (b = 0; b < 4 && !revk_gpio_get (btng[b]); b++);
+         if (b < 4)
+            c = 0;
+         if (++c == 5)
+            break;
+         usleep (10000);
+      }
+   }
+}
+
 void
 weather_get (void)
 {
@@ -2358,13 +2516,35 @@ ha_config (void)
    }
    for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
    {
+      bleenv_t *e = NULL;
+      if (*blesensor[i])
+         for (e = bleenv; e; e = e->next)
+            if (!strcmp (e->mac, blesensor[i]) || !strcmp (e->name, blesensor[i]))
+               break;
       char id[20],
-        name[20],
+        name[50],
         js[20];
       sprintf (id, "ble%dT", i);
-      sprintf (name, "BLE-%d", i);
+      if (e)
+         sprintf (name, "BLE-Temp-%s", e->name);
+      else
+         sprintf (name, "BLE-Temp-%d", i + 1);
       sprintf (js, "ble[%d].C", i);
-    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field: js, delete:*blesensor ? 0 : 1);
+    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field: js, delete:*blesensor[i] ? 0 : 1);
+      sprintf (id, "ble%dR", i);
+      if (e)
+         sprintf (name, "BLE-RH-%s", e->name);
+      else
+         sprintf (name, "BLE-RH-%d", i + 1);
+      sprintf (js, "ble[%d].RH", i);
+    ha_config_sensor (id, name: name, type: "humidity", unit: "%", field: js, delete:*blesensor[i] ? 0 : 1);
+      sprintf (id, "ble%dB", i);
+      if (e)
+         sprintf (name, "BLE-Bat-%s", e->name);
+      else
+         sprintf (name, "BLE-Bat-%d", i + 1);
+      sprintf (js, "ble[%d].bat", i);
+    ha_config_sensor (id, name: name, type: "battery", unit: "%", field: js, delete:*blesensor[i] ? 0 : 1);
    }
  ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
  ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
@@ -2375,6 +2555,8 @@ ha_config (void)
  ha_config_sensor ("solarV", name: "Solar-Voltage", type: "voltage", unit: "V", field: "solar.voltage", delete:!solar);
  ha_config_sensor ("solarF", name: "Solar-Frequency", type: "frequency", unit: "Hz", field: "solar.frequency", delete:!solar);
  ha_config_sensor ("solarP", name: "Solar-Power", type: "power", unit: "W", field: "solar.power", delete:!solar);
+   for (int b = 0; b < 4; b++)
+    ha_config_trigger (btns[b], name: btns[b], stat: btns[b], delete:!btng[b].set);
 }
 
 void
@@ -2384,7 +2566,6 @@ app_main ()
    snmp.sock = -1;
    revk_boot (&app_callback);
    revk_start ();
-   revk_gpio_output (gfxbl, 0);
    epd_mutex = xSemaphoreCreateMutex ();
    xSemaphoreGive (epd_mutex);
    json_mutex = xSemaphoreCreateMutex ();
@@ -2409,9 +2590,14 @@ app_main ()
 #endif
       revk_web_settings_add (webserver);
    }
+   if (gfxbl.set)
+      revk_task ("BL", bl_task, NULL, 4);
+   if (btnu.set || btnd.set || btnl.set || btnr.set)
+      revk_task ("btn", btn_task, NULL, 4);
+   bl = gfxhigh;
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    {
-    const char *e = gfx_init (pwr: gfxpwr.num, bl: gfxbl.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
+    const char *e = gfx_init (pwr: gfxpwr.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
       if (e)
       {
          ESP_LOGE (TAG, "gfx %s", e);
@@ -2425,7 +2611,6 @@ app_main ()
       xSemaphoreGive (epd_mutex);
    }
 #endif
-
    if (leds && rgb.set)
    {
       led_strip_config_t strip_config = {
@@ -2449,9 +2634,9 @@ app_main ()
       revk_task ("solar", solar_task, NULL, 10);
    revk_task ("reload", reload_task, NULL, 10);
    if (sda.set && scl.set)
-      revk_task ("i2c", i2c_task, NULL, 10);
+      revk_task ("i2c", i2c_task, NULL, 4);
    if (ds18b20.set)
-      revk_task ("18b20", ds18b20_task, NULL, 10);
+      revk_task ("18b20", ds18b20_task, NULL, 4);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -2459,7 +2644,7 @@ app_main ()
       gpio_set_level (gfxena.num, gfxena.invert);       // Enable
    }
    if (bleenable)
-      revk_task ("ble", ble_task, NULL, 10);
+      revk_task ("ble", ble_task, NULL, 4);
    if (sdcmd.set)
    {
       revk_gpio_input (sdcd);
@@ -2871,7 +3056,7 @@ app_main ()
       snmp_tx ();
    }
    b.die = 1;
-   revk_gpio_set (gfxbl, 0);
+   bl = gfxlow;
 }
 
 void

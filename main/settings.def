@@ -18,6 +18,8 @@ gpio	gfx.rst		36				// Display RST
 gpio	gfx.bl						// Display Backlight
 gpio	gfx.busy	35				// Display BUSY
 u8	gfx.flip	6				// Display Flip
+u8	gfx.low		0	.live .unit="%"		// Display low level (e.g. dark mode)
+u8	gfx.high	100	.live .unit="%"		// Display high level (e.g. light mode)
 #ifdef	GFX_EPD
 bit	gfx.invert	1				// Display invert
 bit	gfx.night	1	.live			// Display overnight refresh
@@ -25,6 +27,11 @@ u32	refresh		86400	.live .unit="s"		// Full refresh time
 #endif
 
 gpio	relay						// Relay output
+
+gpio	btn.u						// Button up (reports to HA)
+gpio	btn.d						// Button down (reports to HA)
+gpio	btn.l						// Button left (reports to HA)
+gpio	btn.r						// Button right (reports to HA)
 
 gpio    sd.dat2                         	// MicroSD DAT2
 gpio    sd.dat3         3	.old="sdss"     // MicroSD DAT3 / SS
