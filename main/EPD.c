@@ -2446,7 +2446,7 @@ btn_task (void *x)
          if (c < 255)
             c++;
          if (c == 5)
-            revk_state (btns[b],NULL); // TODO maybe long press later
+            revk_info (btns[b],NULL); // TODO maybe long press later
          usleep (10000);
       }
       // Wait all clear
