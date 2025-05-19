@@ -116,6 +116,8 @@ struct
    char *desc;                  // Description
 } snmp = { 0 };
 
+// TODO snmp as a JSON object with data
+
 httpd_handle_t webserver = NULL;
 
 led_strip_handle_t strip = NULL;
