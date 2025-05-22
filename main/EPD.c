@@ -2513,12 +2513,18 @@ ha_config (void)
    b.ha = 0;
    if (!haannounce)
       return;
- ha_config_sensor ("veml6040W", name: "VEML6040-White", type: "illuminance", unit: "lx", field: "veml6040.W", delete:!veml6040);
- ha_config_sensor ("veml6040R", name: "VEML6040-Red", type: "illuminance", unit: "lx", field: "veml6040.R", delete:!veml6040);
- ha_config_sensor ("veml6040G", name: "VEML6040-Green", type: "illuminance", unit: "lx", field: "veml6040.G", delete:!veml6040);
- ha_config_sensor ("veml6040B", name: "VEML6040-Blue", type: "illuminance", unit: "lx", field: "veml6040.B", delete:!veml6040);
- ha_config_sensor ("mcp9808T", name: "MCP9808", type: "temperature", unit: "C", field: "mcp9808.C", delete:!mcp9808);
- ha_config_sensor ("tmp1075T", name: "TMP1075", type: "temperature", unit: "C", field: "tmp1075.C", delete:!tmp1075);
+   ha_config_sensor ("ram",.name = "RAM",.field = "mem",.unit = "B");
+   ha_config_sensor ("spi",.name = "PSRAM",.field = "spi",.unit = "B");
+   ha_config_sensor ("veml6040W",.name = "VEML6040-White",.type = "illuminance",.unit = "lx",.field = "veml6040.W",.delete =
+                     !veml6040);
+   ha_config_sensor ("veml6040R",.name = "VEML6040-Red",.type = "illuminance",.unit = "lx",.field = "veml6040.R",.delete =
+                     !veml6040);
+   ha_config_sensor ("veml6040G",.name = "VEML6040-Green",.type = "illuminance",.unit = "lx",.field = "veml6040.G",.delete =
+                     !veml6040);
+   ha_config_sensor ("veml6040B",.name = "VEML6040-Blue",.type = "illuminance",.unit = "lx",.field = "veml6040.B",.delete =
+                     !veml6040);
+   ha_config_sensor ("mcp9808T",.name = "MCP9808",.type = "temperature",.unit = "C",.field = "mcp9808.C",.delete = !mcp9808);
+   ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "C",.field = "tmp1075.C",.delete = !tmp1075);
    for (int i = 0; i < ds18b20_num; i++)
    {
       char id[20],
@@ -2527,7 +2533,7 @@ ha_config (void)
       sprintf (id, "ds18b20%dT", i);
       sprintf (name, "DS18B20-%d", i);
       sprintf (js, "ds18b20[%d].C", i);
-    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field:js);
+      ha_config_sensor (id,.name = name,.type = "temperature",.unit = "C",.field = js);
    }
    for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
    {
@@ -2545,31 +2551,34 @@ ha_config (void)
       else
          sprintf (name, "BLE-Temp-%d", i + 1);
       sprintf (js, "ble[%d].C", i);
-    ha_config_sensor (id, name: name, type: "temperature", unit: "C", field: js, delete:*blesensor[i] ? 0 : 1);
+      ha_config_sensor (id,.name = name,.type = "temperature",.unit = "C",.field = js,.delete = *blesensor[i] ? 0 : 1);
       sprintf (id, "ble%dR", i);
       if (e)
          sprintf (name, "BLE-RH-%s", e->name);
       else
          sprintf (name, "BLE-RH-%d", i + 1);
       sprintf (js, "ble[%d].RH", i);
-    ha_config_sensor (id, name: name, type: "humidity", unit: "%", field: js, delete:*blesensor[i] ? 0 : 1);
+      ha_config_sensor (id,.name = name,.type = "humidity",.unit = "%",.field = js,.delete = *blesensor[i] ? 0 : 1);
       sprintf (id, "ble%dB", i);
       if (e)
          sprintf (name, "BLE-Bat-%s", e->name);
       else
          sprintf (name, "BLE-Bat-%d", i + 1);
       sprintf (js, "ble[%d].bat", i);
-    ha_config_sensor (id, name: name, type: "battery", unit: "%", field: js, delete:*blesensor[i] ? 0 : 1);
+      ha_config_sensor (id,.name = name,.type = "battery",.unit = "%",.field = js,.delete = *blesensor[i] ? 0 : 1);
    }
- ha_config_sensor ("gzp6816dP", name: "GZP6816D-Pressure", type: "pressure", unit: "mbar", field: "gzp6816d.hPa", delete:!gzp6816d);
- ha_config_sensor ("gzp6816dT", name: "GZP6816D-Temp", type: "temperature", unit: "C", field: "gzp6816d.C", delete:!gzp6816d);
- ha_config_sensor ("scd41C", name: "SCD41-CO₂", type: "carbon_dioxide", unit: "ppm", field: "scd41.ppm", delete:!scd41);
- ha_config_sensor ("scd41T", name: "SCD41-Temp", type: "temperature", unit: "C", field: "scd41.C", delete:!scd41);
- ha_config_sensor ("scd41H", name: "SCD41-Humidity", type: "humidity", unit: "%", field: "scd41.RH", delete:!scd41);
- ha_config_sensor ("t6793C", name: "T6793-CO₂", type: "carbon_dioxide", unit: "ppm", field: "t6793.ppm", delete:!t6793);
- ha_config_sensor ("solarV", name: "Solar-Voltage", type: "voltage", unit: "V", field: "solar.voltage", delete:!solar);
- ha_config_sensor ("solarF", name: "Solar-Frequency", type: "frequency", unit: "Hz", field: "solar.frequency", delete:!solar);
- ha_config_sensor ("solarP", name: "Solar-Power", type: "power", unit: "W", field: "solar.power", delete:!solar);
+   ha_config_sensor ("gzp6816dP",.name = "GZP6816D-Pressure",.type = "pressure",.unit = "mbar",.field = "gzp6816d.hPa",.delete =
+                     !gzp6816d);
+   ha_config_sensor ("gzp6816dT",.name = "GZP6816D-Temp",.type = "temperature",.unit = "C",.field = "gzp6816d.C",.delete =
+                     !gzp6816d);
+   ha_config_sensor ("scd41C",.name = "SCD41-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "scd41.ppm",.delete = !scd41);
+   ha_config_sensor ("scd41T",.name = "SCD41-Temp",.type = "temperature",.unit = "C",.field = "scd41.C",.delete = !scd41);
+   ha_config_sensor ("scd41H",.name = "SCD41-Humidity",.type = "humidity",.unit = "%",.field = "scd41.RH",.delete = !scd41);
+   ha_config_sensor ("t6793C",.name = "T6793-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "t6793.ppm",.delete = !t6793);
+   ha_config_sensor ("solarV",.name = "Solar-Voltage",.type = "voltage",.unit = "V",.field = "solar.voltage",.delete = !solar);
+   ha_config_sensor ("solarF",.name = "Solar-Frequency",.type = "frequency",.unit = "Hz",.field = "solar.frequency",.delete =
+                     !solar);
+   ha_config_sensor ("solarP",.name = "Solar-Power",.type = "power",.unit = "W",.field = "solar.power",.delete = !solar);
    for (int b = 0; b < sizeof (btns) / sizeof (*btns); b++)
    {
       char t[10];
@@ -2578,11 +2587,11 @@ ha_config (void)
       sprintf (st, "button_%d", b + 1);
       char n[10];
       sprintf (n, "S%s", btns[b]);
-    ha_config_trigger (n, info: t, subtype: btns[b], payload: "short", delete:!btng[b].set);
+      ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "short",.delete = !btng[b].set);
       sprintf (n, "L%s", btns[b]);
-    ha_config_trigger (n, info: t, subtype: btns[b], payload: "long", type: "button_long_press", delete:!btng[b].set);
+      ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "long",.type = "button_long_press",.delete = !btng[b].set);
       sprintf (n, "R%s", btns[b]);
-    ha_config_trigger (n, info: t, subtype: btns[b], payload: "release", type: "button_long_release", delete:!btng[b].set);
+      ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "release",.type = "button_long_release",.delete = !btng[b].set);
    }
 }
 
@@ -2944,7 +2953,8 @@ app_main ()
                          || widgetk[w] == REVK_SETTINGS_WIDGETK_MASKINVERT ? 0xFFFFFF : 0);
 #endif
          // Content substitutions
-         char *c = dollars (widgetc[w], now);
+         char *ca = strdup (widgetc[w]);
+         char *c = dollars (ca, now);
          switch (widgett[w])
          {
          case REVK_SETTINGS_WIDGETT_TEXT:
@@ -3067,8 +3077,9 @@ app_main ()
             widget_clock (widgets[w], c);
             break;
          }
-         if (c != widgetc[w])
+         if (c != ca)
             free (c);
+         free (ca);
       }
 #ifdef	TIMINGS
       uint64_t timec = esp_timer_get_time ();
@@ -3083,7 +3094,35 @@ app_main ()
       snmp_tx ();
    }
    b.die = 1;
+#ifdef	GFX_LCD
+   bl = gfxhigh;
+   while (1)
+   {
+      epd_lock ();
+      gfx_clear (0);
+      const char *reason;
+      int t = revk_shutting_down (&reason);
+      if (t < 3)
+         bl = 0;
+      if (t > 1)
+      {
+         gfx_text (0, 5, "Reboot");
+         gfx_pos (gfx_width () / 2, gfx_height () / 2, GFX_C | GFX_M);
+         gfx_text (1, 2, "%s", reason);
+         int i = revk_ota_progress ();
+         if (i >= 0 && i <= 100)
+         {
+            gfx_pos (gfx_width () / 2, gfx_height () - 1, GFX_C | GFX_B);
+            gfx_text (0, 5, "%d%%", i);
+         }
+      }
+      epd_unlock ();
+      usleep (100000);
+   }
+#else
    bl = gfxlow;
+   sleep (1);
+#endif
 }
 
 void
