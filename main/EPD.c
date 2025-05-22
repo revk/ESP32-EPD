@@ -2626,12 +2626,11 @@ app_main ()
 #endif
       revk_web_settings_add (webserver);
    }
-   if (gfxbl.set)
-      revk_task ("BL", bl_task, NULL, 4);
    if (btnu.set || btnd.set || btnl.set || btnr.set)
       revk_task ("btn", btn_task, NULL, 4);
-   bl = gfxhigh;
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
+   if (gfxbl.set)
+      revk_task ("BL", bl_task, NULL, 4);
    {
     const char *e = gfx_init (pwr: gfxpwr.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
       if (e)
@@ -2642,6 +2641,7 @@ app_main ()
          jo_string (j, "description", e);
          revk_error ("gfx", &j);
       }
+      bl = gfxhigh;
       xSemaphoreTake (epd_mutex, portMAX_DELAY);
       revk_gfx_init (startup);
       xSemaphoreGive (epd_mutex);
@@ -3112,8 +3112,9 @@ app_main ()
          int i = revk_ota_progress ();
          if (i >= 0 && i <= 100)
          {
-            gfx_pos (gfx_width () / 2, gfx_height () - 1, GFX_C | GFX_B);
-            gfx_text (0, 5, "%d%%", i);
+            gfx_pos (gfx_width () / 2 - 50, gfx_height () - 1, GFX_L | GFX_B | GFX_H);
+            gfx_7seg (0, 5, "%3d", i);
+            gfx_text (0, 5, "%%", i);
          }
       }
       epd_unlock ();
