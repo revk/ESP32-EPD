@@ -252,6 +252,12 @@ Simple analogue clock face - default is current time,. but you can specify HH:MM
 
 More widgets planned, and more `$variable` planned.
 
+## Message
+
+You can send an MQTT command `override` with a URL/image. This displays an image for a short period (configurable).
+
+You can send an MQTT command `message` with a message string (see [https://gfx.revk.uk/](GFX) for details of `gfx_message` format. This displays a message for a short period (configurable).
+
 ## Weather
 
 You can set the weather api for use with [https://www.weatherapi.com/](https://www.weatherapi.com/) this then allows you to access `$WEATHER` and a weather app field. e.g. `${WEATHER.current.feelslike_c}C` or `${WEATHER.current.condition.text}`

@@ -314,7 +314,7 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       overrideimage = strdup (value);
       return "";
    }
-   if (!strcmp (suffix, "message"))
+   if (!strcmp (suffix, "message") && *value)
    {
       char *was = (void *) overridemessage;
       if (was)
@@ -2823,7 +2823,7 @@ app_main ()
          b.startup = 1;
          b.wificonnect = 0;
       }
-      if (overrideimage)
+      if (overrideimage && gfxmessage)
       {
          char *was = (void *) overrideimage;
          overrideimage = NULL;
@@ -2847,9 +2847,9 @@ app_main ()
             }
             free (was);
          }
-      } else if (gfxmessage)
+      } else if (overridemessage && gfxmessage)
       {
-         char *m = overridemessage;
+         char *m = (void *) overridemessage;
          overridemessage = NULL;
          gfx_message (m);
          free (m);
