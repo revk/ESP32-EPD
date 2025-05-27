@@ -66,6 +66,7 @@ revk_gpio_t btng[sizeof (btns) / sizeof (*btns)] = { 0 };
 
 volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
+volatile char *overridemessage = NULL;
 
 #define BL_TIMEBASE_RESOLUTION_HZ 1000000       // 1MHz, 1us per tick
 #define BL_TIMEBASE_PERIOD        1000
@@ -311,6 +312,16 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       overrideimage = NULL;
       free (was);
       overrideimage = strdup (value);
+      return "";
+   }
+   if (!strcmp (suffix, "message"))
+   {
+      char *was = (void *) overridemessage;
+      if (was)
+         return "Too quick";
+      overridemessage = NULL;
+      free (was);
+      overridemessage = strdup (value);
       return "";
    }
    const char *log_json (jo_t * jp)
@@ -733,8 +744,8 @@ web_status (httpd_req_t * req)
 static void
 settings_ble (httpd_req_t * req, int i)
 {
-   revk_web_send (req, "<tr><td>BLE%d</td><td>" //
-                  "<select name=blesensor%d>", i + 1, i + 1);
+   revk_web_send (req, "<tr><td>BLE[%d]</td><td>"       //
+                  "<select name=blesensor%d>", i, i + 1);
    revk_web_send (req, "<option value=\"\">-- None --");
    char found = 0;
    for (bleenv_t * e = bleenv; e; e = e->next)
@@ -1564,7 +1575,7 @@ i2c_task (void *x)
          json_store (&veml6040, j);
          if (veml6040dark && gfxbl.set)
          {
-            uint8_t l = (w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
+            uint8_t l = (!override && w < (float) veml6040dark / veml6040dark_scale ? 0 : 1);
             if (l != b.bl)
             {
                b.bl = l;
@@ -2832,10 +2843,18 @@ app_main ()
 #endif
                   );
                epd_unlock ();
-               override = up + 60;
+               override = up + gfxmessage;
             }
             free (was);
          }
+      }
+      if (!override && gfxmessage)
+      {
+         char *m = overridemessage;
+         overridemessage = NULL;
+         gfx_message (m);
+         free (m);
+         override = up + gfxmessage;
       }
       if (override)
       {
