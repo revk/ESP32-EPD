@@ -2847,8 +2847,7 @@ app_main ()
             }
             free (was);
          }
-      }
-      if (!override && gfxmessage)
+      } else if (gfxmessage)
       {
          char *m = overridemessage;
          overridemessage = NULL;
