@@ -339,6 +339,8 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    }
    if (!strcasecmp (suffix, "weather"))
       return log_json (&weather);
+   if (!strcasecmp (suffix, "api"))
+      return log_json (&apijson);
    if (!strncasecmp (suffix, "mqtt", 4) && isdigit ((int) (uint8_t) suffix[4]) && !suffix[5] && suffix[4] > '0'
        && suffix[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
       return log_json (&mqttjson[suffix[4] - '1']);
@@ -2502,8 +2504,8 @@ api_get (void)
    xSemaphoreTake (file_mutex, portMAX_DELAY);
    if (w && w->data && w->json)
    {
-      if (w->cache > up + apicache)
-         w->cache = up + apicache;
+      if (w->cache < up + apicache * 60)
+         w->cache = up + apicache * 60;
       jo_t j = jo_parse_mem (w->data, w->size);
       if (j)
          json_store (&apijson, jo_dup (j));
