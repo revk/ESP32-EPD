@@ -1493,7 +1493,9 @@ i2c_task (void *x)
       i2c_master_stop (t);
       esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
       i2c_cmd_link_delete (t);
-      if (!err)
+      if (err)
+         fail (mcp9808i2c, "GZP6816D");
+      else
          gzp6816d = jo_object_alloc ();
    }
    if (t6793i2c)
@@ -2675,6 +2677,28 @@ app_main ()
    for (int i = 0; i < sizeof (jsonsub) / sizeof (*jsonsub); i++)
       if (*jsonsub[i])
          revk_mqtt_sub (0, jsonsub[i], mqttjson_cb, (void *) i);
+   if (sda.set && scl.set)
+      revk_task ("i2c", i2c_task, NULL, 4);
+   if (ds18b20.set)
+      revk_task ("18b20", ds18b20_task, NULL, 4);
+   if (leds && rgb.set)
+   {
+      led_strip_config_t strip_config = {
+         .strip_gpio_num = (rgb.num),
+         .max_leds = leds,
+         .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
+         .led_model = LED_MODEL_WS2812, // LED strip model
+         .flags.invert_out = rgb.invert,        // whether to invert the output signal(useful when your hardware has a level inverter)
+      };
+      led_strip_rmt_config_t rmt_config = {
+         .clk_src = RMT_CLK_SRC_DEFAULT,        // different clock source can lead to different power consumption
+         .resolution_hz = 10 * 1000 * 1000,     // 10 MHz
+         .flags.with_dma = true,
+      };
+      REVK_ERR_CHECK (led_strip_new_rmt_device (&strip_config, &rmt_config, &strip));
+      showlights ("b");
+      revk_task ("blink", led_task, NULL, 4);
+   }
    // Web interface
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.stack_size += 1024 * 4;
@@ -2710,32 +2734,10 @@ app_main ()
       xSemaphoreGive (epd_mutex);
    }
 #endif
-   if (leds && rgb.set)
-   {
-      led_strip_config_t strip_config = {
-         .strip_gpio_num = (rgb.num),
-         .max_leds = leds,
-         .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
-         .led_model = LED_MODEL_WS2812, // LED strip model
-         .flags.invert_out = rgb.invert,        // whether to invert the output signal(useful when your hardware has a level inverter)
-      };
-      led_strip_rmt_config_t rmt_config = {
-         .clk_src = RMT_CLK_SRC_DEFAULT,        // different clock source can lead to different power consumption
-         .resolution_hz = 10 * 1000 * 1000,     // 10 MHz
-         .flags.with_dma = true,
-      };
-      REVK_ERR_CHECK (led_strip_new_rmt_device (&strip_config, &rmt_config, &strip));
-      showlights ("b");
-      revk_task ("blink", led_task, NULL, 4);
-   }
    revk_task ("snmp", snmp_rx_task, NULL, 4);
    if (*solarip)
       revk_task ("solar", solar_task, NULL, 10);
    revk_task ("reload", reload_task, NULL, 10);
-   if (sda.set && scl.set)
-      revk_task ("i2c", i2c_task, NULL, 4);
-   if (ds18b20.set)
-      revk_task ("18b20", ds18b20_task, NULL, 4);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
