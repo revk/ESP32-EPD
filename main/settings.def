@@ -97,8 +97,10 @@ u16	reporting	60	.unit="s"		// Report interval
 gpio	ir						// IR receiver
 gpio	scl						// I2C SCL
 gpio	sda						// I2C SDA
-
 gpio	ds18b20						// DS18B20 Temp sensors
+gpio	i2s.clock					// I2S PDM clock
+gpio	i2s.data					// I2S PDM data
+bit	i2s.right					// I2S is right channel
 
 u8	mcp9808.i2c		.set .hex .fix		// MCP9808 Temp sensor
 s16	mcp9808.dt		.live .decimal=2 .unit="°C"	// MCP9808 Temp offset

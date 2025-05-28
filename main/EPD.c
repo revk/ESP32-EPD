@@ -16,6 +16,7 @@ static const char TAG[] = "EPD";
 #include "esp_vfs_fat.h"
 #include <driver/sdmmc_host.h>
 #include <driver/mcpwm_prelude.h>
+#include <driver/i2s_pdm.h>
 #include "gfx.h"
 #include "iec18004.h"
 #include <hal/spi_types.h>
