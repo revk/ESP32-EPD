@@ -102,6 +102,9 @@ gpio	ds18b20						// DS18B20 Temp sensors
 u8	mcp9808.i2c		.set .hex .fix		// MCP9808 Temp sensor
 s16	mcp9808.dt		.live .decimal=2 .unit="°C"	// MCP9808 Temp offset
 
+u8	sht40.i2c		.set .hex .fix		// SHT40 Temp sensor
+s16	sht40.dt		.live .decimal=2 .unit="°C"	// SHT40 Temp offset
+
 u8	tmp1075.i2c		.set .hex .fix		// TMP1075 Temp sensor
 s16	tmp1075.dt		.live .decimal=2 .unit="°C"	// TMP1075 Temp offset
 
