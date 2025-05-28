@@ -2046,16 +2046,38 @@ dollar_time (time_t now, const char *fmt)
 }
 
 char *
-suffix_number (long double v, uint8_t digits, const char *tag)
+suffix_number (long double v, uint8_t places, const char *tag)
 {
    int target = INT_MIN;
    int margin = 0;
+   int digits = 0;
    char *r = NULL;
+   char zero = 0;
    while (*tag)
    {
       if (*tag >= '0' && *tag <= '9')
-         digits = *tag - '0';
-      else if (*tag == 'd')
+      {
+         int d = 0;
+         zero = 0;
+         if (*tag == '0')
+            zero = 1;
+         while (*tag >= '0' && *tag <= '9')
+            d = d * 10 + *tag++ - '0';
+         if (*tag == '.')
+         {
+            digits = d;
+            tag++;
+            if (*tag >= '0' && *tag <= '9')
+            {
+               d = 0;
+               while (*tag >= '0' && *tag <= '9')
+                  d = d * 10 + *tag++ - '0';
+               places = d;
+            }
+         } else
+            places = d;         // just places not total digits
+         tag--;
+      } else if (*tag == 'd')
          v /= 10;
       else if (*tag == 'c')
          v /= 100;
@@ -2099,7 +2121,12 @@ suffix_number (long double v, uint8_t digits, const char *tag)
       }
       tag++;
    }
-   asprintf (&r, "%.*Lf", digits, v);
+   if (zero)
+      asprintf (&r, "%0*.*Lf", digits, places, v);
+   else if (digits)
+      asprintf (&r, "%*.*Lf", digits, places, v);
+   else
+      asprintf (&r, "%.*Lf", places, v);
    if (target != INT_MIN)
    {                            // Colour override if out of range
       if (!margin)
@@ -2128,12 +2155,12 @@ dollar_json (jo_t * jp, const char *dot, const char *colon)
          res = jo_strdup (j);
          if (res && *res && colon && *colon && t == JO_NUMBER)
          {
-            uint8_t digits = 1;
+            uint8_t places = 0;
             char *d = strchr (res, '.');
             if (d)
-               digits = strlen (d + 1);
+               places = strlen (d + 1);
             free (res);
-            res = suffix_number (jo_read_float (j), digits, colon);
+            res = suffix_number (jo_read_float (j), places, colon);
          }
       }
    }

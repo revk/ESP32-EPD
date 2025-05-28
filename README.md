@@ -105,7 +105,11 @@ Buttons can be added as inputs, and these are used as HA triggers.
 
 |Tag|Meaning|
 |---|-------|
-|*digit*|set number of places|
+|*digits*|Set number of places|
+|*digits*.|Set total digits (use default places)|
+|0*digits*.|Set total digits (use default places) but leading zeros|
+|*digits*.*digits*|Set total digits and number of places|
+|0*digits*.*digits*|Set total digits and number of places but apply leading zeros|
 |`k`|Divide by 1000|
 |`M`|Divide by 1000000|
 |`m`|Multiply by 1000|
