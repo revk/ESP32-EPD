@@ -94,6 +94,7 @@ bit	ha.announce	1					// Home Assistant announce
 
 u16	reporting	60	.unit="s"		// Report interval
 
+gpio	ir						// IR receiver
 gpio	scl						// I2C SCL
 gpio	sda						// I2C SDA
 
