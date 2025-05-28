@@ -80,6 +80,8 @@ text	widget.c	"$DATE\n$TIME\n\nGO TO WEB\nPAGE SETTINGS\nTO CONFIGURE\n\n$IPV4\n
 s	qr.ssid			.live			// WiFi SSID for $WIFI
 s	qr.pass			.live			// WiFi pass for $WIFI
 s	weather.api		.live			// API key for weatherapi.com
+s	api.url			.live			// Generic API URL for $API
+u32	api.cache	60	.live .unit="s"		// Min cache time
 s	solar.ip					// SolarEdge IP address
 u32	solar.sod		.live	.hide		// SolarEdge start of day kWh
 u32	solar.day		.live	.hide		// SolarEdge date for sod

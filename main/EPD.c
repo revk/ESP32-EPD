@@ -91,6 +91,7 @@ jo_t mqttjson[sizeof (jsonsub) / sizeof (*jsonsub)] = { 0 };
 void revk_state_extra (jo_t j);
 
 jo_t weather = NULL;
+jo_t apijson = NULL;
 jo_t solar = NULL;
 jo_t veml6040 = NULL;
 jo_t mcp9808 = NULL;
@@ -2212,6 +2213,8 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       asprintf (&r, "%u", b.defcon);
       return r;
    }
+   if (!strcasecmp (c, "API"))
+      return dollar_json (&apijson, dot, colon);
    if (!strcasecmp (c, "WEATHER"))
    {
       r = NULL;
@@ -2434,7 +2437,6 @@ reload_task (void *x)
    }
 }
 
-
 void
 btn_task (void *x)
 {
@@ -2487,6 +2489,27 @@ btn_task (void *x)
          usleep (10000);
       }
    }
+}
+
+void
+api_get (void)
+{
+   if (!*apiurl)
+      return;
+   uint32_t up = uptime ();
+   file_t *w = download (apiurl, NULL, 0);
+   ESP_LOGE (TAG, "%s (%ld)", apiurl, w ? w->cache - up : 0);
+   xSemaphoreTake (file_mutex, portMAX_DELAY);
+   if (w && w->data && w->json)
+   {
+      if (w->cache > up + apicache)
+         w->cache = up + apicache;
+      jo_t j = jo_parse_mem (w->data, w->size);
+      if (j)
+         json_store (&apijson, jo_dup (j));
+      jo_free (&j);
+   }
+   xSemaphoreGive (file_mutex);
 }
 
 void
@@ -2808,6 +2831,7 @@ app_main ()
          b.redraw = 1;
 #endif
          weather_get ();
+         api_get ();
       }
       if (b.setting)
       {
@@ -2818,6 +2842,7 @@ app_main ()
       {
          snmp_tx ();
          weather_get ();
+         api_get ();
          gfx_refresh ();
          b.redraw = 1;
          b.startup = 1;
@@ -3230,6 +3255,8 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting (req, NULL, "weatherapi");
       revk_web_setting (req, NULL, "postown");
    }
+   if ((found = dollar_check (c, "API")))
+      revk_web_setting (req, NULL, "api");
    if (found || dollar_check (c, "SUN"))
    {
       revk_web_setting (req, NULL, "poslat");

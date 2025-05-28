@@ -92,7 +92,8 @@ The code supports a number of sensors which can be configured on I2C (or one wir
 |`TEMPERATURE`|Picks `SCD41`, `DS18B20`, `MCP9808` or `TMP1075`|
 |`CO2` or `CO₂`|Picks `SCD41` or `T6793`|
 |`HUMIDITY`|Picks `SCD41`|
-|`BLE`|BLE tracking sensors (enable BLE to allow a number of sensors to be added)|
+|`BLE`|BLE tracking sensors array (enable BLE to allow a number of sensors to be added)|
+|`API`|JSON payload from generic API URL|
 
 All sensors are included in MQTT `state` message, and can be fetched by web from `/status`.
 
