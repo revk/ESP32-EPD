@@ -1581,7 +1581,7 @@ i2c_task (void *x)
       }
       uint8_t buf[9];
       {
-         uint16_t to = (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536 / scd41dt_scale / 175;   // Temp offset
+         uint16_t to = (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536.0 / scd41dt_scale / 175.0;       // Temp offset
          if (!err)
             err = scd41_read (0x2318, 3, buf);  // get offset
          if (!err && to != (buf[0] << 8) + buf[1])
