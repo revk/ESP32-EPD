@@ -6,7 +6,6 @@
 #define	GFX_EPD
 #endif
 
-gpio	rgb		2				// RGB
 
 gpio	gfx.pwr						// Display power
 gpio	gfx.ena						// Display ENA
@@ -44,13 +43,15 @@ gpio    sd.dat1                			// MicroSD DAT1
 gpio    sd.cd           -7                	// MicroSD CD
 
 u8	startup		10	.unit="s"		// Start up message
-u8	leds		25				// Number of LEDs
 
 s32	pos.lat			.live .decimal=7 .unit="°N"	// Latitude
 s32	pos.lon			.live .decimal=6 .unit="°E"	// Longitude
 s	pos.town		.live 	// Town name (for weather)
 
-s	lights		RGB	.live			// LEDs pattern (colour letters)
+gpio	light.gpio	2	.old="rgb"		// Lights GPIO
+u8	light.count	25	.old="leds"		// Number of Lights
+enum	light.mode	1	.live .array=3 .enums="RGB-Pattern,Status,Off"	// Mode for initial LEDs (the RGB-Pattern for rest)
+s	light.pattern	RGB	.live .old="lights"		// Lights pattern (colour letters)
 u16	light.on		.live	.digits=4 .place="HHMM"	// Lights on time (HHMM). 5000±59 sinrise, 7000±59 sunset
 u16	light.off		.live	.digits=4 .place="HHMM"	// Lights off time (HHMM). 5000±59 sinrise, 7000±59 sunset
 

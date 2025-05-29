@@ -238,13 +238,26 @@ showlights (const char *rgb)
    if (!strip)
       return;
    const char *c = rgb;
-   for (int i = 1; i < leds; i++)
+   for (int i = 0; i < lightcount; i++)
    {
-      revk_led (strip, i, 255, revk_rgb (*c));
-      if (*c)
-         c++;
-      if (!*c)
-         c = rgb;
+      uint8_t mode = 0;
+      if (i < sizeof (lightmode) / sizeof (*lightmode))
+         mode = lightmode[i];
+      switch (mode)
+      {
+      case REVK_SETTINGS_LIGHTMODE_RGB_PATTERN:
+         revk_led (strip, i, 255, revk_rgb (*c));
+         if (*c)
+            c++;
+         if (!*c)
+            c = rgb;
+         break;
+      case REVK_SETTINGS_LIGHTMODE_STATUS:     // Done in task
+         break;
+      case REVK_SETTINGS_LIGHTMODE_OFF:
+         revk_led (strip, i, 255, 0);
+         break;
+      }
    }
 }
 
@@ -1223,7 +1236,10 @@ led_task (void *x)
    while (!b.die)
    {
       usleep (100000);
-      revk_led (strip, 0, 255, revk_blinker ());
+      uint32_t b = revk_blinker ();
+      for (int i = 0; i < sizeof (lightmode) / sizeof (*lightmode); i++)
+         if (lightmode[i] == REVK_SETTINGS_LIGHTMODE_STATUS)
+            revk_led (strip, i, 255, b);
       led_strip_refresh (strip);
    }
    vTaskDelete (NULL);
@@ -2925,14 +2941,14 @@ app_main ()
       revk_task ("i2s", i2s_task, NULL, 10);
    if (ds18b20.set)
       revk_task ("18b20", ds18b20_task, NULL, 4);
-   if (leds && rgb.set)
+   if (lightcount && lightgpio.set)
    {
       led_strip_config_t strip_config = {
-         .strip_gpio_num = (rgb.num),
-         .max_leds = leds,
+         .strip_gpio_num = (lightgpio.num),
+         .max_leds = lightcount,
          .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
          .led_model = LED_MODEL_WS2812, // LED strip model
-         .flags.invert_out = rgb.invert,        // whether to invert the output signal(useful when your hardware has a level inverter)
+         .flags.invert_out = lightgpio.invert,        // whether to invert the output signal(useful when your hardware has a level inverter)
       };
       led_strip_rmt_config_t rmt_config = {
          .clk_src = RMT_CLK_SRC_DEFAULT,        // different clock source can lead to different power consumption
@@ -3177,7 +3193,7 @@ app_main ()
       season = *revk_season (now);
       if (*seasoncode)
          season = *seasoncode;
-      if (*lights && !b.lightoverride)
+      if (*lightpattern && !b.lightoverride)
       {
          uint16_t on = lighton,
             off = lightoff;
@@ -3206,7 +3222,7 @@ app_main ()
          off = ss (off);
 #endif
          int hhmm = t.tm_hour * 100 + t.tm_min;
-         showlights (on == off || (on < off && on <= hhmm && off > hhmm) || (off < on && (on <= hhmm || off > hhmm)) ? lights : "");
+         showlights (on == off || (on < off && on <= hhmm && off > hhmm) || (off < on && (on <= hhmm || off > hhmm)) ? lightpattern : "");
       }
       b.redraw = 0;
       // Image
@@ -3460,7 +3476,7 @@ revk_web_extra (httpd_req_t * req, int page)
 #else
       revk_web_setting (req, "Image invert", "gfxinvert");
 #endif
-      if (rgb.set && leds > 1)
+      if (lightgpio.set && lightcount)
       {
          revk_web_setting_title (req, "LEDs");
          revk_web_setting (req, "Light pattern", "lights");
