@@ -1594,16 +1594,19 @@ i2c_task (void *x)
          sleep (1);
       }
       uint8_t buf[9];
+      if (!err)
       {
-         uint16_t to = (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536 / scd41dt_scale / 175;   // Temp offset
+         scd41to = ((uint32_t) (scd41dt < 0 ? -scd41dt : 0)) * 65536 / scd41dt_scale / 175;     // Temp offset
          if (!err)
             err = scd41_read (0x2318, 3, buf);  // get offset
-         if (!err && to != (buf[0] << 8) + buf[1])
+         if (!err && scd41to != (buf[0] << 8) + buf[1])
          {
-            err = scd41_write (0x241D, to);     // set offset
+            ESP_LOGE (TAG, "SCD41 TO %u for DT %.2f", scd41to, (float) scd41dt / scd41dt_scale);
+            err = scd41_write (0x241D, scd41to);        // set offset
             if (!err)
                err = scd41_command (0x3615);    // persist
-            usleep (800000);
+            if (!err)
+               usleep (800000);
          }
       }
       if (!err)
@@ -1796,7 +1799,7 @@ i2c_task (void *x)
 void
 i2s_task (void *x)
 {
-   const int rate = 50;
+   const int rate = 25;
    const int samples = 320;
    i2s_chan_handle_t mic_handle = { 0 };
    esp_err_t err;
