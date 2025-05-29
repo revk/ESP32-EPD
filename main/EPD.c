@@ -17,6 +17,7 @@ static const char TAG[] = "EPD";
 #include <driver/sdmmc_host.h>
 #include <driver/mcpwm_prelude.h>
 #include <driver/i2s_pdm.h>
+#include <driver/rmt_rx.h>
 #include "gfx.h"
 #include "iec18004.h"
 #include <hal/spi_types.h>
@@ -2232,6 +2233,104 @@ solar_task (void *x)
    vTaskDelete (NULL);
 }
 
+rmt_symbol_word_t rmt_rx_symbols[256];
+rmt_rx_done_event_data_t rmt_rx_data;
+
+static bool
+rmt_rx_done_callback (rmt_channel_handle_t channel, const rmt_rx_done_event_data_t * edata, void *user_data)
+{
+   BaseType_t high_task_wakeup = pdFALSE;
+   QueueHandle_t receive_queue = (QueueHandle_t) user_data;
+   xQueueSendFromISR (receive_queue, edata, &high_task_wakeup);
+   return high_task_wakeup == pdTRUE;
+}
+
+void
+ir_task (void *arg)
+{
+   revk_gpio_input (ir);
+   rmt_rx_channel_config_t rx_channel_cfg = {
+      .clk_src = RMT_CLK_SRC_DEFAULT,
+      .resolution_hz = 1000000,
+      .mem_block_symbols = sizeof (rmt_rx_symbols) / sizeof (*rmt_rx_symbols),
+      .gpio_num = ir.num,
+      .flags.invert_in = ir.invert,
+#ifdef	CONFIG_IDF_TARGET_ESP32S3
+      .flags.with_dma = 1,
+#endif
+   };
+   rmt_channel_handle_t rx_channel = NULL;
+   REVK_ERR_CHECK (rmt_new_rx_channel (&rx_channel_cfg, &rx_channel));
+   if (!rx_channel)
+   {
+      ESP_LOGE (TAG, "No RMT Rx");
+      vTaskDelete (NULL);
+      return;
+   }
+   QueueHandle_t receive_queue = xQueueCreate (1, sizeof (rmt_rx_done_event_data_t));
+   if (!receive_queue)
+   {
+      ESP_LOGE (TAG, "No RMT Queue");
+      vTaskDelete (NULL);
+      return;
+   }
+   rmt_rx_event_callbacks_t cbs = {
+      .on_recv_done = rmt_rx_done_callback,
+   };
+   REVK_ERR_CHECK (rmt_rx_register_event_callbacks (rx_channel, &cbs, receive_queue));
+
+   rmt_receive_config_t receive_config = {
+      .signal_range_min_ns = 2500,
+      .signal_range_max_ns = 25000000,
+   };
+
+   REVK_ERR_CHECK (rmt_enable (rx_channel));
+   REVK_ERR_CHECK (rmt_receive (rx_channel, rmt_rx_symbols, sizeof (rmt_rx_symbols), &receive_config));
+
+   ESP_LOGE (TAG, "IR started %d", ir.num);
+
+   uint64_t v = 0;
+   uint8_t b = 0;
+
+   while (1)
+   {
+      if (xQueueReceive (receive_queue, &rmt_rx_data, pdMS_TO_TICKS (100)) == pdPASS)
+      {
+         //ESP_LOGE (TAG, "Symbols %d", rmt_rx_data.num_symbols);
+         for (int i = 0; i < rmt_rx_data.num_symbols; i++)
+         {
+            uint32_t a = rmt_rx_symbols[i].duration0;
+            if (a > rmt_rx_symbols[i].duration1)
+               a = rmt_rx_symbols[i].duration1;
+            a = a * 3 / 2;
+            if (rmt_rx_symbols[i].duration0 > a || rmt_rx_symbols[i].duration1 > a)
+               v = (v << 1) + 1;
+            else
+               v <<= 1;
+            if (++b == 64)
+            {
+               ESP_LOGE (TAG, "IR %016llX", v);
+               v = 0;
+               b = 0;
+            }
+         }
+
+         // Next
+         REVK_ERR_CHECK (rmt_receive (rx_channel, rmt_rx_symbols, sizeof (rmt_rx_symbols), &receive_config));
+      } else
+      {
+         if (b)
+         {
+            v <<= (64 - b);
+            ESP_LOGE (TAG, "IR %016llX.", v);
+         }
+         b = 0;
+         v = 0;
+      }
+   }
+   vTaskDelete (NULL);
+}
+
 char *
 dollar_diff (time_t ref, time_t now)
 {
@@ -2942,6 +3041,8 @@ app_main ()
       revk_task ("i2s", i2s_task, NULL, 10);
    if (ds18b20.set)
       revk_task ("18b20", ds18b20_task, NULL, 4);
+   if (ir.set)
+      revk_task ("ir", ir_task, NULL, 4);
    if (lightcount && lightgpio.set)
    {
       led_strip_config_t strip_config = {
