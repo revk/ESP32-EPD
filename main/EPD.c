@@ -16,6 +16,7 @@ static const char TAG[] = "EPD";
 #include "esp_vfs_fat.h"
 #include <driver/sdmmc_host.h>
 #include <driver/mcpwm_prelude.h>
+#include <driver/i2s_pdm.h>
 #include "gfx.h"
 #include "iec18004.h"
 #include <hal/spi_types.h>
@@ -101,6 +102,8 @@ jo_t scd41 = NULL;
 uint16_t scd41to = 0;
 uint32_t scd41_serial = 0;
 jo_t tmp1075 = NULL;
+jo_t sht40 = NULL;
+uint32_t sht40_serial = 0;
 jo_t ds18b20s = NULL;
 uint8_t ds18b20_num = 0;
 jo_t bles = NULL;
@@ -356,6 +359,8 @@ app_callback (int client, const char *prefix, const char *target, const char *su
       return log_json (&t6793);
    if (!strcasecmp (suffix, "scd41"))
       return log_json (&scd41);
+   if (!strcasecmp (suffix, "sht40"))
+      return log_json (&sht40);
    if (!strcasecmp (suffix, "tmp1075"))
       return log_json (&tmp1075);
    if (!strcasecmp (suffix, "ds18b20"))
@@ -1405,7 +1410,7 @@ scd41_read (uint16_t c, int8_t len, uint8_t * buf)
       {
          if (scd41_crc (buf[p], buf[p + 1]) != buf[p + 2])
          {
-            ESP_LOGE (TAG, "SCD41 CRC fail on read %02x", c);
+            ESP_LOGE (TAG, "SCD41 CRC fail on read %02X", c);
             err = ESP_FAIL;
          }
          p += 3;
@@ -1433,6 +1438,61 @@ scd41_write (uint16_t c, uint16_t v)
    return err;
 }
 
+esp_err_t
+sht40_write (uint8_t cmd)
+{
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (sht40i2c << 1) | I2C_MASTER_WRITE, true);
+   i2c_master_write_byte (t, cmd, true);
+   i2c_master_stop (t);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 100 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+   if (err)
+      ESP_LOGE (TAG, "I2C write %02X %02X fail %s", sht40i2c & 0x7F, cmd, esp_err_to_name (err));
+   usleep (cmd >= 0xE0 ? 10000 : 1000);
+   return err;
+}
+
+esp_err_t
+sht40_read (uint16_t * ap, uint16_t * bp)
+{
+   if (ap)
+      *ap = 0;
+   if (bp)
+      *bp = 0;
+   uint8_t buf[6];
+   i2c_cmd_handle_t t = i2c_cmd_link_create ();
+   i2c_master_start (t);
+   i2c_master_write_byte (t, (sht40i2c << 1) + I2C_MASTER_READ, true);
+   i2c_master_read (t, buf, sizeof (buf), I2C_MASTER_LAST_NACK);
+   i2c_master_stop (t);
+   esp_err_t err = i2c_master_cmd_begin (i2cport, t, 100 / portTICK_PERIOD_MS);
+   i2c_cmd_link_delete (t);
+   if (err)
+      ESP_LOGE (TAG, "I2C read %02X fail %s", sht40i2c & 0x7F, esp_err_to_name (err));
+   if (!err)
+   {                            // CRC checks
+      int p = 0;
+      while (p < sizeof (buf) && !err)
+      {
+         if (scd41_crc (buf[p], buf[p + 1]) != buf[p + 2])
+         {
+            ESP_LOGE (TAG, "SCD41 CRC fail on read");
+            err = ESP_FAIL;
+         }
+         p += 3;
+      }
+   }
+   if (!err)
+   {
+      if (ap)
+         *ap = ((buf[0] << 8) | buf[1]);
+      if (bp)
+         *bp = ((buf[3] << 8) | buf[4]);
+   }
+   return err;
+}
 
 void
 i2c_task (void *x)
@@ -1500,7 +1560,9 @@ i2c_task (void *x)
       i2c_master_stop (t);
       esp_err_t err = i2c_master_cmd_begin (i2cport, t, 10 / portTICK_PERIOD_MS);
       i2c_cmd_link_delete (t);
-      if (!err)
+      if (err)
+         fail (mcp9808i2c, "GZP6816D");
+      else
          gzp6816d = jo_object_alloc ();
    }
    if (t6793i2c)
@@ -1548,7 +1610,10 @@ i2c_task (void *x)
             ((unsigned long long) buf[3] << 24) + ((unsigned long long) buf[4] << 16) +
             ((unsigned long long) buf[6] << 8) + ((unsigned long long) buf[7]);
          if (!scd41_command (0x21B1))   // Start periodic
+         {
             scd41 = jo_object_alloc ();
+            jo_litf (scd41, "serial", "%u", scd41_serial);
+         }
       }
    }
    if (tmp1075i2c)
@@ -1557,6 +1622,20 @@ i2c_task (void *x)
          fail (tmp1075i2c, "TMP1075");
       else
          tmp1075 = jo_object_alloc ();
+   }
+   if (sht40i2c)
+   {
+      uint16_t a,
+        b;
+      usleep (1000);
+      if (sht40_write (0x94) || sht40_write (0x89) || sht40_read (&a, &b))
+         fail (sht40i2c, "SHT40");
+      else
+      {
+         sht40_serial = (a << 16) + b;
+         sht40 = jo_object_alloc ();
+         jo_litf (sht40, "serial", "%u", sht40_serial);
+      }
    }
    b.ha = 1;
    sleep (5);
@@ -1681,6 +1760,19 @@ i2c_task (void *x)
             jo_t j = jo_object_alloc ();
             jo_litf (j, "C", "%.2f", (float) ((int16_t) v) / 256 + (float) tmp1075dt / tmp1075dt_scale);
             json_store (&tmp1075, j);
+         }
+      }
+      if (sht40)
+      {
+         uint16_t a,
+           b;
+         if (!sht40_write (0xFD) && !sht40_read (&a, &b))
+         {
+            jo_t j = jo_object_alloc ();
+            jo_litf (j, "serial", "%u", sht40_serial);
+            jo_litf (j, "C", "%.2f", -45.0 + 175.0 * a / 65535.0 + (float) sht40dt / sht40dt_scale);
+            jo_litf (j, "RH", "%.2f", -6.0 + 125.0 * b / 65535.0);
+            json_store (&sht40, j);
          }
       }
       {                         // Next second
@@ -2309,6 +2401,8 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       return dollar_json (&gzp6816d, dot ? : "hPa", colon);
    if (scd41 && !strcasecmp (c, "SCD41"))
       return dollar_json (&scd41, dot ? : "ppm", colon);
+   if (sht40 && !strcasecmp (c, "SHT40"))
+      return dollar_json (&sht40, dot ? : "C", colon);
    if (t6793 && !strcasecmp (c, "T6793"))
       return dollar_json (&t6793, dot ? : "ppm", colon);
    if (veml6040 && (!strcasecmp (c, "VEML6040") || !strcasecmp (c, "LIGHT")))
@@ -2640,6 +2734,8 @@ ha_config (void)
    ha_config_sensor ("scd41C",.name = "SCD41-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "scd41.ppm",.delete = !scd41);
    ha_config_sensor ("scd41T",.name = "SCD41-Temp",.type = "temperature",.unit = "C",.field = "scd41.C",.delete = !scd41);
    ha_config_sensor ("scd41H",.name = "SCD41-Humidity",.type = "humidity",.unit = "%",.field = "scd41.RH",.delete = !scd41);
+   ha_config_sensor ("sht40T",.name = "SHT40-Temp",.type = "temperature",.unit = "C",.field = "sht40.C",.delete = !sht40);
+   ha_config_sensor ("sht40H",.name = "SHT40-Humidity",.type = "humidity",.unit = "%",.field = "sht40.RH",.delete = !sht40);
    ha_config_sensor ("t6793C",.name = "T6793-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "t6793.ppm",.delete = !t6793);
    ha_config_sensor ("solarV",.name = "Solar-Voltage",.type = "voltage",.unit = "V",.field = "solar.voltage",.delete = !solar);
    ha_config_sensor ("solarF",.name = "Solar-Frequency",.type = "frequency",.unit = "Hz",.field = "solar.frequency",.delete =
@@ -2678,6 +2774,28 @@ app_main ()
    for (int i = 0; i < sizeof (jsonsub) / sizeof (*jsonsub); i++)
       if (*jsonsub[i])
          revk_mqtt_sub (0, jsonsub[i], mqttjson_cb, (void *) i);
+   if (sda.set && scl.set)
+      revk_task ("i2c", i2c_task, NULL, 4);
+   if (ds18b20.set)
+      revk_task ("18b20", ds18b20_task, NULL, 4);
+   if (leds && rgb.set)
+   {
+      led_strip_config_t strip_config = {
+         .strip_gpio_num = (rgb.num),
+         .max_leds = leds,
+         .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
+         .led_model = LED_MODEL_WS2812, // LED strip model
+         .flags.invert_out = rgb.invert,        // whether to invert the output signal(useful when your hardware has a level inverter)
+      };
+      led_strip_rmt_config_t rmt_config = {
+         .clk_src = RMT_CLK_SRC_DEFAULT,        // different clock source can lead to different power consumption
+         .resolution_hz = 10 * 1000 * 1000,     // 10 MHz
+         .flags.with_dma = true,
+      };
+      REVK_ERR_CHECK (led_strip_new_rmt_device (&strip_config, &rmt_config, &strip));
+      showlights ("b");
+      revk_task ("blink", led_task, NULL, 4);
+   }
    // Web interface
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.stack_size += 1024 * 4;
@@ -2713,32 +2831,10 @@ app_main ()
       xSemaphoreGive (epd_mutex);
    }
 #endif
-   if (leds && rgb.set)
-   {
-      led_strip_config_t strip_config = {
-         .strip_gpio_num = (rgb.num),
-         .max_leds = leds,
-         .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
-         .led_model = LED_MODEL_WS2812, // LED strip model
-         .flags.invert_out = rgb.invert,        // whether to invert the output signal(useful when your hardware has a level inverter)
-      };
-      led_strip_rmt_config_t rmt_config = {
-         .clk_src = RMT_CLK_SRC_DEFAULT,        // different clock source can lead to different power consumption
-         .resolution_hz = 10 * 1000 * 1000,     // 10 MHz
-         .flags.with_dma = true,
-      };
-      REVK_ERR_CHECK (led_strip_new_rmt_device (&strip_config, &rmt_config, &strip));
-      showlights ("b");
-      revk_task ("blink", led_task, NULL, 4);
-   }
    revk_task ("snmp", snmp_rx_task, NULL, 4);
    if (*solarip)
       revk_task ("solar", solar_task, NULL, 10);
    revk_task ("reload", reload_task, NULL, 10);
-   if (sda.set && scl.set)
-      revk_task ("i2c", i2c_task, NULL, 4);
-   if (ds18b20.set)
-      revk_task ("18b20", ds18b20_task, NULL, 4);
    if (gfxena.set)
    {
       gpio_reset_pin (gfxena.num);
@@ -3326,6 +3422,8 @@ revk_state_extra (jo_t j)
       jo_json (j, "t6793", t6793);
    if (scd41)
       jo_json (j, "scd41", scd41);
+   if (sht40)
+      jo_json (j, "sht40", sht40);
    if (tmp1075)
       jo_json (j, "tmp1075", tmp1075);
    if (ds18b20s)
