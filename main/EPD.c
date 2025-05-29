@@ -107,6 +107,7 @@ uint32_t sht40_serial = 0;
 jo_t ds18b20s = NULL;
 uint8_t ds18b20_num = 0;
 jo_t bles = NULL;
+jo_t noise = NULL;
 
 struct
 {
@@ -342,6 +343,8 @@ app_callback (int client, const char *prefix, const char *target, const char *su
    }
    if (!strcasecmp (suffix, "weather"))
       return log_json (&weather);
+   if (!strcasecmp (suffix, "noise"))
+      return log_json (&noise);
    if (!strcasecmp (suffix, "api"))
       return log_json (&apijson);
    if (!strncasecmp (suffix, "mqtt", 4) && isdigit ((int) (uint8_t) suffix[4]) && !suffix[5] && suffix[4] > '0'
@@ -1793,13 +1796,14 @@ i2c_task (void *x)
 void
 i2s_task (void *x)
 {
-   const int samples = 80;
+   const int rate = 100;
+   const int samples = 160;
    i2s_chan_handle_t mic_handle = { 0 };
    esp_err_t err;
    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG (I2S_NUM_AUTO, I2S_ROLE_MASTER);
    err = i2s_new_channel (&chan_cfg, NULL, &mic_handle);
    i2s_pdm_rx_config_t cfg = {
-      .clk_cfg = I2S_PDM_RX_CLK_DEFAULT_CONFIG (samples * 100),
+      .clk_cfg = I2S_PDM_RX_CLK_DEFAULT_CONFIG ((samples * rate)),
       .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG (I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
       .gpio_cfg = {
                    .clk = i2sclock.num,
@@ -1827,36 +1831,73 @@ i2s_task (void *x)
       vTaskDelete (NULL);
       return;
    }
-   ESP_LOGE (TAG, "Mic init PDM CLK %d DAT %d", i2sclock.num, i2sdata.num);
+   ESP_LOGE (TAG, "Mic init PDM CLK %d DAT %d %s", i2sclock.num, i2sdata.num, i2sright ? "R" : "L");
+   double means[60] = { 0 };
+   double peaks[60] = { 0 };
+   uint8_t sec = 0;
    int16_t sample[samples];
    uint8_t tick = 0;
-   float peak = 0;
-   float sum = 0;
+   double peak = -INFINITY;
+   double sum = 0;
    while (!b.die)
    {
       size_t n = 0;
-      err = i2s_channel_read (mic_handle, sample, samples, &n, 100);
-      if (err || n != samples)
+      err = i2s_channel_read (mic_handle, sample, sizeof (sample), &n, 100);
+      if (err || n != sizeof (sample))
       {
          ESP_LOGE (TAG, "Bad read %d %s", n, esp_err_to_name (err));
          sleep (1);
          continue;
       }
-      ESP_LOG_BUFFER_HEX_LEVEL (TAG, (void *) samples, sizeof (samples), ESP_LOG_ERROR);
+      int32_t b = 0;
+      for (int i = 0; i < samples; i++)
+         b += sample[i];        // DC
+      b /= samples;
       uint64_t t = 0;
       for (int i = 0; i < samples; i++)
-         t += (int32_t) sample[i] * (int32_t) sample[i];
+      {
+         int32_t v = (int32_t) sample[i] - b;
+         t += v * v;
+      }
       t /= samples;
-      float db = log10 (t) * 10;        // RMS
+      //ESP_LOG_BUFFER_HEX_LEVEL (TAG, sample, sizeof (sample), ESP_LOG_ERROR);
+      //ESP_LOGE (TAG, "t=%llu", t);
+      double db = log10 (t) * 10 + (double) i2sdb / i2sdb_scale;        // RMS
       if (db > peak)
          peak = db;
       sum += db;
-      if (++tick == 100)
+      if (++tick == rate)
       {
-         sum /= 100;
-         ESP_LOGE (TAG, "Peak %f Mean %f", peak, sum);
+         sum /= rate;
+         means[sec] = sum;
+         peaks[sec] = peak;
+         if (++sec == 60)
+            sec = 0;
+         //ESP_LOGE (TAG, "Peak %.2lf Mean %.2lf", peak, sum);
+         jo_t j = jo_object_alloc ();
+         jo_litf (j, "peak1", "%.2lf", peak);
+         jo_litf (j, "mean1", "%.2lf", sum);
+         double p = -INFINITY,
+            m = 0;
+         for (int s = 50; s < 60; s++)
+         {
+            if (peaks[(s + sec) % 60] > p)
+               p = peaks[(s + sec) % 60];
+            m += means[(s + sec) % 60];
+         }
+         jo_litf (j, "peak10", "%.2lf", p);
+         jo_litf (j, "mean10", "%.2lf", m / 10);
+         for (int s = 0; s < 50; s++)
+         {
+            if (peaks[(s + sec) % 60] > p)
+               p = peaks[(s + sec) % 60];
+            m += means[(s + sec) % 60];
+         }
+         jo_litf (j, "peak60", "%.2lf", p);
+         jo_litf (j, "mean60", "%.2lf", m / 60);
+         json_store (&noise, j);
          tick = 0;
-         peak = 0;
+         peak = -INFINITY;
          sum = 0;
       }
    }
@@ -2422,6 +2463,8 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
    }
    if (!strcasecmp (c, "API"))
       return dollar_json (&apijson, dot, colon);
+   if (!strcasecmp (c, "NOISE"))
+      return dollar_json (&noise, dot, colon);
    if (!strcasecmp (c, "WEATHER"))
    {
       r = NULL;
@@ -2486,6 +2529,8 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       return dollar_json (&t6793, dot ? : "ppm", colon);
    if (veml6040 && (!strcasecmp (c, "VEML6040") || !strcasecmp (c, "LIGHT")))
       return dollar_json (&veml6040, dot ? : "W", colon);
+   if (noise && !strcasecmp (c, "NOISE"))
+      return dollar_json (&noise, dot ? : "mean1", colon);
    if (!strncasecmp (c, "MQTT", 4) && isdigit ((int) (uint8_t) c[4]) && !c[5] && c[4] > '0'
        && c[4] <= '0' + sizeof (mqttjson) / sizeof (*mqttjson))
       return dollar_json (&mqttjson[c[4] - '1'], dot, colon);
@@ -2765,6 +2810,12 @@ ha_config (void)
                      !veml6040);
    ha_config_sensor ("mcp9808T",.name = "MCP9808",.type = "temperature",.unit = "C",.field = "mcp9808.C",.delete = !mcp9808);
    ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "C",.field = "tmp1075.C",.delete = !tmp1075);
+   ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field = "noise.mean1",.delete = !noise);
+   ha_config_sensor ("noiseP1",.name = "NOISE_PEAK1",.type = "sound_pressure",.unit = "dB",.field = "noise.peal1",.delete = !noise);
+   ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit = "dB",.field = "noise.mean60",.delete =
+                     !noise);
+   ha_config_sensor ("noiseP60",.name = "NOISE_PEAK60",.type = "sound_pressure",.unit = "dB",.field = "noise.peal60",.delete =
+                     !noise);
    for (int i = 0; i < ds18b20_num; i++)
    {
       char id[20],
@@ -2858,7 +2909,7 @@ app_main ()
    if (sda.set && scl.set)
       revk_task ("i2c", i2c_task, NULL, 4);
    if (i2sdata.set && i2sclock.set)
-      revk_task ("i2s", i2s_task, NULL, 4);
+      revk_task ("i2s", i2s_task, NULL, 10);
    if (ds18b20.set)
       revk_task ("18b20", ds18b20_task, NULL, 4);
    if (leds && rgb.set)
@@ -3521,5 +3572,7 @@ revk_state_extra (jo_t j)
       jo_json (j, "solar", solar);
    if (bles)
       jo_json (j, "ble", bles);
+   if (noise)
+      jo_json (j, "noise", noise);
    xSemaphoreGive (json_mutex);
 }
