@@ -1595,7 +1595,7 @@ i2c_task (void *x)
       }
       uint8_t buf[9];
       {
-         uint16_t to = (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536.0 / scd41dt_scale / 175.0;       // Temp offset
+         uint16_t to = (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536 / scd41dt_scale / 175;       // Temp offset
          if (!err)
             err = scd41_read (0x2318, 3, buf);  // get offset
          if (!err && to != (buf[0] << 8) + buf[1])
@@ -3034,9 +3034,7 @@ app_main ()
    int16_t lastday = -1;
    int8_t lasthour = -1;
    int8_t lastmin = -1;
-#ifndef	GFX_EPD
    int8_t lastsec = -1;
-#endif
    int8_t lastreport = -1;
    while (!revk_shutting_down (NULL))
    {
@@ -3086,15 +3084,16 @@ app_main ()
       if (t.tm_min != lastmin)
       {                         // Per minute
          lastmin = t.tm_min;
-#ifndef	GFX_EPD
          lastsec = -1;
-#endif
 #ifndef	ESP_EPD
          b.redraw = 1;
 #endif
       }
       if (t.tm_sec != lastsec)
       {                         // Per sec
+#ifdef	GFX_EPD
+         lastsec = t.tm_sec;
+#endif
          weather_get ();
          api_get ();
       }
