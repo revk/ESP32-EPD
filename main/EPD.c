@@ -2291,10 +2291,12 @@ ir_task (void *arg)
 
    uint64_t v = 0;
    uint8_t b = 0;
+   uint8_t t = 0;
+   uint64_t m[3];
 
    while (1)
    {
-      if (xQueueReceive (receive_queue, &rmt_rx_data, pdMS_TO_TICKS (100)) == pdPASS)
+      if (xQueueReceive (receive_queue, &rmt_rx_data, pdMS_TO_TICKS (50)) == pdPASS)
       {
          //ESP_LOGE (TAG, "Symbols %d", rmt_rx_data.num_symbols);
          for (int i = 0; i < rmt_rx_data.num_symbols; i++)
@@ -2309,23 +2311,34 @@ ir_task (void *arg)
                v <<= 1;
             if (++b == 64)
             {
+               if (t / 64 < sizeof (m) / sizeof (*m))
+                  m[t / 64] = v;
                ESP_LOGE (TAG, "IR %016llX", v);
                v = 0;
                b = 0;
             }
+            t++;
          }
 
          // Next
          REVK_ERR_CHECK (rmt_receive (rx_channel, rmt_rx_symbols, sizeof (rmt_rx_symbols), &receive_config));
       } else
       {
-         if (b)
+         if (b && t > 8)
          {
             v <<= (64 - b);
-            ESP_LOGE (TAG, "IR %016llX.", v);
+            if (t / 64 < sizeof (m) / sizeof (*m))
+               m[t / 64] = v;
+            ESP_LOGE (TAG, "IR %016llX %d.", v, t);
+            if (t == 34 && (m[0] >> 48) == 0x807F)
+            {                   // Generic IR remote?
+               // TODO
+
+            }
          }
          b = 0;
          v = 0;
+         t = 0;
       }
    }
    vTaskDelete (NULL);
@@ -2923,28 +2936,28 @@ ha_config (void)
       return;
    ha_config_sensor ("ram",.name = "RAM",.field = "mem",.unit = "B");
    ha_config_sensor ("spi",.name = "PSRAM",.field = "spi",.unit = "B");
-   ha_config_sensor ("veml6040W",.name = "VEML6040-White",.type = "illuminance",.unit = "lx",.field = "veml6040.W",.delete =
-                     !veml6040);
+   ha_config_sensor ("veml6040W",.name = "VEML6040-White",.type = "illuminance",.unit = "lx",.field =
+                     "veml6040.W",.delete = !veml6040);
    ha_config_sensor ("veml6040R",.name = "VEML6040-Red",.type = "illuminance",.unit = "lx",.field = "veml6040.R",.delete =
                      !veml6040);
-   ha_config_sensor ("veml6040G",.name = "VEML6040-Green",.type = "illuminance",.unit = "lx",.field = "veml6040.G",.delete =
-                     !veml6040);
-   ha_config_sensor ("veml6040B",.name = "VEML6040-Blue",.type = "illuminance",.unit = "lx",.field = "veml6040.B",.delete =
-                     !veml6040);
+   ha_config_sensor ("veml6040G",.name = "VEML6040-Green",.type = "illuminance",.unit = "lx",.field =
+                     "veml6040.G",.delete = !veml6040);
+   ha_config_sensor ("veml6040B",.name = "VEML6040-Blue",.type = "illuminance",.unit = "lx",.field =
+                     "veml6040.B",.delete = !veml6040);
    ha_config_sensor ("mcp9808T",.name = "MCP9808",.type = "temperature",.unit = "C",.field = "mcp9808.C",.delete = !mcp9808);
    ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "C",.field = "tmp1075.C",.delete = !tmp1075);
-   ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field = "noise.mean1",.delete = !noise
-                     || reporting > 1);
-   ha_config_sensor ("noiseP1",.name = "NOISE_PEAK1",.type = "sound_pressure",.unit = "dB",.field = "noise.peak1",.delete = !noise
-                     || reporting > 1);
-   ha_config_sensor ("noiseM10",.name = "NOISE-MEAN10",.type = "sound_pressure",.unit = "dB",.field = "noise.mean10",.delete =
-                     !noise || reporting > 10);
-   ha_config_sensor ("noiseP10",.name = "NOISE_PEAK10",.type = "sound_pressure",.unit = "dB",.field = "noise.peak10",.delete =
-                     !noise || reporting > 10);
-   ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit = "dB",.field = "noise.mean60",.delete =
-                     !noise);
-   ha_config_sensor ("noiseP60",.name = "NOISE_PEAK60",.type = "sound_pressure",.unit = "dB",.field = "noise.peak60",.delete =
-                     !noise);
+   ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field =
+                     "noise.mean1",.delete = !noise || reporting > 1);
+   ha_config_sensor ("noiseP1",.name = "NOISE_PEAK1",.type = "sound_pressure",.unit = "dB",.field =
+                     "noise.peak1",.delete = !noise || reporting > 1);
+   ha_config_sensor ("noiseM10",.name = "NOISE-MEAN10",.type = "sound_pressure",.unit = "dB",.field =
+                     "noise.mean10",.delete = !noise || reporting > 10);
+   ha_config_sensor ("noiseP10",.name = "NOISE_PEAK10",.type = "sound_pressure",.unit = "dB",.field =
+                     "noise.peak10",.delete = !noise || reporting > 10);
+   ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit = "dB",.field =
+                     "noise.mean60",.delete = !noise);
+   ha_config_sensor ("noiseP60",.name = "NOISE_PEAK60",.type = "sound_pressure",.unit = "dB",.field =
+                     "noise.peak60",.delete = !noise);
    for (int i = 0; i < ds18b20_num; i++)
    {
       char id[20],
@@ -2987,8 +3000,8 @@ ha_config (void)
       sprintf (js, "ble[%d].bat", i);
       ha_config_sensor (id,.name = name,.type = "battery",.unit = "%",.field = js,.delete = *blesensor[i] ? 0 : 1);
    }
-   ha_config_sensor ("gzp6816dP",.name = "GZP6816D-Pressure",.type = "pressure",.unit = "mbar",.field = "gzp6816d.hPa",.delete =
-                     !gzp6816d);
+   ha_config_sensor ("gzp6816dP",.name = "GZP6816D-Pressure",.type = "pressure",.unit = "mbar",.field =
+                     "gzp6816d.hPa",.delete = !gzp6816d);
    ha_config_sensor ("gzp6816dT",.name = "GZP6816D-Temp",.type = "temperature",.unit = "C",.field = "gzp6816d.C",.delete =
                      !gzp6816d);
    ha_config_sensor ("scd41C",.name = "SCD41-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "scd41.ppm",.delete = !scd41);
@@ -2998,8 +3011,8 @@ ha_config (void)
    ha_config_sensor ("sht40H",.name = "SHT40-Humidity",.type = "humidity",.unit = "%",.field = "sht40.RH",.delete = !sht40);
    ha_config_sensor ("t6793C",.name = "T6793-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "t6793.ppm",.delete = !t6793);
    ha_config_sensor ("solarV",.name = "Solar-Voltage",.type = "voltage",.unit = "V",.field = "solar.voltage",.delete = !solar);
-   ha_config_sensor ("solarF",.name = "Solar-Frequency",.type = "frequency",.unit = "Hz",.field = "solar.frequency",.delete =
-                     !solar);
+   ha_config_sensor ("solarF",.name = "Solar-Frequency",.type = "frequency",.unit = "Hz",.field =
+                     "solar.frequency",.delete = !solar);
    ha_config_sensor ("solarP",.name = "Solar-Power",.type = "power",.unit = "W",.field = "solar.power",.delete = !solar);
    for (int b = 0; b < sizeof (btns) / sizeof (*btns); b++)
    {
@@ -3527,8 +3540,8 @@ app_main ()
 #endif
 #ifdef	TIMINGS
       uint64_t timed = esp_timer_get_time ();
-      ESP_LOGE (TAG, "Setup %4lldms, plot %4lldms, update %4lldms", (timeb - timea + 500) / 10000, (timec - timeb + 500) / 1000,
-                (timed - timec + 500) / 1000);
+      ESP_LOGE (TAG, "Setup %4lldms, plot %4lldms, update %4lldms", (timeb - timea + 500) / 10000,
+                (timec - timeb + 500) / 1000, (timed - timec + 500) / 1000);
 #endif
       snmp_tx ();
    }
