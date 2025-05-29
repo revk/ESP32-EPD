@@ -34,7 +34,7 @@ main/settings.h:     components/ESP32-RevK/revk_settings main/settings.def compo
 components/ESP32-RevK/revk_settings: components/ESP32-RevK/revk_settings.c
 	make -C components/ESP32-RevK
 
-set:    blind epd75r epd154k epd154r ssd1681 epd29k lcd24 lcd2 epd75k
+set:    blind epd75r epd154k epd154r ssd1681 epd29k lcd24 epd75k lcd2
 
 lcd2:
 	components/ESP32-RevK/setbuildsuffix -S3-MINI-N4-R2-LCD2

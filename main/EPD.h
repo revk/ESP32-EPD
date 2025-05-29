@@ -15,6 +15,7 @@ typedef struct file_s
    uint8_t reload:1;		// File in use after cache expired, so reload
    uint8_t card:1;              // We have tried card
    uint8_t json:1;              // Is JSON
+   uint8_t updated:1;		// New content (cleared by app)
 } file_t;
 extern SemaphoreHandle_t file_mutex;
 

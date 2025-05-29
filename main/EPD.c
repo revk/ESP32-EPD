@@ -462,6 +462,7 @@ check_file (file_t * i)
          ESP_LOGE (TAG, "Unknown %s error %s %s", i->url, e1 ? : "", e2 ? : "");
       }
    }
+   i->updated = 1;
 }
 
 file_t *
@@ -546,10 +547,10 @@ download (char *url, const char *suffix, uint8_t force, uint32_t cache)
                   len = esp_http_client_read_response (client, (char *) buf, len);
             }
             response = esp_http_client_get_status_code (client);
-            if (response != 200 && response != 304)
-               ESP_LOGE (TAG, "Bad response %s (%d)", url, response);
-            else
+            if (response == 200 || response == 304)
                i->backoff = 0;
+            else
+               ESP_LOGE (TAG, "%s response %d cached %ld", url, response, i->cached - up);
             esp_http_client_close (client);
          }
          esp_http_client_cleanup (client);
@@ -1790,6 +1791,81 @@ i2c_task (void *x)
 }
 
 void
+i2s_task (void *x)
+{
+   const int samples = 80;
+   i2s_chan_handle_t mic_handle = { 0 };
+   esp_err_t err;
+   i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG (I2S_NUM_AUTO, I2S_ROLE_MASTER);
+   err = i2s_new_channel (&chan_cfg, NULL, &mic_handle);
+   i2s_pdm_rx_config_t cfg = {
+      .clk_cfg = I2S_PDM_RX_CLK_DEFAULT_CONFIG (samples * 100),
+      .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG (I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
+      .gpio_cfg = {
+                   .clk = i2sclock.num,
+                   .din = i2sdata.num,
+                   .invert_flags = {
+                                    .clk_inv = i2sclock.invert,
+                                    }
+                   }
+   };
+   cfg.slot_cfg.slot_mask = (i2sright ? I2S_PDM_SLOT_RIGHT : I2S_PDM_SLOT_LEFT);
+   if (!err)
+      err = i2s_channel_init_pdm_rx_mode (mic_handle, &cfg);
+   gpio_pulldown_en (i2sdata.num);
+   if (!err)
+      err = i2s_channel_enable (mic_handle);
+   if (err)
+   {
+      ESP_LOGE (TAG, "Mic I2S failed");
+      jo_t j = jo_object_alloc ();
+      jo_int (j, "code", err);
+      jo_string (j, "error", esp_err_to_name (err));
+      jo_int (j, "data", i2sdata.num);
+      jo_int (j, "clock", i2sclock.num);
+      revk_error ("i2s", &j);
+      vTaskDelete (NULL);
+      return;
+   }
+   ESP_LOGE (TAG, "Mic init PDM CLK %d DAT %d", i2sclock.num, i2sdata.num);
+   int16_t sample[samples];
+   uint8_t tick = 0;
+   float peak = 0;
+   float sum = 0;
+   while (!b.die)
+   {
+      size_t n = 0;
+      err = i2s_channel_read (mic_handle, sample, samples, &n, 100);
+      if (err || n != samples)
+      {
+         ESP_LOGE (TAG, "Bad read %d %s", n, esp_err_to_name (err));
+         sleep (1);
+         continue;
+      }
+      ESP_LOG_BUFFER_HEX_LEVEL (TAG, (void *) samples, sizeof (samples), ESP_LOG_ERROR);
+      uint64_t t = 0;
+      for (int i = 0; i < samples; i++)
+         t += (int32_t) sample[i] * (int32_t) sample[i];
+      t /= samples;
+      float db = log10 (t) * 10;        // RMS
+      if (db > peak)
+         peak = db;
+      sum += db;
+      if (++tick == 100)
+      {
+         sum /= 100;
+         ESP_LOGE (TAG, "Peak %f Mean %f", peak, sum);
+         tick = 0;
+         peak = 0;
+         sum = 0;
+      }
+   }
+   i2s_channel_disable (mic_handle);
+   i2s_del_channel (mic_handle);
+   vTaskDelete (NULL);
+}
+
+void
 ble_task (void *x)
 {
    bleenv_run ();
@@ -2630,6 +2706,9 @@ api_get (void)
    if (!*apiurl)
       return;
    file_t *w = download (apiurl, NULL, 0, cacheapi);
+   if (!w || !w->updated)
+      return;
+   w->updated = 0;
    xSemaphoreTake (file_mutex, portMAX_DELAY);
    if (w && w->data && w->json)
    {
@@ -2644,26 +2723,28 @@ api_get (void)
 void
 weather_get (void)
 {
-   if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
-   {                            // Weather
-      char *url;
-      if (*postown)
-         asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
-      else
-         asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
-                   (float) poslat / 10000000, (float) poslon / 1000000);
-      file_t *w = download (url, NULL, 0, cacheweather);
-      free (url);
-      xSemaphoreTake (file_mutex, portMAX_DELAY);
-      if (w && w->data && w->json)
-      {
-         jo_t j = jo_parse_mem (w->data, w->size);
-         if (j)
-            json_store (&weather, jo_dup (j));
-         jo_free (&j);
-      }
-      xSemaphoreGive (file_mutex);
+   if ((!poslat && !poslon && !*postown) || !*weatherapi || revk_link_down ())
+      return;
+   char *url;
+   if (*postown)
+      asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
+   else
+      asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
+                (float) poslat / 10000000, (float) poslon / 1000000);
+   file_t *w = download (url, NULL, 0, cacheweather);
+   free (url);
+   if (!w || !w->updated)
+      return;
+   w->updated = 0;
+   xSemaphoreTake (file_mutex, portMAX_DELAY);
+   if (w && w->data && w->json)
+   {
+      jo_t j = jo_parse_mem (w->data, w->size);
+      if (j)
+         json_store (&weather, jo_dup (j));
+      jo_free (&j);
    }
+   xSemaphoreGive (file_mutex);
 }
 
 void
@@ -2759,6 +2840,7 @@ ha_config (void)
 void
 app_main ()
 {
+   ESP_LOGE (TAG, "Started");
    b.defcon = 7;
    snmp.sock = -1;
    revk_boot (&app_callback);
@@ -2775,6 +2857,8 @@ app_main ()
          revk_mqtt_sub (0, jsonsub[i], mqttjson_cb, (void *) i);
    if (sda.set && scl.set)
       revk_task ("i2c", i2c_task, NULL, 4);
+   if (i2sdata.set && i2sclock.set)
+      revk_task ("i2s", i2s_task, NULL, 4);
    if (ds18b20.set)
       revk_task ("18b20", ds18b20_task, NULL, 4);
    if (leds && rgb.set)
@@ -2957,6 +3041,9 @@ app_main ()
 #ifndef	ESP_EPD
          b.redraw = 1;
 #endif
+      }
+      if (t.tm_sec != lastsec)
+      {                         // Per sec
          weather_get ();
          api_get ();
       }
