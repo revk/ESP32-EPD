@@ -430,7 +430,7 @@ check_file (file_t * i)
 {                               // In mutex
    if (!i || !i->data || !i->size)
       return;
-   i->changed = time (0);
+   i->changed = uptime();
    const char *e1 = lwpng_get_info (i->size, i->data, &i->w, &i->h);
    if (!e1)
    {
@@ -460,8 +460,9 @@ check_file (file_t * i)
 }
 
 file_t *
-download (char *url, const char *suffix, char force)
+download (char *url, const char *suffix, uint8_t force,uint32_t cache)
 {
+	uint32_t up=uptime();
    file_t *i = find_file (url, suffix);
    if (!i)
       return i;
@@ -488,9 +489,10 @@ download (char *url, const char *suffix, char force)
    int32_t len = 0;
    uint8_t *buf = NULL;
    int response = -1;
-   if (i->cache && !force)
+   i->cache=cache; // for reload
+   if (i->cached && !force)
    {
-      if (i->cache < uptime ())
+      if (i->cached < up)
          i->reload = 1;
       response = (i->data ? 304 : 404); // Cached
    } else if (!revk_link_down () && (!strncasecmp (url, "http://", 7) || !strncasecmp (url, "https://", 8)))
@@ -500,7 +502,7 @@ download (char *url, const char *suffix, char force)
          .crt_bundle_attach = esp_crt_bundle_attach,
          .timeout_ms = 20000,
       };
-      i->cache = uptime () + cachetime;
+      i->cached = up+cache;
       i->reload = 0;
       esp_http_client_handle_t client = esp_http_client_init (&config);
       if (client)
@@ -508,8 +510,9 @@ download (char *url, const char *suffix, char force)
          if (i->changed)
          {
             char when[50];
+	    time_t when=time(0)+i->changed-up;
             struct tm t;
-            gmtime_r (&i->changed, &t);
+            gmtime_r (&when, &t);
             strftime (when, sizeof (when), "%a, %d %b %Y %T GMT", &t);
             esp_http_client_set_header (client, "If-Modified-Since", when);
          }
@@ -540,6 +543,7 @@ download (char *url, const char *suffix, char force)
             response = esp_http_client_get_status_code (client);
             if (response != 200 && response != 304)
                ESP_LOGE (TAG, "Bad response %s (%d)", url, response);
+	    else i->backoff=0;
             esp_http_client_close (client);
          }
          esp_http_client_cleanup (client);
@@ -550,6 +554,9 @@ download (char *url, const char *suffix, char force)
    {
       if (response != 200)
       {                         // Failed
+				if(2*i->backoff>255)i->backuoff=255;
+				else i->backoff=(i->backoff*2?:1);
+				i->cached=up+i->backoff;
          jo_t j = jo_object_alloc ();
          jo_string (j, "url", url);
          if (response && response != -1)
@@ -2461,7 +2468,7 @@ reload_task (void *x)
       file_t *i;
       for (i = files; i; i = i->next)
          if (i->reload)
-            download (i->url, i->suffix, 1);
+            download (i->url, i->suffix, 1,i->cache);
       sleep (1);
    }
 }
@@ -2526,13 +2533,11 @@ api_get (void)
    if (!*apiurl)
       return;
    uint32_t up = uptime ();
-   file_t *w = download (apiurl, NULL, 0);
-   ESP_LOGE (TAG, "%s (%ld)", apiurl, w ? w->cache - up : 0);
+   file_t *w = download (apiurl, NULL, 0,cacheapi);
+   ESP_LOGE (TAG, "%s (%ld)", apiurl, w ? w->cached - up : 0);
    xSemaphoreTake (file_mutex, portMAX_DELAY);
    if (w && w->data && w->json)
    {
-      if (w->cache < up + apicache * 60)
-         w->cache = up + apicache * 60;
       jo_t j = jo_parse_mem (w->data, w->size);
       if (j)
          json_store (&apijson, jo_dup (j));
@@ -2553,14 +2558,12 @@ weather_get (void)
       else
          asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
                    (float) poslat / 10000000, (float) poslon / 1000000);
-      file_t *w = download (url, NULL, 0);
-      ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cache - up : 0);
+      file_t *w = download (url, NULL, 0,cacheweather);
+      ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cached - up : 0);
       free (url);
       xSemaphoreTake (file_mutex, portMAX_DELAY);
       if (w && w->data && w->json)
       {
-         if (w->cache > up + 60)
-            w->cache = up + 60; // 1000000/month accesses on free tariff!
          jo_t j = jo_parse_mem (w->data, w->size);
          if (j)
             json_store (&weather, jo_dup (j));
@@ -2883,7 +2886,7 @@ app_main ()
          overrideimage = NULL;
          if (was)
          {
-            file_t *i = download (was, ".png", 0);
+            file_t *i = download (was, ".png", 0,cachepng);
             if (i && i->w)
             {
                epd_lock ();
@@ -3094,16 +3097,16 @@ app_main ()
                   if (season)
                   {
                      *s = season;
-                     i = download (url, ".png", 0);
+                     i = download (url, ".png", 0,cachepng);
                   }
                   if (!i || !i->size)
                   {
                      strcpy (s, s + 1);
-                     i = download (url, ".png", 0);
+                     i = download (url, ".png", 0,cachepng);
                   }
 
                } else
-                  i = download (c, ".png", 0);
+                  i = download (c, ".png", 0,cachepng);
                if (i && i->size && i->w && i->h)
                {
                   gfx_pos_t ox,

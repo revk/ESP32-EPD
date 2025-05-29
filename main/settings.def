@@ -57,7 +57,10 @@ u16	light.off		.live	.digits=4 .place="HHMM"	// Lights off time (HHMM). 5000±59
 bit	fb.version		.live			// Assume SNMP desc is FireBrick, extract version
 
 s	baseurl		.live			// Default base URL
-u32	cachetime	300 .live		// Default cache for https
+u32	cache.png	3600 .live .unit="s"	// Cache time for png/images
+u32	cache.api	60 .live .unit="s"	// Cache time for weather
+u32	cache.weather	60 .live .unit="s"	// Cache time for api
+u32	cache.bins	3600 .live .unit="s"	// Default cache for bins if not specified or too old
 
 #ifdef	GFX_COLOUR
 c1	background		.hide .live 		// Background colour
@@ -81,7 +84,6 @@ s	qr.ssid			.live			// WiFi SSID for $WIFI
 s	qr.pass			.live			// WiFi pass for $WIFI
 s	weather.api		.live			// API key for weatherapi.com
 s	api.url			.live			// Generic API URL for $API
-u16	api.cache	1	.live .unit="m"		// Min cache time
 s	solar.ip					// SolarEdge IP address
 u32	solar.sod		.live	.hide		// SolarEdge start of day kWh
 u32	solar.day		.live	.hide		// SolarEdge date for sod
