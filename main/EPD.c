@@ -435,12 +435,12 @@ check_file (file_t * i)
 {                               // In mutex
    if (!i || !i->data || !i->size)
       return;
-   i->changed = uptime();
+   i->changed = uptime ();
    const char *e1 = lwpng_get_info (i->size, i->data, &i->w, &i->h);
    if (!e1)
    {
       i->json = 0;              // PNG
-      ESP_LOGE (TAG, "Image %s len %lu width %lu height %lu", i->url, i->size, i->w, i->h);
+      ESP_LOGE (TAG, "Image %s len %lu width %lu height %lu cached %lu", i->url, i->size, i->w, i->h, i->cachetime);
    } else
    {                            // Not a png
       jo_t j = jo_parse_mem (i->data, i->size);
@@ -451,7 +451,7 @@ check_file (file_t * i)
       {                         // Valid JSON
          i->json = 1;
          i->w = i->h = 0;
-         ESP_LOGE (TAG, "JSON %s len %lu", i->url, i->size);
+         ESP_LOGE (TAG, "JSON %s len %lu cached %lu", i->url, i->size, i->cachetime);
       } else
       {                         // Not sensible
          free (i->data);
@@ -465,9 +465,9 @@ check_file (file_t * i)
 }
 
 file_t *
-download (char *url, const char *suffix, uint8_t force,uint32_t cache)
+download (char *url, const char *suffix, uint8_t force, uint32_t cache)
 {
-	uint32_t up=uptime();
+   uint32_t up = uptime ();
    file_t *i = find_file (url, suffix);
    if (!i)
       return i;
@@ -494,7 +494,7 @@ download (char *url, const char *suffix, uint8_t force,uint32_t cache)
    int32_t len = 0;
    uint8_t *buf = NULL;
    int response = -1;
-   i->cache=cache; // for reload
+   i->cachetime = cache;        // for reload
    if (i->cached && !force)
    {
       if (i->cached < up)
@@ -507,7 +507,7 @@ download (char *url, const char *suffix, uint8_t force,uint32_t cache)
          .crt_bundle_attach = esp_crt_bundle_attach,
          .timeout_ms = 20000,
       };
-      i->cached = up+cache;
+      i->cached = up + cache;
       i->reload = 0;
       esp_http_client_handle_t client = esp_http_client_init (&config);
       if (client)
@@ -515,10 +515,10 @@ download (char *url, const char *suffix, uint8_t force,uint32_t cache)
          if (i->changed)
          {
             char when[50];
-	    time_t when=time(0)+i->changed-up;
-            struct tm t;
-            gmtime_r (&when, &t);
-            strftime (when, sizeof (when), "%a, %d %b %Y %T GMT", &t);
+            time_t t = time (0) + i->changed - up;
+            struct tm tm;
+            gmtime_r (&t, &tm);
+            strftime (when, sizeof (when), "%a, %d %b %Y %T GMT", &tm);
             esp_http_client_set_header (client, "If-Modified-Since", when);
          }
          if (!esp_http_client_open (client, 0))
@@ -548,7 +548,8 @@ download (char *url, const char *suffix, uint8_t force,uint32_t cache)
             response = esp_http_client_get_status_code (client);
             if (response != 200 && response != 304)
                ESP_LOGE (TAG, "Bad response %s (%d)", url, response);
-	    else i->backoff=0;
+            else
+               i->backoff = 0;
             esp_http_client_close (client);
          }
          esp_http_client_cleanup (client);
@@ -559,9 +560,11 @@ download (char *url, const char *suffix, uint8_t force,uint32_t cache)
    {
       if (response != 200)
       {                         // Failed
-				if(2*i->backoff>255)i->backuoff=255;
-				else i->backoff=(i->backoff*2?:1);
-				i->cached=up+i->backoff;
+         if (2 * i->backoff > 255)
+            i->backoff = 255;
+         else
+            i->backoff = (i->backoff * 2 ? : 1);
+         i->cached = up + i->backoff;
          jo_t j = jo_object_alloc ();
          jo_string (j, "url", url);
          if (response && response != -1)
@@ -2562,7 +2565,7 @@ reload_task (void *x)
       file_t *i;
       for (i = files; i; i = i->next)
          if (i->reload)
-            download (i->url, i->suffix, 1,i->cache);
+            download (i->url, i->suffix, 1, i->cachetime);
       sleep (1);
    }
 }
@@ -2626,9 +2629,7 @@ api_get (void)
 {
    if (!*apiurl)
       return;
-   uint32_t up = uptime ();
-   file_t *w = download (apiurl, NULL, 0,cacheapi);
-   ESP_LOGE (TAG, "%s (%ld)", apiurl, w ? w->cached - up : 0);
+   file_t *w = download (apiurl, NULL, 0, cacheapi);
    xSemaphoreTake (file_mutex, portMAX_DELAY);
    if (w && w->data && w->json)
    {
@@ -2645,15 +2646,13 @@ weather_get (void)
 {
    if ((poslat || poslon || *postown) && *weatherapi && !revk_link_down ())
    {                            // Weather
-      uint32_t up = uptime ();
       char *url;
       if (*postown)
          asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s", weatherapi, postown);
       else
          asprintf (&url, "http://api.weatherapi.com/v1/forecast.json?key=%s&q=%f,%f", weatherapi,
                    (float) poslat / 10000000, (float) poslon / 1000000);
-      file_t *w = download (url, NULL, 0,cacheweather);
-      ESP_LOGE (TAG, "%s (%ld)", url, w ? w->cached - up : 0);
+      file_t *w = download (url, NULL, 0, cacheweather);
       free (url);
       xSemaphoreTake (file_mutex, portMAX_DELAY);
       if (w && w->data && w->json)
@@ -2982,7 +2981,7 @@ app_main ()
          overrideimage = NULL;
          if (was)
          {
-            file_t *i = download (was, ".png", 0,cachepng);
+            file_t *i = download (was, ".png", 0, cachepng);
             if (i && i->w)
             {
                epd_lock ();
@@ -3193,16 +3192,16 @@ app_main ()
                   if (season)
                   {
                      *s = season;
-                     i = download (url, ".png", 0,cachepng);
+                     i = download (url, ".png", 0, cachepng);
                   }
                   if (!i || !i->size)
                   {
                      strcpy (s, s + 1);
-                     i = download (url, ".png", 0,cachepng);
+                     i = download (url, ".png", 0, cachepng);
                   }
 
                } else
-                  i = download (c, ".png", 0,cachepng);
+                  i = download (c, ".png", 0, cachepng);
                if (i && i->size && i->w && i->h)
                {
                   gfx_pos_t ox,
@@ -3384,7 +3383,10 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting (req, NULL, "postown");
    }
    if ((found = dollar_check (c, "API")))
-      revk_web_setting (req, NULL, "api");
+   {
+      revk_web_setting (req, NULL, "apiurl");
+      revk_web_setting (req, NULL, "cacheapi");
+   }
    if (found || dollar_check (c, "SUN"))
    {
       revk_web_setting (req, NULL, "poslat");

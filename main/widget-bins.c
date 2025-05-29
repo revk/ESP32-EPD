@@ -40,7 +40,7 @@ widget_bins (uint16_t s, const char *c)
    if (!s2)
       s2 = 1;
    gfx_align_t a = gfx_a ();
-   file_t *bins = download ((char *) c, ".json", 0,cachebins);
+   file_t *bins = download ((char *) c, ".json", 0, cachebins);
    char *jbins = NULL;
    uint32_t size = 0;
    xSemaphoreTake (file_mutex, portMAX_DELAY);
@@ -80,8 +80,8 @@ widget_bins (uint16_t s, const char *c)
             clear = collect * 12 * 3600;
          if (!cache)
             cache = clear;
-	 if(cache>now)
-         bins->cached = uptime()+cache-now;
+         if (cache > now)
+            bins->cached = uptime () + cache - now;
          char *led = NULL;
          if (display && clear && display < now && now < clear)
          {
@@ -133,7 +133,7 @@ widget_bins (uint16_t s, const char *c)
                               char *fn;
                               asprintf (&fn, "%s/%s", base ? : "", leaf);
                               free (leaf);
-                              i->file = download (fn, ".png", 0,cachepng);
+                              i->file = download (fn, ".png", 0, cachepng);
                               free (fn);
                               if (i->file && (!i->file->data || !i->file->size || !i->file->w))
                                  i->file = NULL;
