@@ -1555,6 +1555,7 @@ i2c_task (void *x)
    }
    if (i2cport < 0)
       vTaskDelete (NULL);
+   usleep (100000);
    // Init
    if (veml6040i2c)
    {
@@ -2948,7 +2949,7 @@ app_main ()
          .max_leds = lightcount,
          .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
          .led_model = LED_MODEL_WS2812, // LED strip model
-         .flags.invert_out = lightgpio.invert,        // whether to invert the output signal(useful when your hardware has a level inverter)
+         .flags.invert_out = lightgpio.invert,  // whether to invert the output signal(useful when your hardware has a level inverter)
       };
       led_strip_rmt_config_t rmt_config = {
          .clk_src = RMT_CLK_SRC_DEFAULT,        // different clock source can lead to different power consumption
@@ -3222,7 +3223,8 @@ app_main ()
          off = ss (off);
 #endif
          int hhmm = t.tm_hour * 100 + t.tm_min;
-         showlights (on == off || (on < off && on <= hhmm && off > hhmm) || (off < on && (on <= hhmm || off > hhmm)) ? lightpattern : "");
+         showlights (on == off || (on < off && on <= hhmm && off > hhmm)
+                     || (off < on && (on <= hhmm || off > hhmm)) ? lightpattern : "");
       }
       b.redraw = 0;
       // Image
@@ -3479,7 +3481,7 @@ revk_web_extra (httpd_req_t * req, int page)
       if (lightgpio.set && lightcount)
       {
          revk_web_setting_title (req, "LEDs");
-         revk_web_setting (req, "Light pattern", "lights");
+         revk_web_setting (req, "Light pattern", "lightpattern");
          revk_web_setting (req, "Light on", "lighton");
          revk_web_setting (req, "Light off", "lightoff");
       }
