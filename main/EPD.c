@@ -1595,7 +1595,7 @@ i2c_task (void *x)
       }
       uint8_t buf[9];
       {
-         uint16_t to = (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536 / scd41dt_scale / 175;       // Temp offset
+         uint16_t to = (uint32_t) (scd41dt < 0 ? -scd41dt : 0) * 65536 / scd41dt_scale / 175;   // Temp offset
          if (!err)
             err = scd41_read (0x2318, 3, buf);  // get offset
          if (!err && to != (buf[0] << 8) + buf[1])
@@ -1796,8 +1796,8 @@ i2c_task (void *x)
 void
 i2s_task (void *x)
 {
-   const int rate = 100;
-   const int samples = 160;
+   const int rate = 50;
+   const int samples = 320;
    i2s_chan_handle_t mic_handle = { 0 };
    esp_err_t err;
    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG (I2S_NUM_AUTO, I2S_ROLE_MASTER);
@@ -1860,8 +1860,6 @@ i2s_task (void *x)
          t += v * v;
       }
       t /= samples;
-      //ESP_LOG_BUFFER_HEX_LEVEL (TAG, sample, sizeof (sample), ESP_LOG_ERROR);
-      //ESP_LOGE (TAG, "t=%llu", t);
       double db = log10 (t) * 10 + (double) i2sdb / i2sdb_scale;        // RMS
       if (db > peak)
          peak = db;
@@ -1875,8 +1873,10 @@ i2s_task (void *x)
             sec = 0;
          //ESP_LOGE (TAG, "Peak %.2lf Mean %.2lf", peak, sum);
          jo_t j = jo_object_alloc ();
-         jo_litf (j, "peak1", "%.2lf", peak);
-         jo_litf (j, "mean1", "%.2lf", sum);
+         if (!isnan (peak))
+            jo_litf (j, "peak1", "%.2lf", peak);
+         if (!isnan (sum))
+            jo_litf (j, "mean1", "%.2lf", sum);
          double p = -INFINITY,
             m = 0;
          for (int s = 50; s < 60; s++)
@@ -1885,16 +1885,20 @@ i2s_task (void *x)
                p = peaks[(s + sec) % 60];
             m += means[(s + sec) % 60];
          }
-         jo_litf (j, "peak10", "%.2lf", p);
-         jo_litf (j, "mean10", "%.2lf", m / 10);
+         if (!isnan (p))
+            jo_litf (j, "peak10", "%.2lf", p);
+         if (!isnan (m))
+            jo_litf (j, "mean10", "%.2lf", m / 10);
          for (int s = 0; s < 50; s++)
          {
             if (peaks[(s + sec) % 60] > p)
                p = peaks[(s + sec) % 60];
             m += means[(s + sec) % 60];
          }
-         jo_litf (j, "peak60", "%.2lf", p);
-         jo_litf (j, "mean60", "%.2lf", m / 60);
+         if (!isnan (p))
+            jo_litf (j, "peak60", "%.2lf", p);
+         if (!isnan (m))
+            jo_litf (j, "mean60", "%.2lf", m / 60);
          json_store (&noise, j);
          tick = 0;
          peak = -INFINITY;
