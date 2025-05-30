@@ -67,7 +67,7 @@ ir_task (void *arg)
 
    rmt_receive_config_t receive_config = {
       .signal_range_min_ns = 2500,
-      .signal_range_max_ns = 25000000,
+      .signal_range_max_ns = 12500000,
    };
 
    REVK_ERR_CHECK (rmt_enable (rx_channel));
@@ -88,7 +88,7 @@ ir_task (void *arg)
       if (xQueueReceive (receive_queue, &ir_rx_data, pdMS_TO_TICKS (50)) == pdPASS)
       {
          idle = 1;
-         //ESP_LOGE (TAG, "Symbols %d", ir_rx_data.num_symbols);
+         //ESP_LOGE (TAG, "Symbols %d %d/%d", ir_rx_data.num_symbols,ir_rx_symbols[0].level0,ir_rx_symbols[0].level1);
          int i = 0;
          if (ir_rx_symbols[i].duration0 > 1500)
          {
@@ -125,11 +125,11 @@ ir_task (void *arg)
             }
 #endif
 #endif
-            raw[bit / 8] = (raw[bit / 8] << 1) | (ir_rx_symbols[i].duration0 >= 1000 ? 1 : 0);
+            raw[bit / 8] = (raw[bit / 8] << 1) | (ir_rx_symbols[i].duration0 >= 800 ? 1 : 0);
             bit++;
             if (ir_rx_symbols[i].duration1 || i + 1 < ir_rx_data.num_symbols)
             {
-               raw[bit / 8] = (raw[bit / 8] << 1) | (ir_rx_symbols[i].duration1 >= 1000 ? 1 : 0);
+               raw[bit / 8] = (raw[bit / 8] << 1) | (ir_rx_symbols[i].duration1 >= 800 ? 1 : 0);
                bit++;
             }
             i++;
