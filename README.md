@@ -84,6 +84,7 @@ The code supports a number of sensors which can be configured on I2C (or one wir
 |--------|-------|
 |`MCP9808`|`C` Celsius|
 |`TMP1075`|`C` Celsius|
+|`SHT40`|`C` Celsius, `RH` is humidity|
 |`DS18B20`|`[0].C` is Celsius for first sensor, `[n].serial` is serial number of sensor|
 |`SCD41`|`ppm` is CO₂, ,`C` is Celsius, `RH` is humidity|
 |`T6793`|`ppm` is CO₂|
