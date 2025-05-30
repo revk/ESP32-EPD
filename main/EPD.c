@@ -1880,8 +1880,7 @@ i2s_task (void *x)
          int32_t v = (int32_t) sample[i] - b;
          t += v * v;
       }
-      t /= samples;
-      double db = log10 (t) * 10 + (double) i2sdb / i2sdb_scale;        // RMS
+      double db = log10 ((double) t / samples) * 10 + (double) i2sdb / i2sdb_scale;     // RMS
       if (db > peak)
          peak = db;
       sum += db;
