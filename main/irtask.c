@@ -236,7 +236,7 @@ ir_task (void *arg)
       {
          if (idle && idle++ == 3)
          {
-            ESP_LOGE (TAG, "IR idle");
+            //ESP_LOGE (TAG, "IR idle");
             idle = 0;
             if (cb)
                cb (IR_IDLE, 0, 0, 0, NULL);
