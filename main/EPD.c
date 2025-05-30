@@ -2233,115 +2233,45 @@ solar_task (void *x)
    vTaskDelete (NULL);
 }
 
-rmt_symbol_word_t rmt_rx_symbols[256];
-rmt_rx_done_event_data_t rmt_rx_data;
+#define	IR_GPIO		irgpio
+#define	IR_LOG		irlog
+#define	IR_DEBUG	irdebug
+#include "irtask.c"
 
-static bool
-rmt_rx_done_callback (rmt_channel_handle_t channel, const rmt_rx_done_event_data_t * edata, void *user_data)
-{
-   BaseType_t high_task_wakeup = pdFALSE;
-   QueueHandle_t receive_queue = (QueueHandle_t) user_data;
-   xQueueSendFromISR (receive_queue, edata, &high_task_wakeup);
-   return high_task_wakeup == pdTRUE;
-}
-
-void
-ir_task (void *arg)
-{
-   revk_gpio_input (ir);
-   rmt_rx_channel_config_t rx_channel_cfg = {
-      .clk_src = RMT_CLK_SRC_DEFAULT,
-      .resolution_hz = 1000000,
-      .mem_block_symbols = sizeof (rmt_rx_symbols) / sizeof (*rmt_rx_symbols),
-      .gpio_num = ir.num,
-      .flags.invert_in = ir.invert,
-#ifdef	CONFIG_IDF_TARGET_ESP32S3
-      .flags.with_dma = 1,
-#endif
-   };
-   rmt_channel_handle_t rx_channel = NULL;
-   REVK_ERR_CHECK (rmt_new_rx_channel (&rx_channel_cfg, &rx_channel));
-   if (!rx_channel)
-   {
-      ESP_LOGE (TAG, "No RMT Rx");
-      vTaskDelete (NULL);
-      return;
+static void
+ir_callback (uint8_t coding, uint16_t lead0, uint16_t lead1, uint8_t len, uint8_t * data)
+{                               // Handle generic IR https://www.amazon.co.uk/dp/B07DJ58XGC
+   //ESP_LOGE (TAG, "IR CB %d %d %d %d", coding, lead0, lead1, len);
+   static uint8_t key = 0;
+   static uint8_t count = 0;
+   if (coding == IR_PDC && len == 32 && lead0 > 8500 && lead0 < 9500 && lead1 > 4000 && lead1 < 5000 && (data[0] ^ data[1]) == 0xFF
+       && (data[2] ^ data[3]) == 0xFF && !data[0])
+   {                            // Key
+      key = data[2];
+      //ESP_LOGE (TAG, "Key %02X", key);
+      count = 0;
    }
-   QueueHandle_t receive_queue = xQueueCreate (1, sizeof (rmt_rx_done_event_data_t));
-   if (!receive_queue)
-   {
-      ESP_LOGE (TAG, "No RMT Queue");
-      vTaskDelete (NULL);
-      return;
-   }
-   rmt_rx_event_callbacks_t cbs = {
-      .on_recv_done = rmt_rx_done_callback,
-   };
-   REVK_ERR_CHECK (rmt_rx_register_event_callbacks (rx_channel, &cbs, receive_queue));
-
-   rmt_receive_config_t receive_config = {
-      .signal_range_min_ns = 2500,
-      .signal_range_max_ns = 25000000,
-   };
-
-   REVK_ERR_CHECK (rmt_enable (rx_channel));
-   REVK_ERR_CHECK (rmt_receive (rx_channel, rmt_rx_symbols, sizeof (rmt_rx_symbols), &receive_config));
-
-   ESP_LOGE (TAG, "IR started %d", ir.num);
-
-   uint64_t v = 0;
-   uint8_t b = 0;
-   uint8_t t = 0;
-   uint64_t m[3];
-
-   while (1)
-   {
-      if (xQueueReceive (receive_queue, &rmt_rx_data, pdMS_TO_TICKS (50)) == pdPASS)
-      {
-         //ESP_LOGE (TAG, "Symbols %d", rmt_rx_data.num_symbols);
-         for (int i = 0; i < rmt_rx_data.num_symbols; i++)
-         {
-            uint32_t a = rmt_rx_symbols[i].duration0;
-            if (a > rmt_rx_symbols[i].duration1)
-               a = rmt_rx_symbols[i].duration1;
-            a = a * 3 / 2;
-            if (rmt_rx_symbols[i].duration0 > a || rmt_rx_symbols[i].duration1 > a)
-               v = (v << 1) + 1;
-            else
-               v <<= 1;
-            if (++b == 64)
-            {
-               if (t / 64 < sizeof (m) / sizeof (*m))
-                  m[t / 64] = v;
-               ESP_LOGE (TAG, "IR %016llX", v);
-               v = 0;
-               b = 0;
-            }
-            t++;
-         }
-
-         // Next
-         REVK_ERR_CHECK (rmt_receive (rx_channel, rmt_rx_symbols, sizeof (rmt_rx_symbols), &receive_config));
-      } else
-      {
-         if (b && t > 8)
-         {
-            v <<= (64 - b);
-            if (t / 64 < sizeof (m) / sizeof (*m))
-               m[t / 64] = v;
-            ESP_LOGE (TAG, "IR %016llX %d.", v, t);
-            if (t == 34 && (m[0] >> 48) == 0x807F)
-            {                   // Generic IR remote?
-               // TODO
-
-            }
-         }
-         b = 0;
-         v = 0;
-         t = 0;
+   if (coding == IR_ZERO && len == 1 && lead0 > 8500 && lead0 < 9500 && lead1 > 1500 && lead1 < 2500 && key)
+   {                            // Continue - ignore for now
+      if (count < 255)
+         count++;
+      if (count == 5)
+      {                         // hold
+         jo_t j = jo_create_alloc ();
+         jo_stringf (j, NULL, "%02X", key);
+         revk_info ("irhold", &j);
       }
    }
-   vTaskDelete (NULL);
+   if (coding == IR_IDLE)
+   {
+      jo_t j = jo_create_alloc ();
+      jo_stringf (j, NULL, "%02X", key);
+      if (count < 5)
+         revk_info ("irpress", &j);
+      else
+         revk_info ("irrelease", &j);
+      key = 0;
+   }
 }
 
 char *
@@ -2932,101 +2862,117 @@ void
 ha_config (void)
 {
    b.ha = 0;
-   if (!haannounce)
-      return;
-   ha_config_sensor ("ram",.name = "RAM",.field = "mem",.unit = "B");
-   ha_config_sensor ("spi",.name = "PSRAM",.field = "spi",.unit = "B");
-   ha_config_sensor ("veml6040W",.name = "VEML6040-White",.type = "illuminance",.unit = "lx",.field =
-                     "veml6040.W",.delete = !veml6040);
-   ha_config_sensor ("veml6040R",.name = "VEML6040-Red",.type = "illuminance",.unit = "lx",.field = "veml6040.R",.delete =
-                     !veml6040);
-   ha_config_sensor ("veml6040G",.name = "VEML6040-Green",.type = "illuminance",.unit = "lx",.field =
-                     "veml6040.G",.delete = !veml6040);
-   ha_config_sensor ("veml6040B",.name = "VEML6040-Blue",.type = "illuminance",.unit = "lx",.field =
-                     "veml6040.B",.delete = !veml6040);
-   ha_config_sensor ("mcp9808T",.name = "MCP9808",.type = "temperature",.unit = "C",.field = "mcp9808.C",.delete = !mcp9808);
-   ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "C",.field = "tmp1075.C",.delete = !tmp1075);
-   ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field =
-                     "noise.mean1",.delete = !noise || reporting > 1);
-   ha_config_sensor ("noiseP1",.name = "NOISE_PEAK1",.type = "sound_pressure",.unit = "dB",.field =
-                     "noise.peak1",.delete = !noise || reporting > 1);
-   ha_config_sensor ("noiseM10",.name = "NOISE-MEAN10",.type = "sound_pressure",.unit = "dB",.field =
-                     "noise.mean10",.delete = !noise || reporting > 10);
-   ha_config_sensor ("noiseP10",.name = "NOISE_PEAK10",.type = "sound_pressure",.unit = "dB",.field =
-                     "noise.peak10",.delete = !noise || reporting > 10);
-   ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit = "dB",.field =
-                     "noise.mean60",.delete = !noise);
-   ha_config_sensor ("noiseP60",.name = "NOISE_PEAK60",.type = "sound_pressure",.unit = "dB",.field =
-                     "noise.peak60",.delete = !noise);
-   for (int i = 0; i < ds18b20_num; i++)
+   if (haannounce)
    {
-      char id[20],
-        name[20],
-        js[20];
-      sprintf (id, "ds18b20%dT", i);
-      sprintf (name, "DS18B20-%d", i);
-      sprintf (js, "ds18b20[%d].C", i);
-      ha_config_sensor (id,.name = name,.type = "temperature",.unit = "C",.field = js);
+      ha_config_sensor ("ram",.name = "RAM",.field = "mem",.unit = "B");
+      ha_config_sensor ("spi",.name = "PSRAM",.field = "spi",.unit = "B");
+      ha_config_sensor ("veml6040W",.name = "VEML6040-White",.type = "illuminance",.unit = "lx",.field =
+                        "veml6040.W",.delete = !veml6040);
+      ha_config_sensor ("veml6040R",.name = "VEML6040-Red",.type = "illuminance",.unit = "lx",.field = "veml6040.R",.delete =
+                        !veml6040);
+      ha_config_sensor ("veml6040G",.name = "VEML6040-Green",.type = "illuminance",.unit = "lx",.field =
+                        "veml6040.G",.delete = !veml6040);
+      ha_config_sensor ("veml6040B",.name = "VEML6040-Blue",.type = "illuminance",.unit = "lx",.field =
+                        "veml6040.B",.delete = !veml6040);
+      ha_config_sensor ("mcp9808T",.name = "MCP9808",.type = "temperature",.unit = "C",.field = "mcp9808.C",.delete = !mcp9808);
+      ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "C",.field = "tmp1075.C",.delete = !tmp1075);
+      ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field =
+                        "noise.mean1",.delete = !noise || reporting > 1);
+      ha_config_sensor ("noiseP1",.name = "NOISE_PEAK1",.type = "sound_pressure",.unit = "dB",.field =
+                        "noise.peak1",.delete = !noise || reporting > 1);
+      ha_config_sensor ("noiseM10",.name = "NOISE-MEAN10",.type = "sound_pressure",.unit = "dB",.field =
+                        "noise.mean10",.delete = !noise || reporting > 10);
+      ha_config_sensor ("noiseP10",.name = "NOISE_PEAK10",.type = "sound_pressure",.unit = "dB",.field =
+                        "noise.peak10",.delete = !noise || reporting > 10);
+      ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit = "dB",.field =
+                        "noise.mean60",.delete = !noise);
+      ha_config_sensor ("noiseP60",.name = "NOISE_PEAK60",.type = "sound_pressure",.unit = "dB",.field =
+                        "noise.peak60",.delete = !noise);
+      for (int i = 0; i < ds18b20_num; i++)
+      {
+         char id[20],
+           name[20],
+           js[20];
+         sprintf (id, "ds18b20%dT", i);
+         sprintf (name, "DS18B20-%d", i);
+         sprintf (js, "ds18b20[%d].C", i);
+         ha_config_sensor (id,.name = name,.type = "temperature",.unit = "C",.field = js);
+      }
+      for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
+      {
+         bleenv_t *e = NULL;
+         if (*blesensor[i])
+            for (e = bleenv; e; e = e->next)
+               if (!strcmp (e->mac, blesensor[i]) || !strcmp (e->name, blesensor[i]))
+                  break;
+         char id[20],
+           name[50],
+           js[20];
+         sprintf (id, "ble%dT", i);
+         if (e)
+            sprintf (name, "BLE-Temp-%s", e->name);
+         else
+            sprintf (name, "BLE-Temp-%d", i + 1);
+         sprintf (js, "ble[%d].C", i);
+         ha_config_sensor (id,.name = name,.type = "temperature",.unit = "C",.field = js,.delete = *blesensor[i] ? 0 : 1);
+         sprintf (id, "ble%dR", i);
+         if (e)
+            sprintf (name, "BLE-RH-%s", e->name);
+         else
+            sprintf (name, "BLE-RH-%d", i + 1);
+         sprintf (js, "ble[%d].RH", i);
+         ha_config_sensor (id,.name = name,.type = "humidity",.unit = "%",.field = js,.delete = *blesensor[i] ? 0 : 1);
+         sprintf (id, "ble%dB", i);
+         if (e)
+            sprintf (name, "BLE-Bat-%s", e->name);
+         else
+            sprintf (name, "BLE-Bat-%d", i + 1);
+         sprintf (js, "ble[%d].bat", i);
+         ha_config_sensor (id,.name = name,.type = "battery",.unit = "%",.field = js,.delete = *blesensor[i] ? 0 : 1);
+      }
+      ha_config_sensor ("gzp6816dP",.name = "GZP6816D-Pressure",.type = "pressure",.unit = "mbar",.field =
+                        "gzp6816d.hPa",.delete = !gzp6816d);
+      ha_config_sensor ("gzp6816dT",.name = "GZP6816D-Temp",.type = "temperature",.unit = "C",.field = "gzp6816d.C",.delete =
+                        !gzp6816d);
+      ha_config_sensor ("scd41C",.name = "SCD41-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "scd41.ppm",.delete =
+                        !scd41);
+      ha_config_sensor ("scd41T",.name = "SCD41-Temp",.type = "temperature",.unit = "C",.field = "scd41.C",.delete = !scd41);
+      ha_config_sensor ("scd41H",.name = "SCD41-Humidity",.type = "humidity",.unit = "%",.field = "scd41.RH",.delete = !scd41);
+      ha_config_sensor ("sht40T",.name = "SHT40-Temp",.type = "temperature",.unit = "C",.field = "sht40.C",.delete = !sht40);
+      ha_config_sensor ("sht40H",.name = "SHT40-Humidity",.type = "humidity",.unit = "%",.field = "sht40.RH",.delete = !sht40);
+      ha_config_sensor ("t6793C",.name = "T6793-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "t6793.ppm",.delete =
+                        !t6793);
+      ha_config_sensor ("solarV",.name = "Solar-Voltage",.type = "voltage",.unit = "V",.field = "solar.voltage",.delete = !solar);
+      ha_config_sensor ("solarF",.name = "Solar-Frequency",.type = "frequency",.unit = "Hz",.field =
+                        "solar.frequency",.delete = !solar);
+      ha_config_sensor ("solarP",.name = "Solar-Power",.type = "power",.unit = "W",.field = "solar.power",.delete = !solar);
+      for (int b = 0; b < sizeof (btns) / sizeof (*btns); b++)
+      {
+         char t[10];
+         sprintf (t, "/%s", btns[b]);
+         char st[10];
+         sprintf (st, "button_%d", b + 1);
+         char n[10];
+         sprintf (n, "S%s", btns[b]);
+         ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "short",.delete = !btng[b].set);
+         sprintf (n, "L%s", btns[b]);
+         ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "long",.type = "button_long_press",.delete = !btng[b].set);
+         sprintf (n, "R%s", btns[b]);
+         ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "release",.type = "button_long_release",.delete =
+                            !btng[b].set);
+      }
    }
-   for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
+   if (hairkeys && irgpio.set)
    {
-      bleenv_t *e = NULL;
-      if (*blesensor[i])
-         for (e = bleenv; e; e = e->next)
-            if (!strcmp (e->mac, blesensor[i]) || !strcmp (e->name, blesensor[i]))
-               break;
-      char id[20],
-        name[50],
-        js[20];
-      sprintf (id, "ble%dT", i);
-      if (e)
-         sprintf (name, "BLE-Temp-%s", e->name);
-      else
-         sprintf (name, "BLE-Temp-%d", i + 1);
-      sprintf (js, "ble[%d].C", i);
-      ha_config_sensor (id,.name = name,.type = "temperature",.unit = "C",.field = js,.delete = *blesensor[i] ? 0 : 1);
-      sprintf (id, "ble%dR", i);
-      if (e)
-         sprintf (name, "BLE-RH-%s", e->name);
-      else
-         sprintf (name, "BLE-RH-%d", i + 1);
-      sprintf (js, "ble[%d].RH", i);
-      ha_config_sensor (id,.name = name,.type = "humidity",.unit = "%",.field = js,.delete = *blesensor[i] ? 0 : 1);
-      sprintf (id, "ble%dB", i);
-      if (e)
-         sprintf (name, "BLE-Bat-%s", e->name);
-      else
-         sprintf (name, "BLE-Bat-%d", i + 1);
-      sprintf (js, "ble[%d].bat", i);
-      ha_config_sensor (id,.name = name,.type = "battery",.unit = "%",.field = js,.delete = *blesensor[i] ? 0 : 1);
-   }
-   ha_config_sensor ("gzp6816dP",.name = "GZP6816D-Pressure",.type = "pressure",.unit = "mbar",.field =
-                     "gzp6816d.hPa",.delete = !gzp6816d);
-   ha_config_sensor ("gzp6816dT",.name = "GZP6816D-Temp",.type = "temperature",.unit = "C",.field = "gzp6816d.C",.delete =
-                     !gzp6816d);
-   ha_config_sensor ("scd41C",.name = "SCD41-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "scd41.ppm",.delete = !scd41);
-   ha_config_sensor ("scd41T",.name = "SCD41-Temp",.type = "temperature",.unit = "C",.field = "scd41.C",.delete = !scd41);
-   ha_config_sensor ("scd41H",.name = "SCD41-Humidity",.type = "humidity",.unit = "%",.field = "scd41.RH",.delete = !scd41);
-   ha_config_sensor ("sht40T",.name = "SHT40-Temp",.type = "temperature",.unit = "C",.field = "sht40.C",.delete = !sht40);
-   ha_config_sensor ("sht40H",.name = "SHT40-Humidity",.type = "humidity",.unit = "%",.field = "sht40.RH",.delete = !sht40);
-   ha_config_sensor ("t6793C",.name = "T6793-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "t6793.ppm",.delete = !t6793);
-   ha_config_sensor ("solarV",.name = "Solar-Voltage",.type = "voltage",.unit = "V",.field = "solar.voltage",.delete = !solar);
-   ha_config_sensor ("solarF",.name = "Solar-Frequency",.type = "frequency",.unit = "Hz",.field =
-                     "solar.frequency",.delete = !solar);
-   ha_config_sensor ("solarP",.name = "Solar-Power",.type = "power",.unit = "W",.field = "solar.power",.delete = !solar);
-   for (int b = 0; b < sizeof (btns) / sizeof (*btns); b++)
-   {
-      char t[10];
-      sprintf (t, "/%s", btns[b]);
-      char st[10];
-      sprintf (st, "button_%d", b + 1);
-      char n[10];
-      sprintf (n, "S%s", btns[b]);
-      ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "short",.delete = !btng[b].set);
-      sprintf (n, "L%s", btns[b]);
-      ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "long",.type = "button_long_press",.delete = !btng[b].set);
-      sprintf (n, "R%s", btns[b]);
-      ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "release",.type = "button_long_release",.delete = !btng[b].set);
+      const char irkeys[] = "123456789*0#ULPRD";
+      const char ircode[] = "A262E22202C2E0A8906898B01810385A4A";
+      for (int i = 0; irkeys[i]; i++)
+      {
+         char k[] = { irkeys[i], 0 };
+         char p[] = { ircode[i * 2], ircode[i * 2 + 1], 0 };
+	 char n[]={'S',ircode[i * 2], ircode[i * 2 + 1], 0 };
+         ha_config_trigger (n,.info = "/irpress",.subtype = k,.payload = p);
+      }
    }
 }
 
@@ -3054,8 +3000,8 @@ app_main ()
       revk_task ("i2s", i2s_task, NULL, 10);
    if (ds18b20.set)
       revk_task ("18b20", ds18b20_task, NULL, 4);
-   if (ir.set)
-      revk_task ("ir", ir_task, NULL, 4);
+   if (irgpio.set)
+      revk_task ("ir", ir_task, ir_callback, 4);
    if (lightcount && lightgpio.set)
    {
       led_strip_config_t strip_config = {

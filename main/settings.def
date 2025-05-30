@@ -95,15 +95,18 @@ s	snmphost		.live			// Hostname for SNMP poll
 s	json.sub		.array=5 .old="mqttsub"		// Subscriptions for JSON payload $MQTTn
 
 bit	ha.announce	1					// Home Assistant announce
+bit	ha.irkeys	1					// Home Assistance IR key events
 
-gpio	ir						// IR receiver
+bit	ir.log			.live			// MQTT log IR
+bit	ir.debug		.live			// MQTT log debug (timings)
+gpio	ir.gpio						// IR receiver
 gpio	scl						// I2C SCL
 gpio	sda						// I2C SDA
 gpio	ds18b20						// DS18B20 Temp sensors
 gpio	i2s.clock					// I2S PDM clock
 gpio	i2s.data					// I2S PDM data
 bit	i2s.right					// I2S is right channel
-s16	i2s.db		.live .decimal=2 .unit="dB"	// I2S offset
+s16	i2s.db		28 .live .decimal=2 .unit="dB"	// I2S offset
 
 u8	mcp9808.i2c		.set .hex .fix		// MCP9808 Temp sensor
 s16	mcp9808.dt		.live .decimal=2 .unit="°C"	// MCP9808 Temp offset
