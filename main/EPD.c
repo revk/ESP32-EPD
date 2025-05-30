@@ -2242,37 +2242,35 @@ static void
 ir_callback (uint8_t coding, uint16_t lead0, uint16_t lead1, uint8_t len, uint8_t * data)
 {                               // Handle generic IR https://www.amazon.co.uk/dp/B07DJ58XGC
    //ESP_LOGE (TAG, "IR CB %d %d %d %d", coding, lead0, lead1, len);
-   static uint8_t address = 0;
-   static uint8_t key = 0;
+   static uint16_t key = 0;
    static uint8_t count = 0;
    if (coding == IR_PDC && len == 32 && lead0 > 8500 && lead0 < 9500 && lead1 > 4000 && lead1 < 5000 && (data[0] ^ data[1]) == 0xFF
        && (data[2] ^ data[3]) == 0xFF)
    {                            // Key
-      address = data[0];
-      key = data[2];
-      //ESP_LOGE (TAG, "Key %02X %02X", address key);
-      count = 0;
+      key = ((data[0] << 8) | data[2]);
+      count = 1;
+      //ESP_LOGE (TAG, "Key %04X", key);
    }
-   if (key && coding == IR_ZERO && len == 1 && lead0 > 8500 && lead0 < 9500 && lead1 > 1500 && lead1 < 2500 && key)
+   if (count && coding == IR_ZERO && len == 1 && lead0 > 8500 && lead0 < 9500 && lead1 > 1500 && lead1 < 2500 && key)
    {                            // Continue - ignore for now
       if (count < 255)
          count++;
-      if (count == 5)
+      if (count == 10)
       {                         // hold
          jo_t j = jo_create_alloc ();
-         jo_stringf (j, NULL, "%02X%02X", address, key);
+         jo_stringf (j, NULL, "%04X", key);
          revk_info ("irhold", &j);
       }
    }
-   if (key && coding == IR_IDLE)
+   if (count && coding == IR_IDLE)
    {
       jo_t j = jo_create_alloc ();
-      jo_stringf (j, NULL, "%02X%02X", address, key);
-      if (count < 5)
+      jo_stringf (j, NULL, "%04X", key);
+      if (count < 10)
          revk_info ("irpress", &j);
       else
          revk_info ("irrelease", &j);
-      key = 0;
+      count = 0;
    }
 }
 
@@ -2967,7 +2965,7 @@ ha_config (void)
    if (hairkeys && irgpio.set)
    {
       const char irkeys[] = "123456789*0#ULPRD";
-      const char ircode[] = "A262E22202C2E0A8906898B01810385A4A";
+      const char ircode[] = "45464744404307150916190D18081C5A52";
       for (int i = 0; irkeys[i]; i++)
       {
          char k[] = { irkeys[i], 0 };
