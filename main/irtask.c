@@ -8,12 +8,11 @@ enum
    IR_UNKNOWN,                  // Unknown coding, so raw data provided
    IR_IDLE,
    IR_ZERO,                     // All zeros
-   IR_BPC,                      // Bi-phase coding
    IR_PDC,                      // Pulse Distance coding
    IR_PLC,                      // Pulse length coding
 };
 #ifdef	IR_LOG
-static const char *const ir_coding[] = { "UNKNOWN", "IDLE", "ZERO", "BPC", "PDC", "PLC" };
+static const char *const ir_coding[] = { "UNKNOWN", "IDLE", "ZERO", "PDC", "PLC" };
 #endif
 
 typedef void ir_callback_t (uint8_t coding, uint16_t lead0, uint16_t lead1, uint8_t len, uint8_t * data);
@@ -90,7 +89,7 @@ ir_task (void *arg)
          idle = 1;
          //ESP_LOGE (TAG, "Symbols %d %d/%d", ir_rx_data.num_symbols,ir_rx_symbols[0].level0,ir_rx_symbols[0].level1);
          int i = 0;
-         if (ir_rx_symbols[i].duration0 > 1500)
+         if (ir_rx_symbols[i].duration0 > 2000)
          {
             lead0 = ir_rx_symbols[i].duration0;
             lead1 = ir_rx_symbols[i].duration1;
@@ -192,24 +191,7 @@ ir_task (void *arg)
                   bit = b;
                }
             }
-            if (!coding)
-            {
-               for (b = 0; b < bit / 8 && !((raw[b] ^ (raw[b] << 1)) & 0xAA); b++);
-               if (b && b == bit / 8)
-               {                // biphase coding (we don't check last byte)
-                  coding = IR_BPC;
-                  b = 0;
-                  while (b < bit / 2)
-                  {
-                     if (raw[b / 4] & (2 << ((b & 3) * 2)))
-                        raw[b / 8] |= (1 << (b & 7));
-                     else
-                        raw[b / 8] &= ~(1 << (b & 7));
-                     b++;
-                  }
-                  bit = b;
-               }
-            }
+	    // Bi Phase coding for another day
             if (bit & 7)
                raw[bit / 8] >>= (8 - (bit & 7));
             byte = (bit + 7) / 8;
