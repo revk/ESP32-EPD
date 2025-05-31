@@ -97,8 +97,6 @@ s	json.sub		.array=5 .old="mqttsub"		// Subscriptions for JSON payload $MQTTn
 bit	ha.announce	1					// Home Assistant announce
 bit	ha.irkeys	1					// Home Assistance IR key events
 
-bit	ir.log			.live			// MQTT log IR
-bit	ir.debug		.live			// MQTT log debug (timings)
 gpio	ir.gpio						// IR receiver
 gpio	scl						// I2C SCL
 gpio	sda						// I2C SDA

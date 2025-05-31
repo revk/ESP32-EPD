@@ -17,7 +17,6 @@ static const char TAG[] = "EPD";
 #include <driver/sdmmc_host.h>
 #include <driver/mcpwm_prelude.h>
 #include <driver/i2s_pdm.h>
-#include <driver/rmt_rx.h>
 #include "gfx.h"
 #include "iec18004.h"
 #include <hal/spi_types.h>
@@ -29,8 +28,8 @@ static const char TAG[] = "EPD";
 #include "EPD.h"
 #include <math.h>
 #include <halib.h>
+#include <ir.h>
 #include "bleenv.h"
-
 
 #define	LEFT	0x80            // Flags on font size
 #define	RIGHT	0x40
@@ -2232,11 +2231,6 @@ solar_task (void *x)
    vTaskDelete (NULL);
 }
 
-#define	IR_GPIO		irgpio
-#define	IR_LOG		irlog
-#define	IR_DEBUG	irdebug
-#include "irtask.c"
-
 static void
 ir_callback (uint8_t coding, uint16_t lead0, uint16_t lead1, uint8_t len, uint8_t * data)
 {                               // Handle generic IR https://www.amazon.co.uk/dp/B07DJ58XGC
@@ -3000,7 +2994,7 @@ app_main ()
    if (ds18b20.set)
       revk_task ("18b20", ds18b20_task, NULL, 4);
    if (irgpio.set)
-      revk_task ("ir", ir_task, ir_callback, 4);
+      ir_start (irgpio, ir_callback);
    if (lightcount && lightgpio.set)
    {
       led_strip_config_t strip_config = {
