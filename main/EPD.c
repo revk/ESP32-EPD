@@ -2871,15 +2871,15 @@ ha_config (void)
       ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "C",.field = "tmp1075.C",.delete = !tmp1075);
       ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field =
                         "noise.mean1",.delete = !noise || reporting > 1);
-      ha_config_sensor ("noiseP1",.name = "NOISE_PEAK1",.type = "sound_pressure",.unit = "dB",.field =
+      ha_config_sensor ("noiseP1",.name = "NOISE-PEAK1",.type = "sound_pressure",.unit = "dB",.field =
                         "noise.peak1",.delete = !noise || reporting > 1);
       ha_config_sensor ("noiseM10",.name = "NOISE-MEAN10",.type = "sound_pressure",.unit = "dB",.field =
                         "noise.mean10",.delete = !noise || reporting > 10);
-      ha_config_sensor ("noiseP10",.name = "NOISE_PEAK10",.type = "sound_pressure",.unit = "dB",.field =
+      ha_config_sensor ("noiseP10",.name = "NOISE-PEAK10",.type = "sound_pressure",.unit = "dB",.field =
                         "noise.peak10",.delete = !noise || reporting > 10);
       ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit = "dB",.field =
                         "noise.mean60",.delete = !noise);
-      ha_config_sensor ("noiseP60",.name = "NOISE_PEAK60",.type = "sound_pressure",.unit = "dB",.field =
+      ha_config_sensor ("noiseP60",.name = "NOISE-PEAK60",.type = "sound_pressure",.unit = "dB",.field =
                         "noise.peak60",.delete = !noise);
       for (int i = 0; i < ds18b20_num; i++)
       {
