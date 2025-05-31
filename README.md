@@ -254,6 +254,10 @@ Simple analogue clock face - default is current time,. but you can specify HH:MM
 |`\|`|Tick marks on hour|
 |`/`|Numbers on hour|
 
+### IR
+
+Infrared remote logic - reporting common IR remote key presses as device automation to HA.
+
 ### More
 
 More widgets planned, and more `$variable` planned.
