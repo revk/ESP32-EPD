@@ -1078,15 +1078,17 @@ bl_task (void *x)
    int b = 0;
    while (1)
    {
-      if (b != bl)
+      if (b == bl)
       {
-         if (bl > b && (b += 10) > bl)
-            b = bl;
-         else if (bl < b && (b -= 10) < bl)
-            b = bl;
-         mcpwm_comparator_set_compare_value (comparator, b * BL_TIMEBASE_PERIOD / 100);
+         usleep (100000);
+         continue;
       }
-      usleep (100000);
+      if (bl > b)
+         b++;
+      else
+         b--;
+      mcpwm_comparator_set_compare_value (comparator, b * BL_TIMEBASE_PERIOD / 100);
+      usleep (10000);
    }
 }
 
@@ -2235,14 +2237,13 @@ static void
 ir_callback (uint8_t coding, uint16_t lead0, uint16_t lead1, uint8_t len, uint8_t * data)
 {                               // Handle generic IR https://www.amazon.co.uk/dp/B07DJ58XGC
    //ESP_LOGE (TAG, "IR CB %d %d %d %d", coding, lead0, lead1, len);
-   static uint16_t key = 0;
+   static uint32_t key = 0;
    static uint8_t count = 0;
-   if (coding == IR_PDC && len == 32 && lead0 > 8500 && lead0 < 9500 && lead1 > 4000 && lead1 < 5000 && (data[0] ^ data[1]) == 0xFF
-       && (data[2] ^ data[3]) == 0xFF)
-   {                            // Key
-      key = ((data[0] << 8) | data[2]);
+   if (coding == IR_PDC && len == 32 && lead0 > 8500 && lead0 < 9500 && lead1 > 4000 && lead1 < 5000 && (data[2] ^ data[3]) == 0xFF)
+   {                            // Key (NEC) - normally address and inverted address, but allow for special cases, as long as code and inverted code.
+      key = (((data[0] ^ ~data[1]) & 0xFF) << 16 | (data[0] << 8) | data[2]);
       count = 1;
-      //ESP_LOGE (TAG, "Key %04X", key);
+      //ESP_LOGE (TAG, "Key %04lX", key);
    }
    if (count && coding == IR_ZERO && len == 1 && lead0 > 8500 && lead0 < 9500 && lead1 > 1500 && lead1 < 2500 && key)
    {                            // Continue - ignore for now
@@ -2251,14 +2252,14 @@ ir_callback (uint8_t coding, uint16_t lead0, uint16_t lead1, uint8_t len, uint8_
       if (count == 10)
       {                         // hold
          jo_t j = jo_create_alloc ();
-         jo_stringf (j, NULL, "%04X", key);
+         jo_stringf (j, NULL, "%04lX", key);
          revk_info ("irhold", &j);
       }
    }
    if (count && coding == IR_IDLE)
    {
       jo_t j = jo_create_alloc ();
-      jo_stringf (j, NULL, "%04X", key);
+      jo_stringf (j, NULL, "%04lX", key);
       if (count < 10)
          revk_info ("irpress", &j);
       else
