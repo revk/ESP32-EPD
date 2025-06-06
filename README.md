@@ -10,7 +10,7 @@ This code works with many E-paper panels, and LC Displays, but I have bought up 
 
 ## Environmental monitoring
 
-This code also supports a range of sensors listed below, for light, sound, temperature, gas, pressure, etc. These can be used for display but also logging (MQTT) and polling (http). This makes it idea for a display and monitor. The [FaikinRemote][https://remote.revk.uk] project has an ideal colour display with many sensors for this purpose.
+This code also supports a range of sensors listed below, for light, sound, temperature, gas, pressure, etc. These can be used for display but also logging (MQTT) and polling (http). This makes it idea for a display and monitor. The [FaikinRemote](https://remote.revk.uk) project has an ideal colour display with many sensors for this purpose.
 
 # ESP32-EPD
 
