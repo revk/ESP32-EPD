@@ -568,9 +568,9 @@ download (char *url, const char *suffix, uint8_t force, uint32_t cache)
             else
                ESP_LOGE (TAG, "%s response %d cached %ld", url, response, i->cached - up);
             esp_http_client_close (client);
-         }
+         } else ESP_LOGE(TAG,"Failed http client open %s",url);
          esp_http_client_cleanup (client);
-      }
+      } else ESP_LOGE(TAG,"Failed http client %s",url);
       ESP_LOGD (TAG, "Got %s %d", url, response);
    }
    if (response != 304)
@@ -1557,10 +1557,10 @@ i2c_task (void *x)
    }
    if (i2cport < 0)
       vTaskDelete (NULL);
-   usleep (100000);
    // Init
    if (veml6040i2c)
    {
+      usleep (10000);
       if (i2c_read_16lh2 (veml6040i2c, 0) < 0)
          fail (veml6040i2c, "VEML6040");
       else
@@ -1571,6 +1571,7 @@ i2c_task (void *x)
    }
    if (mcp9808i2c)
    {
+      usleep (10000);
       if (i2c_read_16hl (mcp9808i2c, 6) != 0x54 || i2c_read_16hl (mcp9808i2c, 7) != 0x0400)
          fail (mcp9808i2c, "MCP9808");
       else
@@ -1578,6 +1579,7 @@ i2c_task (void *x)
    }
    if (gzp6816di2c)
    {
+      usleep (10000);
       uint8_t v = 0;
       i2c_cmd_handle_t t = i2c_cmd_link_create ();
       i2c_master_start (t);
@@ -1593,6 +1595,7 @@ i2c_task (void *x)
    }
    if (t6793i2c)
    {
+      usleep (10000);
       if (i2c_modbus_read (t6793i2c, 0x1389) < 0)
          fail (t6793i2c, "T6793");
       else
@@ -1600,6 +1603,7 @@ i2c_task (void *x)
    }
    if (scd41i2c)
    {
+      usleep (10000);
       esp_err_t err = 0;
       uint8_t try = 5;
       while (try--)
@@ -1647,6 +1651,7 @@ i2c_task (void *x)
    }
    if (tmp1075i2c)
    {
+      usleep (10000);
       if (i2c_read_16hl (tmp1075i2c, 0x0F) != 0x7500 || i2c_write_16hl (tmp1075i2c, 1, 0x60FF))
          fail (tmp1075i2c, "TMP1075");
       else
@@ -1654,6 +1659,7 @@ i2c_task (void *x)
    }
    if (sht40i2c)
    {
+      usleep (10000);
       uint16_t a,
         b;
       usleep (1000);
