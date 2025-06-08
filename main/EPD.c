@@ -568,9 +568,11 @@ download (char *url, const char *suffix, uint8_t force, uint32_t cache)
             else
                ESP_LOGE (TAG, "%s response %d cached %ld", url, response, i->cached - up);
             esp_http_client_close (client);
-         } else ESP_LOGE(TAG,"Failed http client open %s",url);
+         } else
+            ESP_LOGE (TAG, "Failed http client open %s", url);
          esp_http_client_cleanup (client);
-      } else ESP_LOGE(TAG,"Failed http client %s",url);
+      } else
+         ESP_LOGE (TAG, "Failed http client %s", url);
       ESP_LOGD (TAG, "Got %s %d", url, response);
    }
    if (response != 304)
@@ -2041,7 +2043,7 @@ ds18b20_task (void *x)
          REVK_ERR_CHECK (ds18b20_get_temperature (adr_ds18b20[i], &c[i]));
          jo_object (j, NULL);
          jo_stringf (j, "serial", "%016llX", id[i]);
-         if (!isnan (c[i]) && c[i] < 1000)
+         if (!isnan (c[i]) && c[i] > -100 && c[i] < 200)
             jo_litf (j, "C", "%.2f", c[i]);
          jo_close (j);
       }
