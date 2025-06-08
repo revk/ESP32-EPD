@@ -170,7 +170,6 @@ widget_bins (uint16_t s, const char *c)
                      space = l;
                   else
                      space = (l < r ? l : r) * 2;
-
                }
                struct tm tm;
                localtime_r (&collect, &tm);
@@ -189,7 +188,7 @@ widget_bins (uint16_t s, const char *c)
                   height = dayh;
                {
                   gfx_pos_t w = 0,
-                     lh = 0;
+                     lh = s2 * 9;
                   icon_t *sol = NULL;
                   for (icon_t * i = icons; i; i = i->next)
                   {
@@ -272,7 +271,10 @@ widget_bins (uint16_t s, const char *c)
                   }
                }
                if (bottom)
+               {
+                  oy += s1;
                   showday ();
+               }
                setlights (leds < now ? led : NULL);
             }
             // Cleanup

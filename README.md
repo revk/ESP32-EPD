@@ -6,11 +6,11 @@ This is an open source project, but bear in mind you cannot sell boards bearing 
 
 ## Buy?
 
-This code works with many E-paper panels, but I have bought up some really nice 7.5" Waveshare ones on laminated glass with black border, and have them on Tindie with my controller (this code pre-loaded). [Tindie](https://www.tindie.com/products/revk/75-e-paper-controller-24-leds-sd-card-slot/) but you can also order direct if you have an A&A account, and even collect if in South Wales!
+This code works with many E-paper panels, and LC Displays, but I have bought up some really nice 7.5" Waveshare ones on laminated glass with black border, and have them on Tindie with my controller (this code pre-loaded). [Tindie](https://www.tindie.com/products/revk/75-e-paper-controller-24-leds-sd-card-slot/) but you can also order direct if you have an A&A account, and even collect if in South Wales!
 
 ## Environmental monitoring
 
-This code also has sensors for `TMP1075`, `MCP9808`, `GZP6818D`, `VEML6040`, `T6793`, `SCD41`, and multiple `DS18B20` (more may be added later). These can be used for display but also logging (MQTT) and polling (http). This makes it idea for a display and monitor. The [FaikinRemote][https://remote.revk.uk] project has an ideal colour display with many sensors for this purpose.
+This code also supports a range of sensors listed below, for light, sound, temperature, gas, pressure, etc. These can be used for display but also logging (MQTT) and polling (http). This makes it idea for a display and monitor. The [FaikinRemote](https://remote.revk.uk) project has an ideal colour display with many sensors for this purpose.
 
 # ESP32-EPD
 
@@ -23,7 +23,7 @@ This code is much more generic, allowing a number of *widgets* to be applied to 
 ## PCBs
 
 <img size=25% align=right src=https://github.com/user-attachments/assets/1ef1e463-68c8-4b88-aa3e-d03f21327863>
-A number of PCBs designs are included. The most work on this code as been done using the `EPD75` (mono) display, and the `LCD2` and `LCD24` format colour LCD displays. Otehr displays 
+A number of PCBs designs are included. The most work on this code as been done using the `EPD75` (mono) display, and the `LCD2` and `LCD24` format colour LCD displays. Other displays 
 simply need work on the GFX library now as needed, but should work with a range of different display types and models quite easily. 
 
 ## LEDs
@@ -75,6 +75,7 @@ Using `${variable}` you can append the variable name with.
 |`WEATHER`|Extract a field from weather api response JSON, suffix `:128` finds `64x64` and replaces with `128x128`, e.g. `https:${WEATHER.current.condition.icon:128}`|
 |`SOLAR`|Extract a field from SolareEdge MODBUS TCP collection generated JSON|
 |`MQTTn`|Extract a field from JSON payload payload on subscribed MQTT (`jsonsub`)|
+|`API`|JSON payload from generic API URL|
 
 #### Sensors
 
@@ -88,13 +89,13 @@ The code supports a number of sensors which can be configured on I2C (or one wir
 |`DS18B20`|`[0].C` is Celsius for first sensor, `[n].serial` is serial number of sensor|
 |`SCD41`|`ppm` is CO₂, ,`C` is Celsius, `RH` is humidity|
 |`T6793`|`ppm` is CO₂|
+|`T3902`|`noise` with mean and peak for 1, 10 and 60 second periods|
 |`GZP6818D` or `PRESSURE`|`hPa` is pressure, `C` is Celsius|
 |`VEML6040` or `LIGHT`|`W` is white, `R` is red, `G` is green, `B` is blue, values in lux|
 |`TEMPERATURE`|Picks `SCD41`, `DS18B20`, `MCP9808` or `TMP1075`|
 |`CO2` or `CO₂`|Picks `SCD41` or `T6793`|
 |`HUMIDITY`|Picks `SCD41`|
 |`BLE`|BLE tracking sensors array (enable BLE to allow a number of sensors to be added)|
-|`API`|JSON payload from generic API URL|
 
 All sensors are included in MQTT `state` message, and can be fetched by web from `/status`.
 
