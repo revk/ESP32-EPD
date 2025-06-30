@@ -2305,7 +2305,6 @@ dollar_diff (time_t ref, time_t now, const char *colon)
       t.tm_mon = nowt.tm_mon - reft.tm_mon;
       t.tm_mday = nowt.tm_mday - reft.tm_mday;
       t.tm_yday = nowt.tm_yday - reft.tm_yday;
-      ESP_LOGE (TAG, "%d %d %d %d", t.tm_year, t.tm_mon, t.tm_mday, t.tm_yday);
       if (t.tm_mday < 0)
       {
          t.tm_mday += 30;       // ??
@@ -2317,7 +2316,6 @@ dollar_diff (time_t ref, time_t now, const char *colon)
          t.tm_year--;
          t.tm_yday += 365;      // ?
       }
-      ESP_LOGE (TAG, "%d %d %d %d", t.tm_year, t.tm_mon, t.tm_mday, t.tm_yday);
       if (!strstr (colon, "%y") && !strstr (colon, "%F"))
       {                         // No year
          if (!strstr (colon, "%m") && !strstr (colon, "%F"))
