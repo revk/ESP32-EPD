@@ -2320,7 +2320,7 @@ dollar_diff (time_t ref, time_t now, const char *colon)
       {                         // No year
          if (!strstr (colon, "%m") && !strstr (colon, "%F"))
          {                      // No month
-            if (!strstr (colon, "%d") && !strstr (colon, "%F"))
+            if (!strstr (colon, "%d") && !strstr (colon, "%e") && !strstr (colon, "%F"))
             {                   // No day
                if (!strstr (colon, "%H") && !strstr (colon, "%T"))
                {                // No hour
@@ -2336,8 +2336,8 @@ dollar_diff (time_t ref, time_t now, const char *colon)
          } else
             t.tm_mon += t.tm_year * 12;
       }
-      t.tm_year -= 1900; // base year 0000
-      t.tm_mon--; // 1 gets added
+      t.tm_year -= 1900;        // base year 0000
+      t.tm_mon--;               // 1 gets added
 
       char temp[100];
       *temp = 0;
