@@ -1902,9 +1902,9 @@ i2s_task (void *x)
             sec = 0;
          //ESP_LOGE (TAG, "Peak %.2lf Mean %.2lf", peak, sum);
          jo_t j = jo_object_alloc ();
-         if (!isnan (peak))
+         if (isfinite (peak))
             jo_litf (j, "peak1", "%.2lf", peak);
-         if (!isnan (sum))
+         if (isfinite (sum))
             jo_litf (j, "mean1", "%.2lf", sum);
          double p = -INFINITY,
             m = 0;
@@ -1914,9 +1914,9 @@ i2s_task (void *x)
                p = peaks[(s + sec) % 60];
             m += means[(s + sec) % 60];
          }
-         if (!isnan (p))
+         if (isfinite (p))
             jo_litf (j, "peak10", "%.2lf", p);
-         if (!isnan (m))
+         if (isfinite (m))
             jo_litf (j, "mean10", "%.2lf", m / 10);
          for (int s = 0; s < 50; s++)
          {
@@ -1924,9 +1924,9 @@ i2s_task (void *x)
                p = peaks[(s + sec) % 60];
             m += means[(s + sec) % 60];
          }
-         if (!isnan (p))
+         if (isfinite (p))
             jo_litf (j, "peak60", "%.2lf", p);
-         if (!isnan (m))
+         if (isfinite (m))
             jo_litf (j, "mean60", "%.2lf", m / 60);
          json_store (&noise, j);
          tick = 0;
@@ -2043,7 +2043,7 @@ ds18b20_task (void *x)
          REVK_ERR_CHECK (ds18b20_get_temperature (adr_ds18b20[i], &c[i]));
          jo_object (j, NULL);
          jo_stringf (j, "serial", "%016llX", id[i]);
-         if (!isnan (c[i]) && c[i] > -100 && c[i] < 200)
+         if (isfinite (c[i]) && c[i] > -100 && c[i] < 200)
             jo_litf (j, "C", "%.2f", c[i]);
          jo_close (j);
       }
