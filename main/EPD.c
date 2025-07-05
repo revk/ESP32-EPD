@@ -1902,9 +1902,9 @@ i2s_task (void *x)
             sec = 0;
          //ESP_LOGE (TAG, "Peak %.2lf Mean %.2lf", peak, sum);
          jo_t j = jo_object_alloc ();
-         if (!isnan (peak))
+         if (isfinite (peak))
             jo_litf (j, "peak1", "%.2lf", peak);
-         if (!isnan (sum))
+         if (isfinite (sum))
             jo_litf (j, "mean1", "%.2lf", sum);
          double p = -INFINITY,
             m = 0;
@@ -1914,9 +1914,9 @@ i2s_task (void *x)
                p = peaks[(s + sec) % 60];
             m += means[(s + sec) % 60];
          }
-         if (!isnan (p))
+         if (isfinite (p))
             jo_litf (j, "peak10", "%.2lf", p);
-         if (!isnan (m))
+         if (isfinite (m))
             jo_litf (j, "mean10", "%.2lf", m / 10);
          for (int s = 0; s < 50; s++)
          {
@@ -1924,9 +1924,9 @@ i2s_task (void *x)
                p = peaks[(s + sec) % 60];
             m += means[(s + sec) % 60];
          }
-         if (!isnan (p))
+         if (isfinite (p))
             jo_litf (j, "peak60", "%.2lf", p);
-         if (!isnan (m))
+         if (isfinite (m))
             jo_litf (j, "mean60", "%.2lf", m / 60);
          json_store (&noise, j);
          tick = 0;
@@ -2043,7 +2043,7 @@ ds18b20_task (void *x)
          REVK_ERR_CHECK (ds18b20_get_temperature (adr_ds18b20[i], &c[i]));
          jo_object (j, NULL);
          jo_stringf (j, "serial", "%016llX", id[i]);
-         if (!isnan (c[i]) && c[i] > -100 && c[i] < 200)
+         if (isfinite (c[i]) && c[i] > -100 && c[i] < 200)
             jo_litf (j, "C", "%.2f", c[i]);
          jo_close (j);
       }
@@ -2277,25 +2277,85 @@ ir_callback (uint8_t coding, uint16_t lead0, uint16_t lead1, uint8_t len, uint8_
 }
 
 char *
-dollar_diff (time_t ref, time_t now)
+dollar_diff (time_t ref, time_t now, const char *colon)
 {
    char *c = NULL;
+   time_t diff = 0;
+   if (ref > now)
+   {                            // Count up
+      time_t s = now;
+      now = ref;
+      ref = s;
+   }
    if (ref && now)
-      ref -= now;
-   if (ref < 0)
-      ref = 0 - ref;
-   if (!ref)
+      diff = now - ref;
+   if (colon && *colon && strchr (colon, '%'))
+   {                            // time formatted
+      struct tm nowt;
+      struct tm reft;
+      gmtime_r (&now, &nowt);
+      gmtime_r (&ref, &reft);
+      struct tm t = { 0 };
+      // Work out manual offset as a datetime
+      t.tm_sec = diff % 60;
+      t.tm_min = (diff / 60) % 60;
+      t.tm_hour = (ref / 3600) % 24;
+      // Date diff
+      t.tm_year = nowt.tm_year - reft.tm_year;
+      t.tm_mon = nowt.tm_mon - reft.tm_mon;
+      t.tm_mday = nowt.tm_mday - reft.tm_mday;
+      t.tm_yday = nowt.tm_yday - reft.tm_yday;
+      if (t.tm_mday < 0)
+      {
+         t.tm_mday += 30;       // ??
+         t.tm_mon--;
+      }
+      if (t.tm_mon < 0)
+      {
+         t.tm_mon += 12;
+         t.tm_year--;
+         t.tm_yday += 365;      // ?
+      }
+      if (!strstr (colon, "%y") && !strstr (colon, "%F"))
+      {                         // No year
+         if (!strstr (colon, "%m") && !strstr (colon, "%F"))
+         {                      // No month
+            if (!strstr (colon, "%d") && !strstr (colon, "%e") && !strstr (colon, "%F"))
+            {                   // No day
+               if (!strstr (colon, "%H") && !strstr (colon, "%T"))
+               {                // No hour
+                  if (!strstr (colon, "%M") && !strstr (colon, "%T"))
+                  {             // No minute
+                     t.tm_sec = diff;
+                  } else
+                     t.tm_min = diff / 60;
+               } else
+                  t.tm_hour = diff / 86400 * 24;
+            } else
+               t.tm_mday = diff / 86400;
+         } else
+            t.tm_mon += t.tm_year * 12;
+      }
+      t.tm_year -= 1900;        // base year 0000
+      t.tm_mon--;               // 1 gets added
+
+      char temp[100];
+      *temp = 0;
+      strftime (temp, sizeof (temp), colon, &t);
+      return strdup (temp);
+   }
+   if (!diff)
       c = strdup ("--:--");
-   else if (ref < 86400)
-      asprintf (&c, "%02lld:%02lld", ref / 3600, ref / 60 % 60);
-   else if (ref < 864000)
-      asprintf (&c, "%lld.%03lld", ref / 86400, ref * 10 / 864 % 1000);
-   else if (ref < 8640000)
-      asprintf (&c, "%lld.%02lld", ref / 86400, ref / 864 % 100);
-   else if (ref < 86400000)
-      asprintf (&c, "%lld.%01lld", ref / 86400, ref / 8640 % 10);
+   else if (diff < 86400)
+      asprintf (&c, "%02lld:%02lld", diff / 3600, diff / 60 % 60);
+   else if (diff < 864000)
+      asprintf (&c, "%lld.%03lld", diff / 86400, diff * 10 / 864 % 1000);
+   else if (diff < 8640000)
+      asprintf (&c, "%lld.%02lld", diff / 86400, diff / 864 % 100);
+   else if (diff < 86400000)
+      asprintf (&c, "%lld.%01lld", diff / 86400, diff / 8640 % 10);
    else if (ref < 864000000)
-      asprintf (&c, "%lld", ref / 86400);
+      asprintf (&c, "%lld", diff / 86400);
    else
       c = strdup ("----");
    return c;
@@ -2476,7 +2536,7 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       time_t ref = parse_time (refdate, t.tm_year + 1900);
       if (ref < now)
          ref = parse_time (refdate, t.tm_year + 1901);  // Counting up, allow for year being next year
-      return dollar_diff (ref, now);
+      return dollar_diff (ref, now, colon);
    }
    if (!strcasecmp (c, "ID"))
       return strdup (revk_id);
@@ -2621,7 +2681,7 @@ dollar (const char *c, const char *dot, const char *colon, time_t now)
       }
    }
    if (!strcasecmp (c, "SNMPUPTIME"))
-      return dollar_diff (snmp.upfrom, now);
+      return dollar_diff (snmp.upfrom, now, colon);
    return r;
 }
 

@@ -44,7 +44,7 @@ The *content* for any widget can contain `$` expanded fields, this can be `$vari
 
 Using `${variable}` you can append the variable name with.
 
-- `:format` for any time based variables, for `strftime` formatting, e.g. `${TIME:%a %:%M}` may show `Wed 10:15`, and optionally ending with `+HHMM` or `-HHMM` or `Z` to set time zone
+- `:format` for any time based variables, for `strftime` formatting, e.g. `${TIME:%a %:%M}` may show `Wed 10:15`, and optionally ending with `+HHMM` or `-HHMM` or `Z` to set time zone.
 - `.fields` for any JSON based variables, allows the JSON field, e.g. `${WEATHER.current.condition.code}`
 - `.field:format` will allow some formatting of fields from JSON based variables.
 
@@ -76,6 +76,8 @@ Using `${variable}` you can append the variable name with.
 |`SOLAR`|Extract a field from SolareEdge MODBUS TCP collection generated JSON|
 |`MQTTn`|Extract a field from JSON payload payload on subscribed MQTT (`jsonsub`)|
 |`API`|JSON payload from generic API URL|
+
+Note that `COUNTDOWN` has default formatting but can use a modified `strftime` formatting. This counts down to `0000-00-00 00:00:00`, i.e. month and day from 0 not 1. Also, if a year (`%y`/`%F`) is missing it does months beyond 11. Similarly if also no month (`%m`/`%F`) the days count as total days. This works all the way to just `%S` being total seconds. Some assumptions on days in year / month needed in some cases.
 
 #### Sensors
 
