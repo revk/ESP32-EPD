@@ -1559,6 +1559,7 @@ i2c_task (void *x)
    }
    if (i2cport < 0)
       vTaskDelete (NULL);
+   sleep (1);
    // Init
    if (veml6040i2c)
    {
@@ -1997,7 +1998,8 @@ ds18b20_task (void *x)
 {
    ds18b20_device_handle_t adr_ds18b20[10];
    uint64_t id[sizeof (adr_ds18b20) / sizeof (*adr_ds18b20)];
-   onewire_bus_config_t bus_config = { ds18b20.num };
+   onewire_bus_config_t bus_config = { ds18b20.num,.flags = {0}
+   };
    onewire_bus_rmt_config_t rmt_config = { 20 };
    onewire_bus_handle_t bus_handle = { 0 };
    REVK_ERR_CHECK (onewire_new_bus_rmt (&bus_config, &rmt_config, &bus_handle));
