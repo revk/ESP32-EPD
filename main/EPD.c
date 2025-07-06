@@ -2702,6 +2702,8 @@ dollar_check (const char *c, const char *tag)
          if (*c == '{')
          {
             c++;
+            if (*c == '$')
+               c++;
             if (!strncasecmp (c, tag, strlen (tag)))
                return c;
             while (*c && *c != '}')
@@ -2720,6 +2722,8 @@ dollars (char *c, time_t now)
 {                               // Check c for $ expansion, return c, or malloc'd replacement
    if (!strchr (c, '$'))
       return c;
+   char nested = 0;
+   char *old = c;
    char *new = NULL;
    size_t len;
    FILE *o = open_memstream (&new, &len);
@@ -2745,6 +2749,11 @@ dollars (char *c, time_t now)
             if (*d == '{')
             {
                d++;
+               if (*d == '$')
+               {
+                  nested = 1;
+                  d++;
+               }
                char *e = strchr (d, '}');
                if (!e)
                   break;
@@ -2798,6 +2807,16 @@ dollars (char *c, time_t now)
       }
    }
    fclose (o);
+   if (nested)
+   {
+      char *new2 = dollars (new, now);
+      if (new2 != new)
+      {
+         if (new != old)
+            free (new);
+         new = new2;
+      }
+   }
    return new;
 }
 
@@ -3696,6 +3715,13 @@ revk_web_extra (httpd_req_t * req, int page)
       revk_web_setting (req, NULL, "refdate");
    if (dollar_check (c, "SNMP"))
       revk_web_setting (req, NULL, "snmphost");
+   const char *m = dollar_check (c, "MQTT");
+   if (m)
+   {
+      char temp[] = "jsonsubx";
+      temp[7] = m[4];
+      revk_web_setting (req, NULL, temp);
+   }
    // Notes
    if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_IMAGE)
       revk_web_setting_info (req, "URL should be http://, and can include * for season character");
