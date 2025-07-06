@@ -814,6 +814,7 @@ web_root (httpd_req_t * req)
    char *qs = NULL;
    revk_web_send (req, "<h1>%s</h1>", revk_web_safe (&qs, hostname));
    free (qs);
+#ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
 #ifdef	CONFIG_LWPNG_ENCODE
    revk_web_send (req, "<p>");
    int32_t w = gfx_width ();
@@ -842,6 +843,7 @@ web_root (httpd_req_t * req)
       );
 #undef DIV
    revk_web_send (req, "</p><p><a href=/>Reload</a></p>");
+#endif
 #endif
    return revk_web_foot (req, 0, 1, NULL);
 }
@@ -2938,8 +2940,8 @@ ha_config (void)
                         "veml6040.G",.delete = !veml6040);
       ha_config_sensor ("veml6040B",.name = "VEML6040-Blue",.type = "illuminance",.unit = "lx",.field =
                         "veml6040.B",.delete = !veml6040);
-      ha_config_sensor ("mcp9808T",.name = "MCP9808",.type = "temperature",.unit = "C",.field = "mcp9808.C",.delete = !mcp9808);
-      ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "C",.field = "tmp1075.C",.delete = !tmp1075);
+      ha_config_sensor ("mcp9808T",.name = "MCP9808",.type = "temperature",.unit = "°C",.field = "mcp9808.C",.delete = !mcp9808);
+      ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "°C",.field = "tmp1075.C",.delete = !tmp1075);
       ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field =
                         "noise.mean1",.delete = !noise || reporting > 1);
       ha_config_sensor ("noiseP1",.name = "NOISE-PEAK1",.type = "sound_pressure",.unit = "dB",.field =
@@ -2960,7 +2962,7 @@ ha_config (void)
          sprintf (id, "ds18b20%dT", i);
          sprintf (name, "DS18B20-%d", i);
          sprintf (js, "ds18b20[%d].C", i);
-         ha_config_sensor (id,.name = name,.type = "temperature",.unit = "C",.field = js);
+         ha_config_sensor (id,.name = name,.type = "temperature",.unit = "°C",.field = js);
       }
       for (int i = 0; i < sizeof (blesensor) / sizeof (*blesensor); i++)
       {
@@ -2978,7 +2980,7 @@ ha_config (void)
          else
             sprintf (name, "BLE-Temp-%d", i + 1);
          sprintf (js, "ble[%d].C", i);
-         ha_config_sensor (id,.name = name,.type = "temperature",.unit = "C",.field = js,.delete = *blesensor[i] ? 0 : 1);
+         ha_config_sensor (id,.name = name,.type = "temperature",.unit = "°C",.field = js,.delete = *blesensor[i] ? 0 : 1);
          sprintf (id, "ble%dR", i);
          if (e)
             sprintf (name, "BLE-RH-%s", e->name);
@@ -2996,13 +2998,13 @@ ha_config (void)
       }
       ha_config_sensor ("gzp6816dP",.name = "GZP6816D-Pressure",.type = "pressure",.unit = "mbar",.field =
                         "gzp6816d.hPa",.delete = !gzp6816d);
-      ha_config_sensor ("gzp6816dT",.name = "GZP6816D-Temp",.type = "temperature",.unit = "C",.field = "gzp6816d.C",.delete =
+      ha_config_sensor ("gzp6816dT",.name = "GZP6816D-Temp",.type = "temperature",.unit = "°C",.field = "gzp6816d.C",.delete =
                         !gzp6816d);
       ha_config_sensor ("scd41C",.name = "SCD41-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "scd41.ppm",.delete =
                         !scd41);
-      ha_config_sensor ("scd41T",.name = "SCD41-Temp",.type = "temperature",.unit = "C",.field = "scd41.C",.delete = !scd41);
+      ha_config_sensor ("scd41T",.name = "SCD41-Temp",.type = "temperature",.unit = "°C",.field = "scd41.C",.delete = !scd41);
       ha_config_sensor ("scd41H",.name = "SCD41-Humidity",.type = "humidity",.unit = "%",.field = "scd41.RH",.delete = !scd41);
-      ha_config_sensor ("sht40T",.name = "SHT40-Temp",.type = "temperature",.unit = "C",.field = "sht40.C",.delete = !sht40);
+      ha_config_sensor ("sht40T",.name = "SHT40-Temp",.type = "temperature",.unit = "°C",.field = "sht40.C",.delete = !sht40);
       ha_config_sensor ("sht40H",.name = "SHT40-Humidity",.type = "humidity",.unit = "%",.field = "sht40.RH",.delete = !sht40);
       ha_config_sensor ("t6793C",.name = "T6793-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "t6793.ppm",.delete =
                         !t6793);
