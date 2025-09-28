@@ -61,8 +61,12 @@
       ],
       "drc_exclusions": [
         [
+          "lib_footprint_mismatch|100000000|26467500|24e732a9-6282-4db9-8219-493704e65efe|00000000-0000-0000-0000-000000000000",
+          ""
+        ],
+        [
           "padstack|100000000|120410000|465529c1-7d93-41bd-9c2c-842ff2c546f5|00000000-0000-0000-0000-000000000000",
-          "Antenna"
+          ""
         ]
       ],
       "meta": {
@@ -115,6 +119,7 @@
         "solder_mask_bridge": "ignore",
         "starved_thermal": "error",
         "text_height": "warning",
+        "text_on_edge_cuts": "error",
         "text_thickness": "warning",
         "through_hole_pad_without_hole": "error",
         "too_many_vias": "error",
@@ -474,6 +479,7 @@
       "single_global_label": "ignore",
       "unannotated": "error",
       "unconnected_wire_endpoint": "warning",
+      "undefined_netclass": "error",
       "unit_value_mismatch": "error",
       "unresolved_variable": "error",
       "wire_dangling": "error"

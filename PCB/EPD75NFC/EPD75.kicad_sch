@@ -6678,7 +6678,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "RevK:WS2812B-1mm"
+		(symbol "RevK:WS2812B-1.5mm"
 			(pin_names
 				(offset 0.254)
 			)
@@ -6694,8 +6694,8 @@
 					)
 				)
 			)
-			(property "Value" "XL-1010RGBC-WS2812B"
-				(at 1.27 -5.715 0)
+			(property "Value" "XL-1615RGBC-WS2812B"
+				(at 1.27 5.715 0)
 				(effects
 					(font
 						(size 1 1)
@@ -6704,8 +6704,8 @@
 					(hide yes)
 				)
 			)
-			(property "Footprint" ""
-				(at 1.27 -7.62 0)
+			(property "Footprint" "RevK:SMD1615"
+				(at 1.27 7.62 0)
 				(effects
 					(font
 						(size 1 1)
@@ -6715,7 +6715,7 @@
 				)
 			)
 			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 -9.525 0)
+				(at 1.27 9.525 0)
 				(effects
 					(font
 						(size 1 1)
@@ -6733,8 +6733,8 @@
 					(hide yes)
 				)
 			)
-			(property "MPN" "C5349953"
-				(at 1.27 -11.43 0)
+			(property "MPN" "C5349954"
+				(at 1.27 11.43 0)
 				(effects
 					(font
 						(size 1 1)
@@ -6761,10 +6761,10 @@
 					(hide yes)
 				)
 			)
-			(symbol "WS2812B-1mm_1_1"
+			(symbol "WS2812B-1.5mm_1_1"
 				(polyline
 					(pts
-						(xy 0 3.175) (xy 3.175 0) (xy 0 -3.175) (xy -3.175 0) (xy 0 3.175)
+						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
 					)
 					(stroke
 						(width 0)
@@ -6784,7 +6784,7 @@
 							)
 						)
 					)
-					(number "4"
+					(number "2"
 						(effects
 							(font
 								(size 1 1)
@@ -6795,7 +6795,7 @@
 				(pin power_in line
 					(at 0 3.81 270)
 					(length 0.5)
-					(name "-"
+					(name "+"
 						(effects
 							(font
 								(size 1 1)
@@ -6813,14 +6813,14 @@
 				(pin power_in line
 					(at 0 -3.81 90)
 					(length 0.5)
-					(name "+"
+					(name "-"
 						(effects
 							(font
 								(size 1 1)
 							)
 						)
 					)
-					(number "2"
+					(number "1"
 						(effects
 							(font
 								(size 1 1)
@@ -6838,7 +6838,7 @@
 							)
 						)
 					)
-					(number "1"
+					(number "4"
 						(effects
 							(font
 								(size 1 1)
@@ -14486,9 +14486,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 45.72 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 45.72 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14505,7 +14504,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 46.99 0)
+			(at 35.56 46.99 0)
 			(effects
 				(font
 					(size 1 1)
@@ -14514,7 +14513,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 46.99 0)
 			(effects
 				(font
@@ -14543,7 +14542,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 46.99 0)
 			(effects
 				(font
@@ -14746,9 +14745,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 185.42 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 185.42 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14765,7 +14763,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 186.69 0)
+			(at 18.415 186.69 0)
 			(effects
 				(font
 					(size 1 1)
@@ -14774,7 +14772,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 186.69 0)
 			(effects
 				(font
@@ -14803,7 +14801,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 186.69 0)
 			(effects
 				(font
@@ -15138,9 +15136,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 58.42 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 58.42 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -15157,7 +15154,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 59.69 0)
+			(at 35.56 59.69 0)
 			(effects
 				(font
 					(size 1 1)
@@ -15166,7 +15163,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 59.69 0)
 			(effects
 				(font
@@ -15195,7 +15192,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 59.69 0)
 			(effects
 				(font
@@ -17206,9 +17203,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 134.62 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 134.62 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -17225,7 +17221,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 135.89 0)
+			(at 35.56 135.89 0)
 			(effects
 				(font
 					(size 1 1)
@@ -17234,7 +17230,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 135.89 0)
 			(effects
 				(font
@@ -17263,7 +17259,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 135.89 0)
 			(effects
 				(font
@@ -17763,9 +17759,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 71.12 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 71.12 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -17782,7 +17777,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 72.39 0)
+			(at 35.56 72.39 0)
 			(effects
 				(font
 					(size 1 1)
@@ -17791,7 +17786,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 72.39 0)
 			(effects
 				(font
@@ -17820,7 +17815,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 72.39 0)
 			(effects
 				(font
@@ -18095,9 +18090,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 109.22 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 109.22 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18114,7 +18108,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 110.49 0)
+			(at 35.56 110.49 0)
 			(effects
 				(font
 					(size 1 1)
@@ -18123,7 +18117,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 110.49 0)
 			(effects
 				(font
@@ -18152,7 +18146,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 110.49 0)
 			(effects
 				(font
@@ -19211,9 +19205,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 147.32 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 147.32 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -19230,7 +19223,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 148.59 0)
+			(at 18.415 148.59 0)
 			(effects
 				(font
 					(size 1 1)
@@ -19239,7 +19232,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 148.59 0)
 			(effects
 				(font
@@ -19268,7 +19261,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 148.59 0)
 			(effects
 				(font
@@ -19820,9 +19813,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 172.72 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 172.72 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -19839,7 +19831,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 173.99 0)
+			(at 18.415 173.99 0)
 			(effects
 				(font
 					(size 1 1)
@@ -19848,7 +19840,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 173.99 0)
 			(effects
 				(font
@@ -19877,7 +19869,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 173.99 0)
 			(effects
 				(font
@@ -20362,9 +20354,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 109.22 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 109.22 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -20381,7 +20372,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 110.49 0)
+			(at 18.415 110.49 0)
 			(effects
 				(font
 					(size 1 1)
@@ -20390,7 +20381,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 110.49 0)
 			(effects
 				(font
@@ -20419,7 +20410,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 110.49 0)
 			(effects
 				(font
@@ -20523,9 +20514,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 147.32 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 147.32 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -20542,7 +20532,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 148.59 0)
+			(at 35.56 148.59 0)
 			(effects
 				(font
 					(size 1 1)
@@ -20551,7 +20541,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 148.59 0)
 			(effects
 				(font
@@ -20580,7 +20570,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 148.59 0)
 			(effects
 				(font
@@ -21230,9 +21220,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 185.42 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 185.42 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -21249,7 +21238,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 186.69 0)
+			(at 35.56 186.69 0)
 			(effects
 				(font
 					(size 1 1)
@@ -21258,7 +21247,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 186.69 0)
 			(effects
 				(font
@@ -21287,7 +21276,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 186.69 0)
 			(effects
 				(font
@@ -21790,9 +21779,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 172.72 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 172.72 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -21809,7 +21797,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 173.99 0)
+			(at 35.56 173.99 0)
 			(effects
 				(font
 					(size 1 1)
@@ -21818,7 +21806,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 173.99 0)
 			(effects
 				(font
@@ -21847,7 +21835,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 173.99 0)
 			(effects
 				(font
@@ -22103,9 +22091,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 121.92 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 121.92 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -22122,7 +22109,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 123.19 0)
+			(at 35.56 123.19 0)
 			(effects
 				(font
 					(size 1 1)
@@ -22131,7 +22118,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 123.19 0)
 			(effects
 				(font
@@ -22160,7 +22147,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 123.19 0)
 			(effects
 				(font
@@ -23571,9 +23558,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 58.42 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 58.42 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -23590,7 +23576,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 59.69 0)
+			(at 18.415 59.69 0)
 			(effects
 				(font
 					(size 1 1)
@@ -23599,7 +23585,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 59.69 0)
 			(effects
 				(font
@@ -23628,7 +23614,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 59.69 0)
 			(effects
 				(font
@@ -24326,9 +24312,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 83.82 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 83.82 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -24345,7 +24330,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 85.09 0)
+			(at 35.56 85.09 0)
 			(effects
 				(font
 					(size 1 1)
@@ -24354,7 +24339,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 85.09 0)
 			(effects
 				(font
@@ -24383,7 +24368,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 85.09 0)
 			(effects
 				(font
@@ -24702,9 +24687,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 96.52 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 96.52 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -24721,7 +24705,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 97.79 0)
+			(at 18.415 97.79 0)
 			(effects
 				(font
 					(size 1 1)
@@ -24730,7 +24714,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 97.79 0)
 			(effects
 				(font
@@ -24759,7 +24743,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 97.79 0)
 			(effects
 				(font
@@ -25216,9 +25200,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 160.02 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 160.02 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -25235,7 +25218,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 161.29 0)
+			(at 18.415 161.29 0)
 			(effects
 				(font
 					(size 1 1)
@@ -25244,7 +25227,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 161.29 0)
 			(effects
 				(font
@@ -25273,7 +25256,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 161.29 0)
 			(effects
 				(font
@@ -25804,9 +25787,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 45.72 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 45.72 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -25823,7 +25805,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 46.99 0)
+			(at 18.415 46.99 0)
 			(effects
 				(font
 					(size 1 1)
@@ -25832,7 +25814,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 46.99 0)
 			(effects
 				(font
@@ -25861,7 +25843,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 46.99 0)
 			(effects
 				(font
@@ -26966,9 +26948,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 121.92 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 121.92 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -26985,7 +26966,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 123.19 0)
+			(at 18.415 123.19 0)
 			(effects
 				(font
 					(size 1 1)
@@ -26994,7 +26975,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 123.19 0)
 			(effects
 				(font
@@ -27023,7 +27004,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 123.19 0)
 			(effects
 				(font
@@ -27061,9 +27042,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 134.62 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 134.62 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -27080,7 +27060,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 135.89 0)
+			(at 18.415 135.89 0)
 			(effects
 				(font
 					(size 1 1)
@@ -27089,7 +27069,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 135.89 0)
 			(effects
 				(font
@@ -27118,7 +27098,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 135.89 0)
 			(effects
 				(font
@@ -27685,9 +27665,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 71.12 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 71.12 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -27704,7 +27683,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 72.39 0)
+			(at 18.415 72.39 0)
 			(effects
 				(font
 					(size 1 1)
@@ -27713,7 +27692,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 72.39 0)
 			(effects
 				(font
@@ -27742,7 +27721,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 72.39 0)
 			(effects
 				(font
@@ -27855,9 +27834,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 31.115 20.32 0)
-		(mirror y)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 31.115 20.32 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -27874,7 +27852,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 26.035 0)
+			(at 29.845 14.605 0)
 			(effects
 				(font
 					(size 1 1)
@@ -27883,7 +27861,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 29.845 27.94 0)
 			(effects
 				(font
@@ -27912,7 +27890,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 29.845 31.75 0)
 			(effects
 				(font
@@ -29858,9 +29836,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 24.13 83.82 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 24.13 83.82 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -29877,7 +29854,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 85.09 0)
+			(at 18.415 85.09 0)
 			(effects
 				(font
 					(size 1 1)
@@ -29886,7 +29863,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 31.75 85.09 0)
 			(effects
 				(font
@@ -29915,7 +29892,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 35.56 85.09 0)
 			(effects
 				(font
@@ -31293,9 +31270,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 96.52 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 96.52 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -31312,7 +31288,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 97.79 0)
+			(at 35.56 97.79 0)
 			(effects
 				(font
 					(size 1 1)
@@ -31321,7 +31297,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 97.79 0)
 			(effects
 				(font
@@ -31350,7 +31326,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 97.79 0)
 			(effects
 				(font
@@ -31626,9 +31602,8 @@
 		)
 	)
 	(symbol
-		(lib_id "RevK:WS2812B-1mm")
-		(at 41.275 160.02 90)
-		(mirror x)
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 41.275 160.02 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -31645,7 +31620,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 46.99 161.29 0)
+			(at 35.56 161.29 0)
 			(effects
 				(font
 					(size 1 1)
@@ -31654,7 +31629,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "RevK:SMD1010"
+		(property "Footprint" "RevK:SMD1615"
 			(at 48.895 161.29 0)
 			(effects
 				(font
@@ -31683,7 +31658,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C5349953"
+		(property "MPN" "C5349954"
 			(at 52.705 161.29 0)
 			(effects
 				(font
