@@ -48,6 +48,8 @@ Using `${variable}` you can append the variable name with.
 - `.fields` for any JSON based variables, allows the JSON field, e.g. `${WEATHER.current.condition.code}`
 - `.field:format` will allow some formatting of fields from JSON based variables.
 
+Using `${$variable}` causes the value for `$variable` to be checked for any contained `$` expansions. Typically used to allow `$MQTT...` expansions to include `$` variables.
+
 |Variable|Meaning|
 |------|-------|
 |`TIME`|Current time (`HH:MM` for epaper, `HH:MM:SS` otherwise)|
