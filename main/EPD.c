@@ -71,6 +71,8 @@ volatile uint32_t override = 0;
 volatile char *overrideimage = NULL;
 volatile char *overridemessage = NULL;
 
+pn532_t *pn532 = NULL;
+
 #define BL_TIMEBASE_RESOLUTION_HZ 1000000       // 1MHz, 1us per tick
 #define BL_TIMEBASE_PERIOD        1000
 uint8_t bl = 0;
@@ -2834,7 +2836,7 @@ mqttjson_cb (void *arg, const char *topic, jo_t j)
 void
 reload_task (void *x)
 {
-   while (1)
+   while (!b.die)
    {
       file_t *i;
       for (i = files; i; i = i->next)
@@ -2842,6 +2844,49 @@ reload_task (void *x)
             download (i->url, i->suffix, 1, i->cachetime);
       sleep (1);
    }
+   vTaskDelete (NULL);
+}
+
+void
+nfc_task (void *x)
+{
+   ESP_LOGE (TAG, "NFC start %d %d", nfctx.num, nfcrx.num);
+   revk_gpio_output (nfctx, 0);
+   revk_gpio_input (nfcrx);
+   pn532 = pn532_init (1, 4, nfctx.num, nfcrx.num, 0);
+   if (!pn532)
+      pn532 = pn532_init (1, 4, nfctx.num, nfcrx.num, 0);
+   if (!pn532)
+      ESP_LOGE (TAG, "NFC fail init");
+   else
+      while (!b.die)
+      {
+         usleep (10000);
+         int cards = pn532_Cards (pn532);
+         if (cards > 1)
+         {
+            ESP_LOGI (TAG, "Release 2nd card");
+            pn532_release (pn532, 2);
+         } else if (cards > 0)
+         {
+            uint8_t *ats = pn532_ats (pn532);
+            if (ats)
+            {
+               char id[21];     // Initial card ID (insecure), hex null terminated
+               if (pn532_nfcid (pn532, id))
+               {
+                  jo_t j = jo_object_alloc ();
+                  jo_string (j, "id", id);
+                  if (ats && *ats)
+                     jo_base16 (j, "ats", ats, *ats);
+                  revk_event ("Fob", &j);
+               }
+            }
+            while (pn532_Present (pn532))
+               usleep (10000);
+         }
+      }
+   vTaskDelete (NULL);
 }
 
 void
@@ -3126,7 +3171,9 @@ app_main ()
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    if (gfxbl.set)
       revk_task ("BL", bl_task, NULL, 4);
-   {
+   if (nfctx.set && nfcrx.set)
+      revk_task ("nfc", nfc_task, NULL, 8);
+   {                            // GFX
     const char *e = gfx_init (pwr: gfxpwr.num, ena: gfxena.num, cs: gfxcs.num, sck: gfxsck.num, mosi: gfxmosi.num, dc: gfxdc.num, rst: gfxrst.num, busy: gfxbusy.num, flip: gfxflip, direct: 1, invert:gfxinvert);
       if (e)
       {
