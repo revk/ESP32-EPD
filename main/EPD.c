@@ -29,6 +29,7 @@ static const char TAG[] = "EPD";
 #include <math.h>
 #include <halib.h>
 #include <ir.h>
+#include <pn532.h>
 #include <desfireaes.h>
 #include "bleenv.h"
 
