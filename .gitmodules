@@ -19,3 +19,6 @@
 [submodule "components/ESP32-IR"]
 	path = components/ESP32-IR
 	url = https://github.com/revk/ESP32-IR
+[submodule "components/DESFireAES"]
+	path = components/DESFireAES
+	url = https://github.com/revk/DESFireAES
