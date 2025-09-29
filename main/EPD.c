@@ -29,6 +29,7 @@ static const char TAG[] = "EPD";
 #include <math.h>
 #include <halib.h>
 #include <ir.h>
+#include <desfireaes.h>
 #include "bleenv.h"
 
 #define	LEFT	0x80            // Flags on font size
