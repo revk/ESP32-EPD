@@ -2014,7 +2014,7 @@ ds18b20_task (void *x)
       {
          id[ds18b20_num] = dev.address;
          ds18b20_config_t config = { };
-         REVK_ERR_CHECK (ds18b20_new_device (&dev, &config, &adr_ds18b20[ds18b20_num]));
+         REVK_ERR_CHECK (ds18b20_new_device_from_enumeration (&dev, &config, &adr_ds18b20[ds18b20_num]));
          REVK_ERR_CHECK (ds18b20_set_resolution (adr_ds18b20[ds18b20_num], DS18B20_RESOLUTION_12B));
          ds18b20_num++;
       }
