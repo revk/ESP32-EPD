@@ -2870,18 +2870,13 @@ nfc_task (void *x)
          } else if (cards > 0)
          {
             uint8_t *ats = pn532_ats (pn532);
-            if (ats)
-            {
-               char id[21];     // Initial card ID (insecure), hex null terminated
-               if (pn532_nfcid (pn532, id))
-               {
-                  jo_t j = jo_object_alloc ();
-                  jo_string (j, "id", id);
-                  if (ats && *ats)
-                     jo_base16 (j, "ats", ats, *ats);
-                  revk_event ("Fob", &j);
-               }
-            }
+            uint8_t *id = pn532_nfcid (pn532, NULL);
+            jo_t j = jo_object_alloc ();
+            if (id && *id)
+               jo_base16 (j, "id", id + 1, *id);
+            if (ats && *ats)
+               jo_base16 (j, "ats", ats + 1, *ats);
+            revk_event ("Fob", &j);
             while (pn532_Present (pn532))
                usleep (10000);
          }
