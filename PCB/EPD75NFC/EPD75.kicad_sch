@@ -32800,7 +32800,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "RevK:L_4x4"
+		(property "Footprint" "RevK:L_6x6"
 			(at 187.96 93.98 0)
 			(effects
 				(font
@@ -32827,7 +32827,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C42429207"
+		(property "MPN" "C168100"
 			(at 187.96 93.98 0)
 			(effects
 				(font
