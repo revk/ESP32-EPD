@@ -21,11 +21,11 @@ update:
 	-git commit -a -m "Library update"
 	-git push
 
-EPD/EPD.scad: EPD/EPD.kicad_pcb PCBCase/case Makefile PCBCase/case.scad
+EPD/EPD.scad: EPD/EPD.kicad_pcb PCBCase/case
 	PCBCase/case -o $@ $< --top=6 --bottom=1 --pcb=2 --case=2
 
-EPDBat/EPDBat.scad: EPDBat/EPDBat.kicad_pcb PCBCase/case Makefile PCBCase/case.scad
+EPDBat/EPDBat.scad: EPDBat/EPDBat.kicad_pcb PCBCase/case
 	PCBCase/case -o $@ $< --top=6 --bottom=1 --pcb=2 --case=2 --ignore=J4
 
-%.png:	%.kicad_pcb PCBCase/clean PCBCase/render Makefile
+%.png:	%.kicad_pcb PCBCase/clean PCBCase/render
 	PCBCase/render $<

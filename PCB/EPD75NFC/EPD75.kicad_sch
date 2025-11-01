@@ -9403,6 +9403,12 @@
 		(uuid "13e82282-f847-40ca-af30-b857c5ef5bac")
 	)
 	(junction
+		(at 31.115 16.51)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "141ab526-a759-45a1-80fd-89f3490494fa")
+	)
+	(junction
 		(at 27.94 77.47)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -9467,6 +9473,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "227b3046-1d62-494c-bea0-e4f226f2255c")
+	)
+	(junction
+		(at 31.115 24.13)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "23729510-c653-4f1e-8e5f-90aeb9ee491b")
 	)
 	(junction
 		(at 269.24 37.465)
@@ -10796,6 +10808,16 @@
 	)
 	(wire
 		(pts
+			(xy 23.495 16.51) (xy 31.115 16.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "059f6140-9f12-4473-a5d4-7f46f2b65066")
+	)
+	(wire
+		(pts
 			(xy 204.47 271.145) (xy 204.47 303.53)
 		)
 		(stroke
@@ -11013,6 +11035,16 @@
 			(type default)
 		)
 		(uuid "14ad99d8-5352-4813-b1a4-3c0b3bb00169")
+	)
+	(wire
+		(pts
+			(xy 31.115 16.51) (xy 41.275 16.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "151d7727-9067-44c9-aa83-82883607376b")
 	)
 	(wire
 		(pts
@@ -11546,6 +11578,16 @@
 	)
 	(wire
 		(pts
+			(xy 19.685 20.32) (xy 19.685 26.67)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "35a65f8a-6690-449b-987c-6cad454ade30")
+	)
+	(wire
+		(pts
 			(xy 20.32 71.12) (xy 20.32 77.47)
 		)
 		(stroke
@@ -11633,16 +11675,6 @@
 			(type default)
 		)
 		(uuid "3d7779d0-d657-43b7-a8bb-e008a7e8ede1")
-	)
-	(wire
-		(pts
-			(xy 27.305 20.32) (xy 24.13 20.32)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3dd2777f-58d6-4662-9e02-3ef16a2b8824")
 	)
 	(wire
 		(pts
@@ -11843,6 +11875,16 @@
 			(type default)
 		)
 		(uuid "4bfa5c6f-836b-456c-a667-629bbbaeb99f")
+	)
+	(wire
+		(pts
+			(xy 23.495 24.13) (xy 31.115 24.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4cf2da72-1d74-42ab-82e7-c0bb48931024")
 	)
 	(wire
 		(pts
@@ -12496,16 +12538,6 @@
 	)
 	(wire
 		(pts
-			(xy 31.115 16.51) (xy 41.275 16.51)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "76121860-50ea-4448-8b17-fdbb2b5f7140")
-	)
-	(wire
-		(pts
 			(xy 184.785 27.305) (xy 186.055 27.305)
 		)
 		(stroke
@@ -12553,6 +12585,16 @@
 			(type default)
 		)
 		(uuid "79d4add4-7e27-4e19-b3b9-8e734581a6d5")
+	)
+	(wire
+		(pts
+			(xy 24.13 26.67) (xy 24.13 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7ac70dd9-54e3-43fe-b37a-7e1d796a8087")
 	)
 	(wire
 		(pts
@@ -12673,16 +12715,6 @@
 			(type default)
 		)
 		(uuid "8020d015-21f5-4033-9ec0-da1160d0a010")
-	)
-	(wire
-		(pts
-			(xy 24.13 20.32) (xy 24.13 41.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "80c2c012-9711-4c13-8d50-4a46af0c9347")
 	)
 	(wire
 		(pts
@@ -13226,6 +13258,16 @@
 	)
 	(wire
 		(pts
+			(xy 31.115 24.13) (xy 41.275 24.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9f99d430-21a2-4a64-b589-a22c87e7cbee")
+	)
+	(wire
+		(pts
 			(xy 235.585 282.575) (xy 231.775 282.575)
 		)
 		(stroke
@@ -13393,6 +13435,16 @@
 			(type default)
 		)
 		(uuid "aa9ce984-213b-4e3a-8638-b6b5e03daf44")
+	)
+	(wire
+		(pts
+			(xy 19.685 26.67) (xy 24.13 26.67)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "aaf174e5-58c3-42a9-a182-556d5d54919a")
 	)
 	(wire
 		(pts
@@ -13703,16 +13755,6 @@
 			(type default)
 		)
 		(uuid "bb3c120c-b85e-4673-9799-11ac1c05cdaa")
-	)
-	(wire
-		(pts
-			(xy 31.115 24.13) (xy 41.275 24.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bb5a593a-d87b-4343-8841-1fd91febf593")
 	)
 	(wire
 		(pts
@@ -31170,6 +31212,94 @@
 		)
 	)
 	(symbol
+		(lib_id "RevK:WS2812B-1.5mm")
+		(at 31.115 20.32 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ba14d015-1294-458f-a6dd-310d63086383")
+		(property "Reference" "D4"
+			(at 31.115 20.32 0)
+			(do_not_autoplace yes)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "XL-1010RGBC-WS2812B"
+			(at 29.845 14.605 0)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "RevK:SMD1615"
+			(at 29.845 27.94 0)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+			(at 29.845 29.845 0)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "RGB LED with integrated controller"
+			(at 31.115 20.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C5349954"
+			(at 29.845 31.75 0)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6d57e174-682f-4903-9e8f-e7f7979e0781")
+		)
+		(pin "2"
+			(uuid "113a2c4f-55f0-478d-b28b-05924d2ecd4d")
+		)
+		(pin "3"
+			(uuid "51a86fcd-7dc0-4346-8890-bfe3ac6f62e9")
+		)
+		(pin "4"
+			(uuid "48cd9e2e-d69b-4c4b-a50e-2f0ece7a6c24")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "D4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 209.55 149.225 0)
 		(unit 1)
@@ -31849,7 +31979,7 @@
 	)
 	(symbol
 		(lib_id "RevK:WS2812B-1.5mm")
-		(at 31.115 20.32 180)
+		(at 23.495 20.32 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -31857,7 +31987,7 @@
 		(dnp no)
 		(uuid "c17fa6f5-1a1e-4fdc-a91b-7630d3e03ad2")
 		(property "Reference" "D35"
-			(at 31.115 20.32 0)
+			(at 23.495 20.32 0)
 			(do_not_autoplace yes)
 			(effects
 				(font
@@ -31866,7 +31996,7 @@
 			)
 		)
 		(property "Value" "XL-1010RGBC-WS2812B"
-			(at 29.845 14.605 0)
+			(at 22.225 14.605 0)
 			(effects
 				(font
 					(size 1 1)
@@ -31876,7 +32006,7 @@
 			)
 		)
 		(property "Footprint" "RevK:SMD1615"
-			(at 29.845 27.94 0)
+			(at 22.225 27.94 0)
 			(effects
 				(font
 					(size 1 1)
@@ -31886,7 +32016,7 @@
 			)
 		)
 		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-			(at 29.845 29.845 0)
+			(at 22.225 29.845 0)
 			(effects
 				(font
 					(size 1 1)
@@ -31896,7 +32026,7 @@
 			)
 		)
 		(property "Description" "RGB LED with integrated controller"
-			(at 31.115 20.32 0)
+			(at 23.495 20.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31905,7 +32035,7 @@
 			)
 		)
 		(property "MPN" "C5349954"
-			(at 29.845 31.75 0)
+			(at 22.225 31.75 0)
 			(effects
 				(font
 					(size 1 1)
