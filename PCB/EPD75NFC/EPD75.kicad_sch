@@ -2595,7 +2595,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" ""
+			(property "Description" "ESP32S3"
 				(at 0 0 0)
 				(effects
 					(font
@@ -6858,6 +6858,220 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "RevK:TPS22916"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 0 -3.302 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TPS22916"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "RevK:WCSP-4-0.78x0.78"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "MPN" "C2655476"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Rotation Offset" "90"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "TPS22916_0_1"
+				(polyline
+					(pts
+						(xy -7.874 5.08) (xy -1.778 5.08) (xy -1.778 3.556)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TPS22916_1_1"
+				(rectangle
+					(start -7.62 7.62)
+					(end 7.62 -7.62)
+					(stroke
+						(width 0)
+						(type solid)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.794 3.556) (xy 2.54 3.556) (xy 2.54 5.08) (xy 7.62 5.08)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.794 2.794) (xy 2.54 2.794)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.286 4.318) (xy -1.27 4.318) (xy -1.778 3.556) (xy -2.286 4.318)
+					)
+					(stroke
+						(width 0)
+						(type solid)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.794) (xy 0 1.524)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin power_in line
+					(at -10.16 5.08 0)
+					(length 2.54)
+					(name "VIN"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "A2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 -5.08 0)
+					(length 2.54)
+					(name "ON"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 10.16 5.08 180)
+					(length 2.54)
+					(name "VOUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "A1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 10.16 -5.08 180)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "RevK:TPS562246"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -7693,7 +7907,7 @@
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+			(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 				(at 1.27 9.525 0)
 				(effects
 					(font
@@ -8873,4281 +9087,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "WS2812B-1.5mm_1"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_1_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_10"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_10_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_11"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_11_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_12"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_12_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_13"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_13_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_14"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_14_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_15"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_15_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_16"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_16_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_17"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_17_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_18"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_18_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_19"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_19_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_2"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_2_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_20"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_20_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_21"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_21_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_22"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_22_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_23"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_23_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_24"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_24_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_25"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_25_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_3"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_3_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_4"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_4_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_5"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_5_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_6"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_6_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_7"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_7_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_8"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_8_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "WS2812B-1.5mm_9"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 0 0 0)
-				(do_not_autoplace)
-				(effects
-					(font
-						(size 1 1)
-					)
-				)
-			)
-			(property "Value" "XL-1615RGBC-WS2812B"
-				(at 1.27 5.715 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Footprint" "RevK:SMD1615"
-				(at 1.27 7.62 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
-				(at 1.27 9.525 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RGB LED with integrated controller"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "MPN" "C5349954"
-				(at 1.27 11.43 0)
-				(effects
-					(font
-						(size 1 1)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "RGB LED NeoPixel addressable"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "WS2812B-1.5mm_9_1_1"
-				(polyline
-					(pts
-						(xy 0 -3.175) (xy 3.175 0) (xy 0 3.175) (xy -3.175 0) (xy 0 -3.175)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -3.81 0 0)
-					(length 0.5)
-					(name "I"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 3.81 270)
-					(length 0.5)
-					(name "+"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -3.81 90)
-					(length 0.5)
-					(name "-"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 0 180)
-					(length 0.5)
-					(name "O"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1 1)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "power:+3.3V"
 			(power)
 			(pin_numbers
@@ -13792,12 +9731,6 @@
 		(uuid "2c12cae8-4421-40fd-8192-37a40251811f")
 	)
 	(junction
-		(at 245.745 101.6)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "2d7677d4-b1c3-4997-a3bf-bbd29eb355c1")
-	)
-	(junction
 		(at 37.465 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -13900,6 +9833,12 @@
 		(uuid "3afb9fe5-d907-4e5d-9388-0d00bc719c9e")
 	)
 	(junction
+		(at 267.97 296.545)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "3b3c00df-0ed5-4256-ad0d-24c7312d101e")
+	)
+	(junction
 		(at 128.905 290.195)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -13994,6 +9933,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4b128962-6212-423b-81ec-66d608896083")
+	)
+	(junction
+		(at 140.97 115.57)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4b50dbc6-dd58-46ba-a2e5-133f2092d497")
 	)
 	(junction
 		(at 123.825 207.01)
@@ -14152,6 +10097,12 @@
 		(uuid "5efdf753-a5b5-441e-9953-472c2144213e")
 	)
 	(junction
+		(at 220.345 178.435)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5fa69108-46d5-4190-ae89-ae61c48fb37f")
+	)
+	(junction
 		(at 243.84 22.225)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -14176,10 +10127,10 @@
 		(uuid "62d26688-6d26-4448-ba24-4cc73f6e0efe")
 	)
 	(junction
-		(at 136.525 112.395)
+		(at 245.745 101.6)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "63695d85-f8f7-4f02-9818-1a256a7d13f2")
+		(uuid "654ca96a-ab88-4753-bf8a-707b4cd86261")
 	)
 	(junction
 		(at 27.94 153.67)
@@ -14324,6 +10275,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8c1300d8-7d75-4b93-a556-6fbe9cb81df2")
+	)
+	(junction
+		(at 191.135 168.275)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "8ecadc40-385a-4fce-83c8-1d2c448c7641")
 	)
 	(junction
 		(at 229.235 22.225)
@@ -14764,6 +10721,12 @@
 		(uuid "ea45feed-0ec9-44d2-95c9-c8d842c39842")
 	)
 	(junction
+		(at 190.5 198.12)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ea6a6084-5912-4a45-ae50-fe6e0964f71f")
+	)
+	(junction
 		(at 27.94 52.07)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -14878,16 +10841,8 @@
 		(uuid "ffc70ec9-afe7-4027-b210-c6337681d461")
 	)
 	(no_connect
-		(at 68.58 72.39)
-		(uuid "048b11e7-32e8-4311-bd98-2fb8940f6ad1")
-	)
-	(no_connect
 		(at 163.195 243.205)
 		(uuid "18a22bf7-6105-4e69-b3b9-a20fc43196f8")
-	)
-	(no_connect
-		(at 68.58 69.85)
-		(uuid "19172398-c25e-4b45-8a7e-d124de8fa57c")
 	)
 	(no_connect
 		(at 165.735 243.205)
@@ -14896,10 +10851,6 @@
 	(no_connect
 		(at 183.515 268.605)
 		(uuid "25a12d93-11ee-4c85-bce4-014b2e9e27f5")
-	)
-	(no_connect
-		(at 68.58 67.31)
-		(uuid "278a1fb7-3eb8-42a2-99e5-1ad1e58531ba")
 	)
 	(no_connect
 		(at 123.19 135.255)
@@ -15106,6 +11057,16 @@
 			(type default)
 		)
 		(uuid "06b82faf-923a-4a10-b471-8e40490d608a")
+	)
+	(wire
+		(pts
+			(xy 140.97 115.57) (xy 140.97 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "070f813a-f012-4f98-9042-3da872b2ae5f")
 	)
 	(wire
 		(pts
@@ -15549,7 +11510,7 @@
 	)
 	(wire
 		(pts
-			(xy 126.365 112.395) (xy 136.525 112.395)
+			(xy 126.365 112.395) (xy 140.97 112.395)
 		)
 		(stroke
 			(width 0)
@@ -15636,6 +11597,16 @@
 			(type default)
 		)
 		(uuid "26f58931-0ec9-4360-bda6-42424476f934")
+	)
+	(wire
+		(pts
+			(xy 187.325 168.275) (xy 191.135 168.275)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2705bf3b-57ff-42db-8a25-4901e6d79a1d")
 	)
 	(wire
 		(pts
@@ -15959,6 +11930,16 @@
 	)
 	(wire
 		(pts
+			(xy 220.345 178.435) (xy 215.265 178.435)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3e3cfc1e-f7a2-4ae1-911e-c38ac0bc9bdf")
+	)
+	(wire
+		(pts
 			(xy 161.29 104.775) (xy 161.29 107.315)
 		)
 		(stroke
@@ -16059,7 +12040,7 @@
 	)
 	(wire
 		(pts
-			(xy 245.745 101.6) (xy 267.97 101.6)
+			(xy 224.79 101.6) (xy 245.745 101.6)
 		)
 		(stroke
 			(width 0)
@@ -16819,6 +12800,16 @@
 	)
 	(wire
 		(pts
+			(xy 215.265 168.275) (xy 220.345 168.275)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "76ee518f-8a3c-48bf-b262-a54728c3432b")
+	)
+	(wire
+		(pts
 			(xy 27.94 35.56) (xy 27.94 39.37)
 		)
 		(stroke
@@ -16909,7 +12900,7 @@
 	)
 	(wire
 		(pts
-			(xy 140.97 112.395) (xy 140.97 124.46)
+			(xy 140.97 112.395) (xy 140.97 115.57)
 		)
 		(stroke
 			(width 0)
@@ -17086,16 +13077,6 @@
 			(type default)
 		)
 		(uuid "87ebc985-bde7-4bdf-86f2-38110d8e688b")
-	)
-	(wire
-		(pts
-			(xy 224.79 101.6) (xy 245.745 101.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "88c83028-f830-4b75-abc8-ae224e5d5060")
 	)
 	(wire
 		(pts
@@ -17299,6 +13280,16 @@
 	)
 	(wire
 		(pts
+			(xy 191.135 168.275) (xy 194.945 168.275)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "92af89bd-b23d-4551-9090-80aaa301fd9c")
+	)
+	(wire
+		(pts
 			(xy 45.085 58.42) (xy 45.085 64.77)
 		)
 		(stroke
@@ -17326,16 +13317,6 @@
 			(type default)
 		)
 		(uuid "949f283d-52f6-459b-8764-dada27bc81e0")
-	)
-	(wire
-		(pts
-			(xy 136.525 112.395) (xy 140.97 112.395)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "94c34741-2c3e-4131-b931-5b43e0644766")
 	)
 	(wire
 		(pts
@@ -18289,6 +14270,16 @@
 	)
 	(wire
 		(pts
+			(xy 186.69 198.12) (xy 190.5 198.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c6d8829a-cb61-453c-aaa5-4107303f823c")
+	)
+	(wire
+		(pts
 			(xy 254.635 282.575) (xy 267.97 282.575)
 		)
 		(stroke
@@ -19109,6 +15100,16 @@
 	)
 	(wire
 		(pts
+			(xy 245.745 101.6) (xy 267.97 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f3959648-2a85-4eee-acd9-f08105e7de6f")
+	)
+	(wire
+		(pts
 			(xy 238.125 79.375) (xy 241.935 79.375)
 		)
 		(stroke
@@ -19219,6 +15220,16 @@
 	)
 	(wire
 		(pts
+			(xy 190.5 198.12) (xy 194.945 198.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f764c5a4-88e1-4c12-a164-7f0e6b820708")
+	)
+	(wire
+		(pts
 			(xy 220.98 22.225) (xy 220.98 24.765)
 		)
 		(stroke
@@ -19326,6 +15337,16 @@
 			(type default)
 		)
 		(uuid "fb83c0c0-c303-4685-a8f0-4a6f75eb3066")
+	)
+	(wire
+		(pts
+			(xy 220.345 170.815) (xy 220.345 178.435)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fbb287bc-9468-4561-930e-5ce2cc358b58")
 	)
 	(wire
 		(pts
@@ -19861,6 +15882,28 @@
 			)
 		)
 	)
+	(global_label "PNFC"
+		(shape output)
+		(at 68.58 69.85 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "55325f23-0a44-4b6f-97bb-1872d7792be1")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 61.2899 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "SDCLK"
 		(shape output)
 		(at 68.58 54.61 180)
@@ -19927,6 +15970,50 @@
 			)
 		)
 	)
+	(global_label "POUT"
+		(shape output)
+		(at 68.58 72.39 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "62aef1fc-cc52-4dd9-bcc1-67a06a15092f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 61.3504 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "PEPD"
+		(shape input)
+		(at 194.31 236.22 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "6465e83e-d6a1-4f3c-b296-eff6b90d859c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 187.02 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "DC"
 		(shape output)
 		(at 99.06 67.31 0)
@@ -19971,9 +16058,9 @@
 			)
 		)
 	)
-	(global_label "PWR"
-		(shape output)
-		(at 116.205 24.13 270)
+	(global_label "POUT"
+		(shape input)
+		(at 194.945 178.435 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -19981,9 +16068,9 @@
 			)
 			(justify right)
 		)
-		(uuid "69c3d507-711e-4e7b-bcb1-803eaef8560b")
+		(uuid "6a2dde92-9e9a-44a6-85cb-dde7a0ae9593")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 116.205 30.4524 90)
+			(at 187.7154 178.435 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20182,6 +16269,28 @@
 		(uuid "8ae0793b-6085-482c-8b13-4c829f2aff9e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 225.0595 282.575 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "PEPD"
+		(shape output)
+		(at 68.58 67.31 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "93ee34b2-b54e-4d8e-a9a0-c4bddbfc2025")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 61.29 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20653,6 +16762,28 @@
 			)
 		)
 	)
+	(global_label "PNFC"
+		(shape input)
+		(at 194.945 208.28 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d66cf89c-9eec-4979-bfbb-39ecfe5d9db6")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 187.6549 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "BTN"
 		(shape input)
 		(at 99.06 77.47 0)
@@ -20959,34 +17090,33 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 106.045 24.13 0)
+		(lib_id "RevK:TPS22916")
+		(at 204.47 231.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "007060e1-fe74-448a-900a-167bb9b5a48a")
-		(property "Reference" "#PWR029"
-			(at 106.045 30.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 106.045 28.2631 0)
+		(uuid "0016687e-02e1-409e-a7e0-c770f398f039")
+		(property "Reference" "U9"
+			(at 204.343 220.9885 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" ""
-			(at 106.045 24.13 0)
+		(property "Value" "TPS22916CNYFPR"
+			(at 204.343 222.6699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "RevK:WCSP-4-0.78x0.78"
+			(at 204.47 231.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20995,7 +17125,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 106.045 24.13 0)
+			(at 204.47 231.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21003,8 +17133,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 106.045 24.13 0)
+		(property "Description" ""
+			(at 204.47 231.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21012,19 +17142,40 @@
 				(hide yes)
 			)
 		)
-		(pin "1"
-			(uuid "67d65e1b-43d6-468c-8677-b9bbc2a10684")
+		(property "MPN" "C2655476"
+			(at 204.47 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Rotation Offset" "90"
+			(at 204.47 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "B2"
+			(uuid "818db331-aff0-47c6-9c4e-f6f4f8a5f3f4")
+		)
+		(pin "A1"
+			(uuid "6fac886c-fc58-4254-8ff9-a2b97dd73392")
+		)
+		(pin "A2"
+			(uuid "e8a34107-8d1b-41ae-97b7-4f16730acea8")
+		)
+		(pin "B1"
+			(uuid "687db3f9-b64a-4594-ae4c-153c3dde4915")
 		)
 		(instances
-			(project "USBA"
-				(path "/2d210a96-f81f-42a9-8bf4-1b43c11086f3"
-					(reference "#PWR0105")
-					(unit 1)
-				)
-			)
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "#PWR029")
+					(reference "U9")
 					(unit 1)
 				)
 			)
@@ -21098,7 +17249,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_23")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 45.72 270)
 		(unit 1)
@@ -21136,7 +17286,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 46.99 0)
 			(effects
 				(font
@@ -21544,7 +17694,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_22")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 185.42 270)
 		(unit 1)
@@ -21582,7 +17731,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 186.69 0)
 			(effects
 				(font
@@ -21937,6 +18086,83 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 225.425 170.815 0)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "0eb5b8a7-7255-44cd-a466-f35ed508c92c")
+		(property "Reference" "J9"
+			(at 225.298 165.227 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "OUT"
+			(at 228.092 169.545 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "RevK:WAGO-2060-452-998-404"
+			(at 225.425 170.815 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 225.425 170.815 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 225.425 170.815 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C2765055"
+			(at 225.425 170.815 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6e187204-1723-492c-adc4-a1994d8f02a0")
+		)
+		(pin "2"
+			(uuid "07d6c709-78ae-4c6d-9ee9-c0d89342b7bc")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "J9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 267.97 299.085 90)
 		(unit 1)
@@ -22080,7 +18306,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_21")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 58.42 270)
 		(unit 1)
@@ -22118,7 +18343,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 59.69 0)
 			(effects
 				(font
@@ -22788,6 +19013,71 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "R16")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 215.265 208.28 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "18d73c35-fbd7-42e5-a5d6-c2a9c2954051")
+		(property "Reference" "#PWR029"
+			(at 221.615 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 220.218 208.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 215.265 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 215.265 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 215.265 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "867190f8-ae08-4e89-8453-ab78053439c7")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR029")
 					(unit 1)
 				)
 			)
@@ -24760,7 +21050,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_20")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 134.62 270)
 		(unit 1)
@@ -24798,7 +21087,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 135.89 0)
 			(effects
 				(font
@@ -25506,7 +21795,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 72.39 0)
 			(effects
 				(font
@@ -25866,7 +22155,71 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_25")
+		(lib_id "power:+3.3V")
+		(at 186.69 198.12 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3c5db743-95b1-438f-a318-b9e9a91f5acf")
+		(property "Reference" "#PWR098"
+			(at 190.5 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "NFCIN"
+			(at 180.467 198.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 186.69 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 186.69 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 186.69 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b66bdf55-cb93-4fe6-9c0d-6c0f0f9d8aa2")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR098")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 109.22 270)
 		(unit 1)
@@ -25904,7 +22257,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 110.49 0)
 			(effects
 				(font
@@ -26691,6 +23044,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+5V")
+		(at 215.265 198.12 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4453b918-f01d-4ccd-80cb-e31d6bb6887f")
+		(property "Reference" "#PWR091"
+			(at 211.455 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "NFC5V"
+			(at 221.234 198.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 215.265 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 215.265 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 215.265 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "52c9d068-bb22-47f6-be1f-2a6aad0300cd")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR091")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 232.41 116.205 90)
 		(unit 1)
@@ -27067,6 +23485,84 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 191.135 164.465 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4b3bb1bc-0a08-419f-94c3-5f6327e2fa41")
+		(property "Reference" "C127"
+			(at 199.136 165.735 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "220uF Tant"
+			(at 204.724 163.449 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "RevK:CP_EIA-3528-21_Kemet-B"
+			(at 190.1698 160.655 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 191.135 164.465 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 191.135 164.465 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C122649"
+			(at 191.135 164.465 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2bcb9601-d90e-4a14-94dc-ba9afaee15eb")
+		)
+		(pin "2"
+			(uuid "ee6f4436-30d0-4404-afc4-6de9b85f4c15")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "C127")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 94.615 266.065 90)
 		(unit 1)
@@ -27213,72 +23709,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 267.97 296.545 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "4cebee8c-8547-4afd-8e2d-5fbe430c3462")
-		(property "Reference" "#PWR025"
-			(at 271.78 296.545 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "NFC5V"
-			(at 262.509 296.291 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 267.97 296.545 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 267.97 296.545 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 267.97 296.545 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "54911972-9681-4390-816d-49216359c598")
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "#PWR025")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_name "WS2812B-1.5mm_18")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 147.32 270)
 		(unit 1)
@@ -27316,7 +23746,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 148.59 0)
 			(effects
 				(font
@@ -27627,71 +24057,6 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "C56")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 116.205 24.13 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "52ec1a5d-d6ed-4019-9478-45641f13f162")
-		(property "Reference" "#FLG02"
-			(at 116.205 22.225 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 116.205 19.9969 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 116.205 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 116.205 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 116.205 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "52ee4198-cb3c-452f-a452-9715e4b11e6c")
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "#FLG02")
 					(unit 1)
 				)
 			)
@@ -28064,7 +24429,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_19")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 172.72 270)
 		(unit 1)
@@ -28102,7 +24466,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 173.99 0)
 			(effects
 				(font
@@ -28153,85 +24517,6 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "D18")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C_Polarized")
-		(at 245.745 97.79 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "56055be0-a548-4e70-81e5-25ac5a05abfa")
-		(property "Reference" "C28"
-			(at 248.666 97.4669 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "C_Polarized"
-			(at 248.666 99.8911 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "RevK:CP_EIA-7343-31_Kemet-D"
-			(at 244.7798 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 245.745 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 245.745 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "C106188"
-			(at 245.745 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "58bcfcaf-0723-4eed-ac92-f40514503ba1")
-		)
-		(pin "2"
-			(uuid "d888a360-c12d-46a5-99bc-f217c6f486ba")
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "C28")
 					(unit 1)
 				)
 			)
@@ -28529,7 +24814,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_6")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 109.22 270)
 		(unit 1)
@@ -28567,7 +24851,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 110.49 0)
 			(effects
 				(font
@@ -28756,7 +25040,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_5")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 147.32 270)
 		(unit 1)
@@ -28794,7 +25077,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 148.59 0)
 			(effects
 				(font
@@ -28845,6 +25128,98 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "D30")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "RevK:TPS22916")
+		(at 205.105 203.2 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6242c6dd-5b79-414a-ba38-931145e528f4")
+		(property "Reference" "U8"
+			(at 204.978 193.0485 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TPS22916CNYFPR"
+			(at 204.978 194.7299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "RevK:WCSP-4-0.78x0.78"
+			(at 205.105 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 205.105 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 205.105 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C2655476"
+			(at 205.105 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Rotation Offset" "90"
+			(at 205.105 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "B2"
+			(uuid "299057c7-9e6b-4af1-8932-5f093a797aef")
+		)
+		(pin "A1"
+			(uuid "935f1f00-6ee0-419e-bbd8-32d6534a83b5")
+		)
+		(pin "A2"
+			(uuid "bdcdc19c-5545-4cbf-95c8-40d39e7296dc")
+		)
+		(pin "B1"
+			(uuid "c299ff53-6211-47e6-a269-4c059a0f51e7")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "U8")
 					(unit 1)
 				)
 			)
@@ -29803,7 +26178,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_4")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 185.42 270)
 		(unit 1)
@@ -29841,7 +26215,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 186.69 0)
 			(effects
 				(font
@@ -30056,7 +26430,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+3.3V"
+		(property "Value" "EPD3V3"
 			(at 228.6 89.1342 0)
 			(effects
 				(font
@@ -30430,7 +26804,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_3")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 172.72 270)
 		(unit 1)
@@ -30468,7 +26841,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 173.99 0)
 			(effects
 				(font
@@ -30897,7 +27270,71 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_2")
+		(lib_id "power:GND")
+		(at 191.135 160.655 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "730ed066-2dfe-41a1-8e10-0f95b1492ffd")
+		(property "Reference" "#PWR089"
+			(at 191.135 154.305 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 191.008 156.2608 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 191.135 160.655 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 191.135 160.655 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 191.135 160.655 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "665a7ebc-1a52-4b8d-9409-0fd691cca803")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR089")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 121.92 270)
 		(unit 1)
@@ -30935,7 +27372,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 123.19 0)
 			(effects
 				(font
@@ -31320,72 +27757,6 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "#PWR067")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 100.965 217.805 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "7a8bcdf4-5794-4706-b55c-b8e71a840766")
-		(property "Reference" "#FLG04"
-			(at 100.965 215.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 100.965 213.6719 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 100.965 217.805 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 100.965 217.805 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 100.965 217.805 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "8bea273c-47f7-4d62-b7b5-771d3deee3cc")
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "#FLG04")
 					(unit 1)
 				)
 			)
@@ -31787,6 +28158,97 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "C11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "RevK:TPS22916")
+		(at 205.105 173.355 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "81ddc068-1760-4147-862d-a76cc861e36a")
+		(property "Reference" "U6"
+			(at 204.978 163.2035 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TPS22916CNYFPR"
+			(at 205.486 164.846 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "RevK:WCSP-4-0.78x0.78"
+			(at 205.105 173.355 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 205.105 173.355 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 205.105 173.355 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C2655476"
+			(at 205.105 173.355 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Rotation Offset" "90"
+			(at 205.105 173.355 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "B2"
+			(uuid "e4cf2ac7-ca1b-4840-81dc-6f9d74e7312d")
+		)
+		(pin "A1"
+			(uuid "f19479cc-9cbb-4b97-bc9f-79be674ce0e5")
+		)
+		(pin "A2"
+			(uuid "10d7ba87-1d45-4ba3-95e3-a176ed961017")
+		)
+		(pin "B1"
+			(uuid "27b6350d-be0a-429e-afb6-4124dc68d455")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "U6")
 					(unit 1)
 				)
 			)
@@ -32301,7 +28763,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_1")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 58.42 270)
 		(unit 1)
@@ -32339,7 +28800,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 59.69 0)
 			(effects
 				(font
@@ -33063,7 +29524,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_13")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 83.82 270)
 		(unit 1)
@@ -33101,7 +29561,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 85.09 0)
 			(effects
 				(font
@@ -33439,7 +29899,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_12")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 96.52 270)
 		(unit 1)
@@ -33477,7 +29936,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 97.79 0)
 			(effects
 				(font
@@ -34031,7 +30490,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_11")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 160.02 270)
 		(unit 1)
@@ -34069,7 +30527,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 161.29 0)
 			(effects
 				(font
@@ -34120,6 +30578,71 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "D17")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 267.97 296.545 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "98db619d-c2c1-45a1-8551-9f6d7c61e58f")
+		(property "Reference" "#PWR094"
+			(at 271.78 296.545 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "NFCIN"
+			(at 261.747 296.545 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 267.97 296.545 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 267.97 296.545 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 267.97 296.545 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ed3d3cde-17a1-45d2-99de-13e54682261a")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR094")
 					(unit 1)
 				)
 			)
@@ -34589,7 +31112,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_17")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 45.72 270)
 		(unit 1)
@@ -34627,7 +31149,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 46.99 0)
 			(effects
 				(font
@@ -34678,6 +31200,71 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "D5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 267.97 296.545 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a30051d7-ebc8-41db-b164-49f3d77510e9")
+		(property "Reference" "#FLG01"
+			(at 267.97 294.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "NFCIN"
+			(at 268.097 292.862 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 267.97 296.545 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 267.97 296.545 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 267.97 296.545 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fd66ae09-5463-4963-9e3f-c8f517a47167")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#FLG01")
 					(unit 1)
 				)
 			)
@@ -35896,7 +32483,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_16")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 121.92 270)
 		(unit 1)
@@ -35934,7 +32520,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 123.19 0)
 			(effects
 				(font
@@ -35991,7 +32577,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_15")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 134.62 270)
 		(unit 1)
@@ -36029,7 +32614,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 135.89 0)
 			(effects
 				(font
@@ -36086,7 +32671,84 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_14")
+		(lib_id "Device:C_Polarized")
+		(at 245.745 97.79 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b9e44806-103d-4eb0-a81e-22d27b52d37c")
+		(property "Reference" "C28"
+			(at 246.38 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "220uF Tant"
+			(at 234.188 94.996 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "RevK:CP_EIA-3528-21_Kemet-B"
+			(at 244.7798 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 245.745 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 245.745 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C122649"
+			(at 245.745 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "60f8bb4d-17cb-4295-8144-a7af2158af5f")
+		)
+		(pin "2"
+			(uuid "ea35a2ec-6707-48c5-98ab-f7edba785244")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "C28")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 31.115 20.32 180)
 		(unit 1)
@@ -36124,7 +32786,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 29.845 29.845 0)
 			(effects
 				(font
@@ -36684,7 +33346,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_10")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 71.12 270)
 		(unit 1)
@@ -36722,7 +33383,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 72.39 0)
 			(effects
 				(font
@@ -36854,7 +33515,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_9")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 23.495 20.32 180)
 		(unit 1)
@@ -36892,7 +33552,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 22.225 29.845 0)
 			(effects
 				(font
@@ -38374,6 +35034,73 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+3.3V")
+		(at 187.325 168.275 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ce31c5b1-fb82-4c98-b828-f2b54f9bf264")
+		(property "Reference" "#PWR088"
+			(at 191.135 168.275 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 184.15 168.275 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 187.325 168.275 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 187.325 168.275 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 187.325 168.275 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "72fce998-6a5e-4b81-81be-a34e935f49df")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR088")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 191.135 277.495 0)
 		(unit 1)
@@ -38547,7 +35274,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 136.525 112.395 180)
+		(at 140.97 115.57 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -38555,7 +35282,7 @@
 		(dnp no)
 		(uuid "d1976deb-3bcb-415a-b6a3-25534f31b028")
 		(property "Reference" "#PWR010"
-			(at 136.525 108.585 0)
+			(at 137.16 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -38563,8 +35290,8 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+3.3V"
-			(at 133.985 116.205 0)
+		(property "Value" "EPD3V3"
+			(at 151.384 115.57 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -38573,7 +35300,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 136.525 112.395 0)
+			(at 140.97 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -38582,7 +35309,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 136.525 112.395 0)
+			(at 140.97 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -38591,7 +35318,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 136.525 112.395 0)
+			(at 140.97 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -38769,6 +35496,73 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "C23")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 194.31 226.06 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d33f578e-1660-44d0-899b-925773ec82b9")
+		(property "Reference" "#PWR039"
+			(at 198.12 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 191.135 226.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 194.31 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 194.31 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 194.31 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b87dfd93-5b70-407c-aa25-a5cea47576a4")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR039")
 					(unit 1)
 				)
 			)
@@ -39067,7 +35861,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_24")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 24.13 83.82 270)
 		(unit 1)
@@ -39105,7 +35898,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 33.655 85.09 0)
 			(effects
 				(font
@@ -39333,71 +36126,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 106.045 24.13 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "d9956689-0754-4822-b8de-f802370e1627")
-		(property "Reference" "#FLG01"
-			(at 106.045 22.225 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 106.045 19.9969 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 106.045 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 106.045 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 106.045 24.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "cc5740c6-93f7-4b0a-9a8b-7e7baf3b7aa1")
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "#FLG01")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
 		(at 105.41 92.075 0)
 		(unit 1)
@@ -39552,6 +36280,84 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 190.5 194.31 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "dafac376-ed83-442c-9be9-74511ffb9f67")
+		(property "Reference" "C82"
+			(at 198.501 195.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "220uF Tant"
+			(at 204.089 193.294 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "RevK:CP_EIA-3528-21_Kemet-B"
+			(at 189.5348 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 190.5 194.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 190.5 194.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "C122649"
+			(at 190.5 194.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "229a07fd-ab4c-4fde-b3fb-f133f516194b")
+		)
+		(pin "2"
+			(uuid "963ebaf7-85fd-433b-8048-be5b83e0929d")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "C82")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 203.2 96.52 0)
 		(unit 1)
@@ -39621,6 +36427,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 214.63 236.22 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "dccbffb1-4480-4753-9ea2-81e9e0a8ec04")
+		(property "Reference" "#PWR092"
+			(at 220.98 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 219.583 236.22 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 214.63 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 214.63 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 214.63 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "818be147-91e6-4a3f-b367-f0167ab0cb32")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR092")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "RevK:SCD41")
 		(at 150.495 356.235 0)
 		(unit 1)
@@ -39674,7 +36545,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C3659294"
+		(property "MPN" "C3659362"
 			(at 150.495 356.235 0)
 			(effects
 				(font
@@ -39962,72 +36833,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 100.965 217.805 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "df4e2ce5-d72d-45c3-a111-8cc788265b94")
-		(property "Reference" "#PWR039"
-			(at 100.965 213.995 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "NFC5V"
-			(at 103.759 222.123 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 100.965 217.805 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 100.965 217.805 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 100.965 217.805 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "30ba48f5-90f8-4b33-866d-d61d98428056")
-		)
-		(instances
-			(project "EPD75"
-				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
-					(reference "#PWR039")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 241.3 352.425 270)
 		(unit 1)
@@ -40208,7 +37013,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ESP32S3"
 			(at 83.82 68.58 0)
 			(effects
 				(font
@@ -40780,7 +37585,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_8")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 96.52 270)
 		(unit 1)
@@ -40818,7 +37622,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 97.79 0)
 			(effects
 				(font
@@ -41114,6 +37918,73 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+3.3V")
+		(at 214.63 226.06 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "e9e9b2c3-7700-48ea-8a3b-7348cb2dc284")
+		(property "Reference" "#PWR025"
+			(at 210.82 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "EPD3V3"
+			(at 217.805 226.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 214.63 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 214.63 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 214.63 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d6a53e9a-8f9a-41cc-8e61-34f61de11c69")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR025")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+5V")
 		(at 141.605 225.425 0)
 		(unit 1)
@@ -41179,7 +38050,6 @@
 		)
 	)
 	(symbol
-		(lib_name "WS2812B-1.5mm_7")
 		(lib_id "RevK:WS2812B-1.5mm")
 		(at 41.275 160.02 270)
 		(unit 1)
@@ -41217,7 +38087,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/lcsc/2301111010_XINGLIGHT-XL-1010RGBC-WS2812B_C5349953.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5349954.pdf"
 			(at 50.8 161.29 0)
 			(effects
 				(font
@@ -41934,6 +38804,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 190.5 190.5 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f3ce9a36-203d-4446-87cd-814c0841394d")
+		(property "Reference" "#PWR093"
+			(at 190.5 184.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 190.373 186.1058 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 190.5 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 190.5 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 190.5 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3a3394c1-aa26-4eb7-a83a-52f8fe3ab6ab")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR093")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 155.575 316.865 0)
 		(unit 1)
@@ -42101,6 +39036,71 @@
 			(project "EPD75"
 				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
 					(reference "#PWR033")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 220.345 178.435 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f6309200-9daa-47f2-8594-3586beadf3ab")
+		(property "Reference" "#PWR084"
+			(at 220.345 184.785 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 220.472 182.8292 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 220.345 178.435 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 220.345 178.435 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 220.345 178.435 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "295aeef1-ecf0-40e2-9fe8-b197983d3847")
+		)
+		(instances
+			(project "EPD75"
+				(path "/46c350bb-7de4-4e81-aafd-4af55e37aab0"
+					(reference "#PWR084")
 					(unit 1)
 				)
 			)
