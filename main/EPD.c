@@ -2872,7 +2872,7 @@ nfc_task (void *x)
             uint8_t *ats = pn532_ats (pn532);
             uint8_t *id = pn532_nfcid (pn532, NULL);
             jo_t j = jo_object_alloc ();
-            jo_stringf (j, "atq", "%04X", pn532_atq (pn532));
+            jo_stringf (j, "atq", "%04X", pn532_atqa (pn532));
             jo_stringf (j, "sak", "%02X", pn532_sak (pn532));
             if (id && *id)
                jo_base16 (j, "id", id + 1, *id);
