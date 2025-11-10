@@ -2885,24 +2885,36 @@ nfc_task (void *x)
             if (pn532_atqa (pn532) == 0x0044)
             {
                uint8_t buf[100];
-               const uint8_t selapdu[] = { 0x00, 0xA4, 0x04, 0x00, 0x07, 0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01, 0x00 };      // SELECT DF first 7 bytes D2760000850101 unspecified
+               const uint8_t selapdu[] = { 0x00, 0xA4, 0x04, 0x00, 0x07, 0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01, 0x00 };     // SELECT DF first 7 bytes D2760000850101 unspecified
                memcpy (buf, selapdu, sizeof (selapdu));
                const char *e = "";
                int l = pn532_dx (pn532, sizeof (selapdu), buf, sizeof (buf), &e);
                j = jo_object_alloc ();
+               jo_base16 (j, "Tx", selapdu, sizeof (selapdu));
                if (l < 0)
                   jo_string (j, "err", e);
                else if (l)
-                  jo_base16 (j, "APDU", buf, l);
+                  jo_base16 (j, "Rx", buf, l);
                revk_event ("NTAG", &j);
                const uint8_t selfile[] = { 0x00, 0xA4, 0x00, 0x0C, 0x02, 0xE1, 0x03 };  //  SELECT FILE
                memcpy (buf, selfile, sizeof (selfile));
                l = pn532_dx (pn532, sizeof (selfile), buf, sizeof (buf), NULL);
                j = jo_object_alloc ();
+               jo_base16 (j, "Tx", selfile, sizeof (selfile));
                if (l < 0)
                   jo_string (j, "err", e);
                else if (l)
                   jo_base16 (j, "File", buf, l);
+               revk_event ("NTAG", &j);
+               const uint8_t read0[] = { 0x00, 0xB0, 0x00, 0x00, 0x0F };        // Read 15 bytes from 0
+               memcpy (buf, read0, sizeof (read0));
+               l = pn532_dx (pn532, sizeof (selfile), buf, sizeof (buf), NULL);
+               j = jo_object_alloc ();
+               jo_base16 (j, "Tx", read0, sizeof (read0));
+               if (l < 0)
+                  jo_string (j, "err", e);
+               else if (l)
+                  jo_base16 (j, "Read0", buf, l);
                revk_event ("NTAG", &j);
 
             }
