@@ -2882,6 +2882,30 @@ nfc_task (void *x)
             if (ats && *ats)
                jo_base16 (j, "ats", ats + 1, *ats);
             revk_event ("Fob", &j);
+            if (pn532_atqa (pn532) == 0x0044)
+            {
+               uint8_t buf[100];
+               const uint8_t selapdu[] = { 0x00, 0xA4, 0x04, 0x00, 0x07, 0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01, 0x00 };      // SELECT DF first 7 bytes D2760000850101 unspecified
+               memcpy (buf, selapdu, sizeof (selapdu));
+               const char *e = "";
+               int l = pn532_dx (pn532, sizeof (selapdu), buf, sizeof (buf), &e);
+               j = jo_object_alloc ();
+               if (l > 0)
+                  jo_base16 (j, "APDU", buf, l);
+               else
+                  jo_string (j, "err", e);
+               revk_event ("NTAG", &j);
+               const uint8_t selfile[] = { 0x00, 0xA4, 0x00, 0x0C, 0x02, 0xE1, 0x03 };  //  SELECT FILE
+               memcpy (buf, selfile, sizeof (selfile));
+               l = pn532_txrx (pn532, sizeof (selfile), buf, sizeof (buf), NULL);
+               j = jo_object_alloc ();
+               if (l > 0)
+                  jo_base16 (j, "File", buf, l);
+               else
+                  jo_string (j, "err", e);
+               revk_event ("NTAG", &j);
+
+            }
             while (pn532_Present (pn532) > 0)
                usleep (10000);
          }
