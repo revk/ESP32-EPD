@@ -138,7 +138,7 @@ SemaphoreHandle_t json_mutex = NULL;
 SemaphoreHandle_t file_mutex = NULL;
 
 static void
-json_store (jo_t * jp, jo_t j)
+json_store (jo_t *jp, jo_t j)
 {
    xSemaphoreTake (json_mutex, portMAX_DELAY);
    jo_free (jp);
@@ -451,7 +451,7 @@ find_file (char *url, const char *suffix)
 }
 
 void
-check_file (file_t * i)
+check_file (file_t *i)
 {                               // In mutex
    if (!i || !i->data || !i->size)
       return;
@@ -734,7 +734,7 @@ pixel (void *opaque, uint32_t x, uint32_t y, uint16_t r, uint16_t g, uint16_t b,
 }
 
 void
-plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy, uint8_t invert)
+plot (file_t *i, gfx_pos_t ox, gfx_pos_t oy, uint8_t invert)
 {
    xSemaphoreTake (file_mutex, portMAX_DELAY);
    plot_t settings = { ox, oy, invert };
@@ -751,7 +751,7 @@ plot (file_t * i, gfx_pos_t ox, gfx_pos_t oy, uint8_t invert)
 #endif
 
 static void
-register_uri (const httpd_uri_t * uri_struct)
+register_uri (const httpd_uri_t *uri_struct)
 {
    esp_err_t res = httpd_register_uri_handler (webserver, uri_struct);
    if (res != ESP_OK)
@@ -761,7 +761,7 @@ register_uri (const httpd_uri_t * uri_struct)
 }
 
 static void
-register_get_uri (const char *uri, esp_err_t (*handler) (httpd_req_t * r))
+register_get_uri (const char *uri, esp_err_t (*handler) (httpd_req_t *r))
 {
    httpd_uri_t uri_struct = {
       .uri = uri,
@@ -772,7 +772,7 @@ register_get_uri (const char *uri, esp_err_t (*handler) (httpd_req_t * r))
 }
 
 static esp_err_t
-web_status (httpd_req_t * req)
+web_status (httpd_req_t *req)
 {
    jo_t j = jo_object_alloc ();
    revk_state_extra (j);
@@ -783,7 +783,7 @@ web_status (httpd_req_t * req)
 }
 
 static void
-settings_ble (httpd_req_t * req, int i)
+settings_ble (httpd_req_t *req, int i)
 {
    revk_web_send (req, "<tr><td>BLE[%d]</td><td>"       //
                   "<select name=blesensor%d>", i, i + 1);
@@ -810,7 +810,7 @@ settings_ble (httpd_req_t * req, int i)
 }
 
 static esp_err_t
-web_root (httpd_req_t * req)
+web_root (httpd_req_t *req)
 {
    if (revk_link_down ())
       return revk_web_settings (req);   // Direct to web set up
@@ -883,7 +883,7 @@ epd_unlock (void)
 
 #ifdef	CONFIG_LWPNG_ENCODE
 static esp_err_t
-web_frame (httpd_req_t * req)
+web_frame (httpd_req_t *req)
 {
    xSemaphoreTake (epd_mutex, portMAX_DELAY);
    uint8_t *png = NULL;
@@ -1421,7 +1421,7 @@ scd41_command (uint16_t c)
 }
 
 static esp_err_t
-scd41_read (uint16_t c, int8_t len, uint8_t * buf)
+scd41_read (uint16_t c, int8_t len, uint8_t *buf)
 {
    i2c_cmd_handle_t t = i2c_cmd_link_create ();
    i2c_master_start (t);
@@ -1488,7 +1488,7 @@ sht40_write (uint8_t cmd)
 }
 
 esp_err_t
-sht40_read (uint16_t * ap, uint16_t * bp)
+sht40_read (uint16_t *ap, uint16_t *bp)
 {
    if (ap)
       *ap = 0;
@@ -2250,7 +2250,7 @@ solar_task (void *x)
 }
 
 static void
-ir_callback (uint8_t coding, uint16_t lead0, uint16_t lead1, uint8_t len, uint8_t * data)
+ir_callback (uint8_t coding, uint16_t lead0, uint16_t lead1, uint8_t len, uint8_t *data)
 {                               // Handle generic IR https://www.amazon.co.uk/dp/B07DJ58XGC
    //ESP_LOGE (TAG, "IR CB %d %d %d %d", coding, lead0, lead1, len);
    static uint32_t key = 0;
@@ -2495,7 +2495,7 @@ suffix_number (long double v, uint8_t places, const char *tag)
 }
 
 char *
-dollar_json (jo_t * jp, const char *dot, const char *colon)
+dollar_json (jo_t *jp, const char *dot, const char *colon)
 {
    if (!jp || !dot)
       return NULL;
@@ -2872,6 +2872,8 @@ nfc_task (void *x)
             uint8_t *ats = pn532_ats (pn532);
             uint8_t *id = pn532_nfcid (pn532, NULL);
             jo_t j = jo_object_alloc ();
+            jo_stringf (j, "atq", "%04X", pn532_atq (pn532));
+            jo_stringf (j, "sak", "%02X", pn532_sak (pn532));
             if (id && *id)
                jo_base16 (j, "id", id + 1, *id);
             if (ats && *ats)
@@ -2993,28 +2995,28 @@ ha_config (void)
    {
       ha_config_sensor ("ram",.name = "RAM",.field = "mem",.unit = "B");
       ha_config_sensor ("spi",.name = "PSRAM",.field = "spi",.unit = "B");
-      ha_config_sensor ("veml6040W",.name = "VEML6040-White",.type = "illuminance",.unit = "lx",.field =
-                        "veml6040.W",.delete = !veml6040);
-      ha_config_sensor ("veml6040R",.name = "VEML6040-Red",.type = "illuminance",.unit = "lx",.field = "veml6040.R",.delete =
-                        !veml6040);
-      ha_config_sensor ("veml6040G",.name = "VEML6040-Green",.type = "illuminance",.unit = "lx",.field =
-                        "veml6040.G",.delete = !veml6040);
-      ha_config_sensor ("veml6040B",.name = "VEML6040-Blue",.type = "illuminance",.unit = "lx",.field =
-                        "veml6040.B",.delete = !veml6040);
+      ha_config_sensor ("veml6040W",.name = "VEML6040-White",.type = "illuminance",.unit =
+                        "lx",.field = "veml6040.W",.delete = !veml6040);
+      ha_config_sensor ("veml6040R",.name = "VEML6040-Red",.type = "illuminance",.unit = "lx",.field =
+                        "veml6040.R",.delete = !veml6040);
+      ha_config_sensor ("veml6040G",.name = "VEML6040-Green",.type = "illuminance",.unit =
+                        "lx",.field = "veml6040.G",.delete = !veml6040);
+      ha_config_sensor ("veml6040B",.name = "VEML6040-Blue",.type = "illuminance",.unit =
+                        "lx",.field = "veml6040.B",.delete = !veml6040);
       ha_config_sensor ("mcp9808T",.name = "MCP9808",.type = "temperature",.unit = "°C",.field = "mcp9808.C",.delete = !mcp9808);
       ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "°C",.field = "tmp1075.C",.delete = !tmp1075);
       ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field =
                         "noise.mean1",.delete = !noise || reporting > 1);
       ha_config_sensor ("noiseP1",.name = "NOISE-PEAK1",.type = "sound_pressure",.unit = "dB",.field =
                         "noise.peak1",.delete = !noise || reporting > 1);
-      ha_config_sensor ("noiseM10",.name = "NOISE-MEAN10",.type = "sound_pressure",.unit = "dB",.field =
-                        "noise.mean10",.delete = !noise || reporting > 10);
-      ha_config_sensor ("noiseP10",.name = "NOISE-PEAK10",.type = "sound_pressure",.unit = "dB",.field =
-                        "noise.peak10",.delete = !noise || reporting > 10);
-      ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit = "dB",.field =
-                        "noise.mean60",.delete = !noise);
-      ha_config_sensor ("noiseP60",.name = "NOISE-PEAK60",.type = "sound_pressure",.unit = "dB",.field =
-                        "noise.peak60",.delete = !noise);
+      ha_config_sensor ("noiseM10",.name = "NOISE-MEAN10",.type = "sound_pressure",.unit =
+                        "dB",.field = "noise.mean10",.delete = !noise || reporting > 10);
+      ha_config_sensor ("noiseP10",.name = "NOISE-PEAK10",.type = "sound_pressure",.unit =
+                        "dB",.field = "noise.peak10",.delete = !noise || reporting > 10);
+      ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit =
+                        "dB",.field = "noise.mean60",.delete = !noise);
+      ha_config_sensor ("noiseP60",.name = "NOISE-PEAK60",.type = "sound_pressure",.unit =
+                        "dB",.field = "noise.peak60",.delete = !noise);
       for (int i = 0; i < ds18b20_num; i++)
       {
          char id[20],
@@ -3057,18 +3059,18 @@ ha_config (void)
          sprintf (js, "ble[%d].bat", i);
          ha_config_sensor (id,.name = name,.type = "battery",.unit = "%",.field = js,.delete = *blesensor[i] ? 0 : 1);
       }
-      ha_config_sensor ("gzp6816dP",.name = "GZP6816D-Pressure",.type = "pressure",.unit = "mbar",.field =
-                        "gzp6816d.hPa",.delete = !gzp6816d);
-      ha_config_sensor ("gzp6816dT",.name = "GZP6816D-Temp",.type = "temperature",.unit = "°C",.field = "gzp6816d.C",.delete =
-                        !gzp6816d);
-      ha_config_sensor ("scd41C",.name = "SCD41-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "scd41.ppm",.delete =
-                        !scd41);
+      ha_config_sensor ("gzp6816dP",.name = "GZP6816D-Pressure",.type = "pressure",.unit =
+                        "mbar",.field = "gzp6816d.hPa",.delete = !gzp6816d);
+      ha_config_sensor ("gzp6816dT",.name = "GZP6816D-Temp",.type = "temperature",.unit =
+                        "°C",.field = "gzp6816d.C",.delete = !gzp6816d);
+      ha_config_sensor ("scd41C",.name = "SCD41-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field =
+                        "scd41.ppm",.delete = !scd41);
       ha_config_sensor ("scd41T",.name = "SCD41-Temp",.type = "temperature",.unit = "°C",.field = "scd41.C",.delete = !scd41);
       ha_config_sensor ("scd41H",.name = "SCD41-Humidity",.type = "humidity",.unit = "%",.field = "scd41.RH",.delete = !scd41);
       ha_config_sensor ("sht40T",.name = "SHT40-Temp",.type = "temperature",.unit = "°C",.field = "sht40.C",.delete = !sht40);
       ha_config_sensor ("sht40H",.name = "SHT40-Humidity",.type = "humidity",.unit = "%",.field = "sht40.RH",.delete = !sht40);
-      ha_config_sensor ("t6793C",.name = "T6793-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field = "t6793.ppm",.delete =
-                        !t6793);
+      ha_config_sensor ("t6793C",.name = "T6793-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field =
+                        "t6793.ppm",.delete = !t6793);
       ha_config_sensor ("solarV",.name = "Solar-Voltage",.type = "voltage",.unit = "V",.field = "solar.voltage",.delete = !solar);
       ha_config_sensor ("solarF",.name = "Solar-Frequency",.type = "frequency",.unit = "Hz",.field =
                         "solar.frequency",.delete = !solar);
@@ -3085,8 +3087,8 @@ ha_config (void)
          sprintf (n, "L%s", btns[b]);
          ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "long",.type = "button_long_press",.delete = !btng[b].set);
          sprintf (n, "R%s", btns[b]);
-         ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "release",.type = "button_long_release",.delete =
-                            !btng[b].set);
+         ha_config_trigger (n,.info = t,.subtype = btns[b],.payload = "release",.type =
+                            "button_long_release",.delete = !btng[b].set);
       }
    }
    if (hairkeys && irgpio.set)
@@ -3284,13 +3286,13 @@ app_main ()
 #ifdef	CONFIG_REVK_SOLAR
          struct tm tm;
          sunrise =
-            sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale, (double) poslon / poslon_scale,
-                      SUN_DEFAULT);
+            sun_rise (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
+                      (double) poslon / poslon_scale, SUN_DEFAULT);
          localtime_r (&sunrise, &tm);
          sunrisehhmm = tm.tm_hour * 100 + t.tm_min;
          sunset =
-            sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale, (double) poslon / poslon_scale,
-                     SUN_DEFAULT);
+            sun_set (t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, (double) poslat / poslat_scale,
+                     (double) poslon / poslon_scale, SUN_DEFAULT);
          localtime_r (&sunset, &tm);
          sunsethhmm = tm.tm_hour * 100 + t.tm_min;
 #endif
@@ -3654,7 +3656,7 @@ app_main ()
 }
 
 void
-revk_web_extra (httpd_req_t * req, int page)
+revk_web_extra (httpd_req_t *req, int page)
 {
    if (!page)
    {
@@ -3710,8 +3712,9 @@ revk_web_extra (httpd_req_t * req, int page)
    add (NULL, "widgety");
    const char *c = widgetc[page - 1];
    const char *p = NULL;
-   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS ||
-       widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
+   if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_TEXT
+       || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BLOCKS
+       || widgett[page - 1] == REVK_SETTINGS_WIDGETT_DIGITS || widgett[page - 1] == REVK_SETTINGS_WIDGETT_BINS)
       p = "Font size";
    else if (widgett[page - 1] == REVK_SETTINGS_WIDGETT_HLINE)
       p = "Line width";
