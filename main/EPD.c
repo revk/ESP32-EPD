@@ -2882,7 +2882,7 @@ nfc_task (void *x)
             if (ats && *ats)
                jo_base16 (j, "ats", ats + 1, *ats);
             revk_event ("Fob", &j);
-            while (pn532_Present (pn532))
+            while (pn532_Present (pn532) > 0)
                usleep (10000);
          }
       }
