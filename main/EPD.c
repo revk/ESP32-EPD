@@ -968,7 +968,7 @@ web_frame (httpd_req_t *req)
    ESP_LOGD (TAG, "Encoded %u bytes %s", len, e ? : "");
    if (e)
    {
-      revk_web_head (req, *hostname ? hostname : appname);
+      revk_web_head (req, *hostname ? hostname : revk_app);
       revk_web_send (req, e);
       revk_web_foot (req, 0, 1, NULL);
    } else
