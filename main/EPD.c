@@ -2904,17 +2904,17 @@ nfc_task (void *x)
                if (l < 0)
                   jo_string (j, "err", e);
                else if (l)
-                  jo_base16 (j, "File", buf, l);
+                  jo_base16 (j, "Rx", buf, l);
                revk_event ("NTAG", &j);
                const uint8_t read0[] = { 0x00, 0xB0, 0x00, 0x00, 0x0F };        // Read 15 bytes from 0
                memcpy (buf, read0, sizeof (read0));
-               l = pn532_dx (pn532, sizeof (selfile), buf, sizeof (buf), NULL);
+               l = pn532_dx (pn532, sizeof (read0), buf, sizeof (buf), NULL);
                j = jo_object_alloc ();
                jo_base16 (j, "Tx", read0, sizeof (read0));
                if (l < 0)
                   jo_string (j, "err", e);
                else if (l)
-                  jo_base16 (j, "Read0", buf, l);
+                  jo_base16 (j, "Rx", buf, l);
                revk_event ("NTAG", &j);
 
             }
