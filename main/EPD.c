@@ -2847,6 +2847,17 @@ reload_task (void *x)
    vTaskDelete (NULL);
 }
 
+const char *const ntagprefix[] = { "http://www.", "https://www.", "http://", "https://", "tel:", "mailto:",
+   "ftp://anonymous:anonymous@", "ftp://ftp.", "ftps://", "sftp://", "smb://",
+   "nfs://", "ftp://",
+   "dav://", "news:", "telnet://", "imap:", "rtsp://", "urn:", "pop:", "sip:",
+   "sips:", "tftp:",
+   "btspp://", "btl2cap://",
+   "btgoep://",
+   "tcpobex://", "irdaobex://", "file://", "urn:epc:id:", "urn:epc:tag:",
+   "urn:epc:pat:", "urn:epc:raw:", "urn:epc:", "urn:nfc:"
+};
+
 void
 nfc_task (void *x)
 {
@@ -2858,7 +2869,174 @@ nfc_task (void *x)
       pn532 = pn532_init (1, 4, nfctx.num, nfcrx.num, 0);
    if (!pn532)
       ESP_LOGE (TAG, "NFC fail init");
-   else
+   else if (nfcndef)
+      while (1)
+      {                         // Operate as NTAG
+         uint8_t buf[64];
+
+         *buf = 7;
+         buf[0] = 7;
+         buf[1] = 0xAA;
+         buf[2] = revk_binid >> 40;
+         buf[3] = revk_binid >> 32;
+         buf[4] = revk_binid >> 24;
+         buf[5] = revk_binid >> 16;
+         buf[6] = revk_binid >> 8;
+         buf[7] = revk_binid;
+         int l = pn532_target (pn532, 0x0044, 0x00, buf, NULL, NULL, buf, sizeof (buf), 60);    // Ultralight Type 2 tag
+         if (l < 0)
+         {
+            if (l != -PN532_ERR_TIMEOUT)
+               sleep (1);
+            continue;
+         }
+         // Build NTAG image
+         uint8_t ntag[924] = { 0 }, *n = ntag;
+         *n++ = 0xAA;           // ID
+         *n++ = revk_binid >> 40;       // Use MAC
+         *n++ = revk_binid >> 32;
+         *n++ = 0x88 ^ ntag[0] ^ ntag[1] ^ ntag[2];
+         *n++ = revk_binid >> 24;
+         *n++ = revk_binid >> 16;
+         *n++ = revk_binid >> 8;
+         *n++ = revk_binid;
+         *n++ = ntag[4] ^ ntag[5] ^ ntag[6] ^ ntag[7];
+         n = ntag + 12;
+         *n++ = 0xE1;           // NFC Forum
+         *n++ = 0x10;           // V1.0
+         *n++ = 0x6D;           // NTAG216
+         *n++ = 0x00;           // No security
+         n = ntag + 16;
+
+// 03 // NDEF
+// 53 // Len
+// DA // MB ME SR IL Media-type
+// 17 // type len
+// 37 // payload len
+// 01 // ID len
+// 61 70 70 6C 69 63 61 74 69 6F 6E 2F 76 6E 64 2E 77 66 61 2E 77 73 63 // type "application/vnd.wfa.wsc"
+// 30 // ID "0"
+// 10 0E 00 29                          // WPS credentials
+// 10 45 00 03 49 6F 54                 // SSID
+// 10 20 00 11 FF FF FF FF FF FF        // MAC
+// 10 27 00 08 73 65 63 75 72 69 74 79  // Key (passphrase)
+// 10 03 00 02 00 02                    // Auth type 0002 is WPA personal, open is 0001
+// 10 0F 00 02 00 02                    // Crypt type
+// 10 49 00 06 00 37 2A 00 01 20        // Vendor ext
+// FE // End
+
+         void make (uint16_t pl, const char *id, uint8_t tnf, const char *type)
+         {
+            *n++ = 0x03;        // NDEF
+            uint16_t ndeflen = pl + 3;
+            if (id)
+               ndeflen += strlen (id) + 1;
+            if (type)
+               ndeflen += strlen (type);
+            if (pl > 255)
+               ndeflen += 3;
+            if (ndeflen < 254)
+               *n++ = ndeflen;
+            else
+            {
+               *n++ = 0xFF;
+               *n++ = ndeflen >> 8;
+               *n++ = ndeflen;
+            }
+            *n++ = 0xC0 + (pl < 256 ? 0x10 : 0) + tnf + (id ? 8 : 0);   // Short
+            *n++ = strlen (type ? : "");        // typelen
+            if (pl < 256)
+               *n++ = pl;       // Len
+            else
+            {
+               *n++ = pl >> 24; // Len
+               *n++ = pl >> 16; // Len
+               *n++ = pl >> 8;  // Len
+               *n++ = pl;       // Len
+            }
+            if (id)
+               *n++ = strlen (id);
+            if (type)
+               n = (uint8_t *) stpcpy ((char *) n, type);
+            if (id)
+               n = (uint8_t *) stpcpy ((char *) n, id);
+         }
+         if (*ndefssid)
+         {                      // WiFI
+            uint16_t l = 4 + 4 + strlen (ndefssid) + 6 + 6 + 10;
+            if (*ndefpass)
+               l += 4 + strlen (ndefpass);
+            make (l, "0", 2, "application/vnd.wfa.wsc");
+            *n++ = 0x10;        // WPS credentials
+            *n++ = 0x0E;
+            *n++ = 0x00;
+            *n++ = 0x29;
+            *n++ = 0x10;        // SSID
+            *n++ = 0x45;
+            *n++ = 0x00;
+            *n++ = strlen (ndefssid);
+            n = (uint8_t *) stpcpy ((char *) n, ndefssid);
+            *n++ = 0x10;        // MAC
+            *n++ = 0x20;
+            *n++ = 0x00;
+            *n++ = 0x11;
+            *n++ = 0xFF;
+            *n++ = 0xFF;
+            *n++ = 0xFF;
+            *n++ = 0xFF;
+            *n++ = 0xFF;
+            if (*ndefpass)
+            {
+               *n++ = 0x10;     // KEY
+               *n++ = 0x27;
+               *n++ = 0x00;
+               *n++ = strlen (ndefpass);
+               n = (uint8_t *) stpcpy ((char *) n, ndefpass);
+            }
+            *n++ = 0x10;        // Auth Type
+            *n++ = 0x03;
+            *n++ = 0x00;
+            *n++ = 2;
+            *n++ = 0x00;
+            *n++ = (*ndefpass ? 2 : 1); // 0002 is WPA personal, 0001 is open
+            *n++ = 0x10;        // Crypt type
+            *n++ = 0x0F;
+            *n++ = 0x00;
+            *n++ = 2;
+            *n++ = 0x00;
+            *n++ = (*ndefpass ? 2 : 1); // 0002 is WEP personal, 0001 is open
+         }
+         if (*ndefurl)
+         {                      // URL
+            const char *u = ndefurl;
+            uint8_t tag;
+            for (tag = 0;
+                 tag < sizeof (ntagprefix) / sizeof (*ntagprefix) && strncmp (ntagprefix[tag], u, strlen (ntagprefix[tag])); tag++);
+            if (tag < sizeof (ntagprefix) / sizeof (*ntagprefix))
+               u += strlen (ntagprefix[tag++]);
+            else
+               tag = 0;
+            make (strlen (u) + 1, NULL, 1, "U");        // URL
+            *n++ = tag;
+            n = (uint8_t *) stpcpy ((char *) n, u);
+         }
+         *n++ = 0xFE;           // End
+         jo_t j = jo_object_alloc ();   // TODO
+         jo_base16 (j, "ntag", ntag, n - ntag);
+         revk_event ("NTAG", &j);
+         // Very simple, no sector select
+         while (l >= 2)
+         {
+            if (l == 2 && buf[0] == 0x30)
+            {
+               uint16_t a = 4 * buf[1];
+               if (a + 16 <= sizeof (ntag))
+                  l = pn532_set_init (pn532, 16, ntag + a);
+            }
+            if (l >= 0)
+               l = pn532_get_init (pn532, buf, sizeof (buf), 2);        // Get next
+         }
+   } else                       // log cards seen to MQTT
       while (!b.die)
       {
          usleep (10000);
@@ -2882,42 +3060,6 @@ nfc_task (void *x)
             if (ats && *ats)
                jo_base16 (j, "ats", ats + 1, *ats);
             revk_event ("Fob", &j);
-            if (pn532_atqa (pn532) == 0x0044)
-            {
-               uint8_t buf[100];
-               const uint8_t selapdu[] = { 0x00, 0xA4, 0x04, 0x00, 0x07, 0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01, 0x00 };     // SELECT DF first 7 bytes D2760000850101 unspecified
-               memcpy (buf, selapdu, sizeof (selapdu));
-               const char *e = "";
-               int l = pn532_dx (pn532, sizeof (selapdu), buf, sizeof (buf), &e);
-               j = jo_object_alloc ();
-               jo_base16 (j, "Tx", selapdu, sizeof (selapdu));
-               if (l < 0)
-                  jo_string (j, "err", e);
-               else if (l)
-                  jo_base16 (j, "Rx", buf, l);
-               revk_event ("NTAG", &j);
-               const uint8_t selfile[] = { 0x00, 0xA4, 0x00, 0x0C, 0x02, 0xE1, 0x03 };  //  SELECT FILE
-               memcpy (buf, selfile, sizeof (selfile));
-               l = pn532_dx (pn532, sizeof (selfile), buf, sizeof (buf), NULL);
-               j = jo_object_alloc ();
-               jo_base16 (j, "Tx", selfile, sizeof (selfile));
-               if (l < 0)
-                  jo_string (j, "err", e);
-               else if (l)
-                  jo_base16 (j, "Rx", buf, l);
-               revk_event ("NTAG", &j);
-               const uint8_t read0[] = { 0x00, 0xB0, 0x00, 0x00, 0x0F };        // Read 15 bytes from 0
-               memcpy (buf, read0, sizeof (read0));
-               l = pn532_dx (pn532, sizeof (read0), buf, sizeof (buf), NULL);
-               j = jo_object_alloc ();
-               jo_base16 (j, "Tx", read0, sizeof (read0));
-               if (l < 0)
-                  jo_string (j, "err", e);
-               else if (l)
-                  jo_base16 (j, "Rx", buf, l);
-               revk_event ("NTAG", &j);
-
-            }
             while (pn532_Present (pn532) > 0)
                usleep (10000);
          }
@@ -3044,18 +3186,18 @@ ha_config (void)
                         "lx",.field = "veml6040.B",.delete = !veml6040);
       ha_config_sensor ("mcp9808T",.name = "MCP9808",.type = "temperature",.unit = "°C",.field = "mcp9808.C",.delete = !mcp9808);
       ha_config_sensor ("tmp1075T",.name = "TMP1075",.type = "temperature",.unit = "°C",.field = "tmp1075.C",.delete = !tmp1075);
-      ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field =
-                        "noise.mean1",.delete = !noise || reporting > 1);
-      ha_config_sensor ("noiseP1",.name = "NOISE-PEAK1",.type = "sound_pressure",.unit = "dB",.field =
-                        "noise.peak1",.delete = !noise || reporting > 1);
-      ha_config_sensor ("noiseM10",.name = "NOISE-MEAN10",.type = "sound_pressure",.unit =
-                        "dB",.field = "noise.mean10",.delete = !noise || reporting > 10);
-      ha_config_sensor ("noiseP10",.name = "NOISE-PEAK10",.type = "sound_pressure",.unit =
-                        "dB",.field = "noise.peak10",.delete = !noise || reporting > 10);
-      ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit =
-                        "dB",.field = "noise.mean60",.delete = !noise);
-      ha_config_sensor ("noiseP60",.name = "NOISE-PEAK60",.type = "sound_pressure",.unit =
-                        "dB",.field = "noise.peak60",.delete = !noise);
+      ha_config_sensor ("noiseM1",.name = "NOISE-MEAN1",.type = "sound_pressure",.unit = "dB",.field = "noise.mean1",.delete =
+                        !noise || reporting > 1);
+      ha_config_sensor ("noiseP1",.name = "NOISE-PEAK1",.type = "sound_pressure",.unit = "dB",.field = "noise.peak1",.delete =
+                        !noise || reporting > 1);
+      ha_config_sensor ("noiseM10",.name = "NOISE-MEAN10",.type = "sound_pressure",.unit = "dB",.field = "noise.mean10",.delete =
+                        !noise || reporting > 10);
+      ha_config_sensor ("noiseP10",.name = "NOISE-PEAK10",.type = "sound_pressure",.unit = "dB",.field = "noise.peak10",.delete =
+                        !noise || reporting > 10);
+      ha_config_sensor ("noiseM60",.name = "NOISE-MEAN60",.type = "sound_pressure",.unit = "dB",.field = "noise.mean60",.delete =
+                        !noise);
+      ha_config_sensor ("noiseP60",.name = "NOISE-PEAK60",.type = "sound_pressure",.unit = "dB",.field = "noise.peak60",.delete =
+                        !noise);
       for (int i = 0; i < ds18b20_num; i++)
       {
          char id[20],
@@ -3111,8 +3253,8 @@ ha_config (void)
       ha_config_sensor ("t6793C",.name = "T6793-CO₂",.type = "carbon_dioxide",.unit = "ppm",.field =
                         "t6793.ppm",.delete = !t6793);
       ha_config_sensor ("solarV",.name = "Solar-Voltage",.type = "voltage",.unit = "V",.field = "solar.voltage",.delete = !solar);
-      ha_config_sensor ("solarF",.name = "Solar-Frequency",.type = "frequency",.unit = "Hz",.field =
-                        "solar.frequency",.delete = !solar);
+      ha_config_sensor ("solarF",.name = "Solar-Frequency",.type = "frequency",.unit = "Hz",.field = "solar.frequency",.delete =
+                        !solar);
       ha_config_sensor ("solarP",.name = "Solar-Power",.type = "power",.unit = "W",.field = "solar.power",.delete = !solar);
       for (int b = 0; b < sizeof (btns) / sizeof (*btns); b++)
       {

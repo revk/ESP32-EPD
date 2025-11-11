@@ -28,8 +28,13 @@ u32	refresh		86400	.live .unit="s"		// Full refresh time
 
 gpio	relay						// Relay output
 
-gpio    nfc.rx                          // NFC Reader Rx from reader
-gpio    nfc.tx                        // NFC Reader Tx to reader
+gpio    nfc.rx 			                        // NFC Reader Rx from reader
+gpio    nfc.tx                 			  	// NFC Reader Tx to reader
+bit	nfc.ndef					// Operate NFC as a target
+
+s	ndef.ssid	.live				// NDEF WIFi SSID
+s	ndef.pass	.live				// NDEF WiFI passphrase
+s	ndef.url	.live				// NDEF URL
 
 gpio	btn.u						// Button up (reports to HA)
 gpio	btn.d						// Button down (reports to HA)
