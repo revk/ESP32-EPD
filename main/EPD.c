@@ -2907,26 +2907,8 @@ nfc_task (void *x)
          *n++ = 0x6D;           // NTAG216
          *n++ = 0x00;           // No security
          n = ntag + 16;
-
-// 03 // NDEF
-// 53 // Len
-// DA // MB ME SR IL Media-type
-// 17 // type len
-// 37 // payload len
-// 01 // ID len
-// 61 70 70 6C 69 63 61 74 69 6F 6E 2F 76 6E 64 2E 77 66 61 2E 77 73 63 // type "application/vnd.wfa.wsc"
-// 30 // ID "0"
-// 10 0E 00 29                          // WPS credentials
-// 10 45 00 03 49 6F 54                 // SSID
-// 10 20 00 11 FF FF FF FF FF FF        // MAC
-// 10 27 00 08 73 65 63 75 72 69 74 79  // Key (passphrase)
-// 10 03 00 02 00 02                    // Auth type 0002 is WPA personal, open is 0001
-// 10 0F 00 02 00 02                    // Crypt type
-// 10 49 00 06 00 37 2A 00 01 20        // Vendor ext
-// FE // End
-
          int make (uint16_t pl, const char *id, uint8_t tnf, const char *type)
-         {
+         {	// Make an NDEF header
             *n++ = 0x03;        // NDEF
             uint16_t ndeflen = pl + 3;
             if (id)
@@ -2935,7 +2917,7 @@ nfc_task (void *x)
                ndeflen += strlen (type);
             if (pl > 255)
                ndeflen += 3;
-            if (ndeflen + 3 > ntag + sizeof (ntag))
+            if (n + ndeflen + 3 > ntag + sizeof (ntag))
                return 0;
             if (ndeflen < 254)
                *n++ = ndeflen;
@@ -2984,6 +2966,7 @@ nfc_task (void *x)
                *n++ = 0x20;
                *n++ = 0x00;
                *n++ = 0x11;
+               *n++ = 0xFF;
                *n++ = 0xFF;
                *n++ = 0xFF;
                *n++ = 0xFF;
