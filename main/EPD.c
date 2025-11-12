@@ -2925,7 +2925,7 @@ nfc_task (void *x)
 // 10 49 00 06 00 37 2A 00 01 20        // Vendor ext
 // FE // End
 
-         void make (uint16_t pl, const char *id, uint8_t tnf, const char *type)
+         int make (uint16_t pl, const char *id, uint8_t tnf, const char *type)
          {
             *n++ = 0x03;        // NDEF
             uint16_t ndeflen = pl + 3;
@@ -2935,6 +2935,8 @@ nfc_task (void *x)
                ndeflen += strlen (type);
             if (pl > 255)
                ndeflen += 3;
+            if (ndeflen + 3 > ntag + sizeof (ntag))
+               return 0;
             if (ndeflen < 254)
                *n++ = ndeflen;
             else
@@ -2960,51 +2962,54 @@ nfc_task (void *x)
                n = (uint8_t *) stpcpy ((char *) n, type);
             if (id)
                n = (uint8_t *) stpcpy ((char *) n, id);
+            return ndeflen;
          }
          if (*ndefssid)
          {                      // WiFI
             uint16_t l = 4 + 4 + strlen (ndefssid) + 6 + 6 + 10;
             if (*ndefpass)
                l += 4 + strlen (ndefpass);
-            make (l, "0", 2, "application/vnd.wfa.wsc");
-            *n++ = 0x10;        // WPS credentials
-            *n++ = 0x0E;
-            *n++ = 0x00;
-            *n++ = 0x29;
-            *n++ = 0x10;        // SSID
-            *n++ = 0x45;
-            *n++ = 0x00;
-            *n++ = strlen (ndefssid);
-            n = (uint8_t *) stpcpy ((char *) n, ndefssid);
-            *n++ = 0x10;        // MAC
-            *n++ = 0x20;
-            *n++ = 0x00;
-            *n++ = 0x11;
-            *n++ = 0xFF;
-            *n++ = 0xFF;
-            *n++ = 0xFF;
-            *n++ = 0xFF;
-            *n++ = 0xFF;
-            if (*ndefpass)
+            if (make (l, "0", 2, "application/vnd.wfa.wsc"))
             {
-               *n++ = 0x10;     // KEY
-               *n++ = 0x27;
+               *n++ = 0x10;     // WPS credentials
+               *n++ = 0x0E;
                *n++ = 0x00;
-               *n++ = strlen (ndefpass);
-               n = (uint8_t *) stpcpy ((char *) n, ndefpass);
+               *n++ = 0x29;
+               *n++ = 0x10;     // SSID
+               *n++ = 0x45;
+               *n++ = 0x00;
+               *n++ = strlen (ndefssid);
+               n = (uint8_t *) stpcpy ((char *) n, ndefssid);
+               *n++ = 0x10;     // MAC
+               *n++ = 0x20;
+               *n++ = 0x00;
+               *n++ = 0x11;
+               *n++ = 0xFF;
+               *n++ = 0xFF;
+               *n++ = 0xFF;
+               *n++ = 0xFF;
+               *n++ = 0xFF;
+               if (*ndefpass)
+               {
+                  *n++ = 0x10;  // KEY
+                  *n++ = 0x27;
+                  *n++ = 0x00;
+                  *n++ = strlen (ndefpass);
+                  n = (uint8_t *) stpcpy ((char *) n, ndefpass);
+               }
+               *n++ = 0x10;     // Auth Type
+               *n++ = 0x03;
+               *n++ = 0x00;
+               *n++ = 2;
+               *n++ = 0x00;
+               *n++ = (*ndefpass ? 2 : 1);      // 0002 is WPA personal, 0001 is open
+               *n++ = 0x10;     // Crypt type
+               *n++ = 0x0F;
+               *n++ = 0x00;
+               *n++ = 2;
+               *n++ = 0x00;
+               *n++ = (*ndefpass ? 2 : 1);      // 0002 is WEP personal, 0001 is open
             }
-            *n++ = 0x10;        // Auth Type
-            *n++ = 0x03;
-            *n++ = 0x00;
-            *n++ = 2;
-            *n++ = 0x00;
-            *n++ = (*ndefpass ? 2 : 1); // 0002 is WPA personal, 0001 is open
-            *n++ = 0x10;        // Crypt type
-            *n++ = 0x0F;
-            *n++ = 0x00;
-            *n++ = 2;
-            *n++ = 0x00;
-            *n++ = (*ndefpass ? 2 : 1); // 0002 is WEP personal, 0001 is open
          }
          if (*ndefurl)
          {                      // URL
@@ -3016,9 +3021,11 @@ nfc_task (void *x)
                u += strlen (ntagprefix[tag++]);
             else
                tag = 0;
-            make (strlen (u) + 1, NULL, 1, "U");        // URL
-            *n++ = tag;
-            n = (uint8_t *) stpcpy ((char *) n, u);
+            if (make (strlen (u) + 1, NULL, 1, "U"))
+            {
+               *n++ = tag;
+               n = (uint8_t *) stpcpy ((char *) n, u);
+            }
          }
          *n++ = 0xFE;           // End
          jo_t j = jo_object_alloc ();   // TODO
