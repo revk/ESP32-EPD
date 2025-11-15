@@ -12,7 +12,7 @@ all:	main/settings.h
 	@cp build/$(PROJECT_NAME).bin $(PROJECT_NAME)$(SUFFIX).bin
 	@echo Done: $(PROJECT_NAME)$(SUFFIX).bin
 
-beta:   
+beta:	
 	-git pull
 	-git submodule update --recursive
 	-git commit -a
@@ -20,13 +20,15 @@ beta:
 	cp $(PROJECT_NAME)*.bin release/beta
 	git commit -a -m Beta
 	git push
+	rsync -az release/beta/$(PROJECT_NAME)* ota.faikout.uk:/var/www/ota/beta/
 
-issue:
+issue:	
 	-git pull
 	-git commit -a
 	cp -f release/beta/$(PROJECT_NAME)*.bin release
-	-git commit -a -m Release
-	-git push
+	git commit -a -m Release
+	git push
+	rsync -az release/$(PROJECT_NAME)* ota.faikout.uk:/var/www/ota/
 
 main/settings.h:     components/ESP32-RevK/revk_settings main/settings.def components/*/settings.def
 	components/ESP32-RevK/revk_settings $^
