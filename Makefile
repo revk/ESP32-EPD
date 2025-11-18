@@ -26,7 +26,7 @@ issue:
 	-git pull
 	-git commit -a
 	cp -f release/beta/$(PROJECT_NAME)*.bin release
-	git commit -a -m Release
+	-git commit -a -m Release
 	git push
 	rsync -az release/$(PROJECT_NAME)* ota.faikout.uk:/var/www/ota/
 
