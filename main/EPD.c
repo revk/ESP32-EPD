@@ -1283,7 +1283,7 @@ sd_task (void *x)
          ESP_LOGE (TAG, "SD Mounted %llu/%llu", sdfree, sdsize);
          while (!b.die && revk_gpio_get (sdcd))
             sleep (1);
-	 esp_vfs_fat_sdcard_unmount(sd_mount,card);
+         esp_vfs_fat_sdcard_unmount (sd_mount, card);
          card = NULL;
       }
    }
@@ -1468,7 +1468,7 @@ scd41_command (uint16_t c)
    esp_err_t err = i2c_master_cmd_begin (i2cport, t, 100 / portTICK_PERIOD_MS);
    i2c_cmd_link_delete (t);
    if (err)
-      ESP_LOGE (TAG, "I2C %02X %04X fail %s", scd41i2c & 0x7F, c, esp_err_to_name (err));
+      revk_ate_fail ("SCD41");
    return err;
 }
 
@@ -1584,6 +1584,7 @@ i2c_task (void *x)
 {
    void fail (uint8_t addr, const char *e)
    {
+      revk_ate_fail (e);
       ESP_LOGE (TAG, "I2C fail %02X: %s", addr & 0x7F, e);
       jo_t j = jo_object_alloc ();
       jo_string (j, "error", e);
@@ -1910,6 +1911,7 @@ i2s_task (void *x)
       err = i2s_channel_enable (mic_handle);
    if (err)
    {
+      revk_ate_fail ("I2S");
       ESP_LOGE (TAG, "Mic I2S failed");
       jo_t j = jo_object_alloc ();
       jo_int (j, "code", err);
@@ -2920,7 +2922,7 @@ nfc_task (void *x)
    if (!pn532)
       pn532 = pn532_init (1, 4, nfctx.num, nfcrx.num, 0);
    if (!pn532)
-      ESP_LOGE (TAG, "NFC fail init");
+      revk_ate_fail ("NFC");
    else if (nfcndef)
       while (1)
       {                         // Operate as NTAG
@@ -3372,7 +3374,6 @@ app_main ()
       showlights ("b");
       revk_task ("blink", led_task, NULL, 4);
    }
-   revk_ate_pass();	// TODO would be good to test stuff - at least the I2C and the like...
    // Web interface
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.stack_size += 1024 * 4;
@@ -3443,6 +3444,7 @@ app_main ()
    }
 #endif
    showlights ("");
+   revk_ate_pass ();
    int16_t lastday = -1;
    int8_t lasthour = -1;
    int8_t lastmin = -1;
