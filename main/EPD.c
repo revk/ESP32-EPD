@@ -2085,6 +2085,7 @@ ds18b20_task (void *x)
    }
    if (!ds18b20_num)
    {
+      // Not really worth doing ATE fail on this one
       jo_t j = jo_object_alloc ();
       jo_string (j, "error", "No DS18B20 devices");
       jo_int (j, "port", ds18b20.num);
