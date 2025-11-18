@@ -3372,6 +3372,7 @@ app_main ()
       showlights ("b");
       revk_task ("blink", led_task, NULL, 4);
    }
+   revk_ate_pass();	// TODO would be good to test stuff - at least the I2C and the like...
    // Web interface
    httpd_config_t config = HTTPD_DEFAULT_CONFIG ();
    config.stack_size += 1024 * 4;
@@ -3442,7 +3443,6 @@ app_main ()
    }
 #endif
    showlights ("");
-   revk_ate_pass();	// TODO would be good to test stuff
    int16_t lastday = -1;
    int8_t lasthour = -1;
    int8_t lastmin = -1;
