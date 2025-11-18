@@ -1241,6 +1241,56 @@ snmp_rx_task (void *x)
 }
 
 void
+sd_task (void *x)
+{
+   revk_gpio_input (sdcd);
+   sdmmc_slot_config_t slot = SDMMC_SLOT_CONFIG_DEFAULT ();
+   slot.clk = sdclk.num;
+   slot.cmd = sdcmd.num;
+   slot.d0 = sddat0.num;
+   slot.d1 = sddat1.set ? sddat1.num : -1;
+   slot.d2 = sddat2.set ? sddat2.num : -1;
+   slot.d3 = sddat3.set ? sddat3.num : -1;
+   //slot.cd = sdcd.set ? sdcd.num : -1; // We do CD, and not sure how we would tell it polarity
+   slot.width = (sddat2.set && sddat3.set ? 4 : sddat1.set ? 2 : 1);
+   if (slot.width == 1)
+      slot.flags |= SDMMC_SLOT_FLAG_INTERNAL_PULLUP;    // Old boards?
+   sdmmc_host_t host = SDMMC_HOST_DEFAULT ();
+   host.max_freq_khz = SDMMC_FREQ_HIGHSPEED;
+   host.slot = SDMMC_HOST_SLOT_1;
+   esp_vfs_fat_sdmmc_mount_config_t mount_config = {
+      .format_if_mount_failed = 1,
+      .max_files = 2,
+      .allocation_unit_size = 16 * 1024,
+      .disk_status_check_enable = 1,
+   };
+   while (!b.die)
+   {
+      while (!b.die && !revk_gpio_get (sdcd))
+         sleep (1);
+      if (b.die)
+         break;
+      if (esp_vfs_fat_sdmmc_mount (sd_mount, &host, &slot, &mount_config, &card))
+      {
+         jo_t j = jo_object_alloc ();
+         ESP_LOGE (TAG, "SD Mount failed");
+         jo_string (j, "error", "Failed to mount");
+         revk_error ("SD", &j);
+         card = NULL;
+      } else
+      {
+         esp_vfs_fat_info (sd_mount, &sdsize, &sdfree);
+         ESP_LOGE (TAG, "SD Mounted %llu/%llu", sdfree, sdsize);
+         while (!b.die && revk_gpio_get (sdcd))
+            sleep (1);
+	 esp_vfs_fat_sdcard_unmount(sd_mount,card);
+         card = NULL;
+      }
+   }
+   vTaskDelete (NULL);
+}
+
+void
 led_task (void *x)
 {
    while (!b.die)
@@ -1248,7 +1298,9 @@ led_task (void *x)
       usleep (100000);
       uint32_t b = revk_blinker ();
       for (int i = 0; i < sizeof (lightmode) / sizeof (*lightmode); i++)
-         if (lightmode[i] == REVK_SETTINGS_LIGHTMODE_STATUS)
+         if (lightmode[i] == REVK_SETTINGS_LIGHTMODE_SD_STATUS)
+            revk_led (strip, i, 255, revk_rgb (card ? 'G' : revk_gpio_get (sdcd) ? 'R' : 'Y'));
+         else if (lightmode[i] == REVK_SETTINGS_LIGHTMODE_STATUS)
             revk_led (strip, i, 255, b);
       led_strip_refresh (strip);
    }
@@ -2908,7 +2960,7 @@ nfc_task (void *x)
          *n++ = 0x00;           // No security
          n = ntag + 16;
          int make (uint16_t pl, const char *id, uint8_t tnf, const char *type)
-         {	// Make an NDEF header
+         {                      // Make an NDEF header
             *n++ = 0x03;        // NDEF
             uint16_t ndeflen = pl + 3;
             if (id)
@@ -3334,11 +3386,12 @@ app_main ()
 #endif
       revk_web_settings_add (webserver);
    }
-   if (btnu.set || btnd.set || btnl.set || btnr.set)
+   if (btnu.set || btnd.set || btnl.set || btnr.set || btnp.set)
       revk_task ("btn", btn_task, NULL, 4);
 #ifndef	CONFIG_GFX_BUILD_SUFFIX_GFXNONE
    if (gfxbl.set)
       revk_task ("BL", bl_task, NULL, 4);
+   revk_gpio_output (nfcpwr, 1);        // Power on anyway in case being used externally
    if (nfctx.set && nfcrx.set)
       revk_task ("nfc", nfc_task, NULL, 8);
    {                            // GFX
@@ -3370,41 +3423,7 @@ app_main ()
    if (bleenable)
       revk_task ("ble", ble_task, NULL, 4);
    if (sdcmd.set)
-   {
-      revk_gpio_input (sdcd);
-      sdmmc_slot_config_t slot = SDMMC_SLOT_CONFIG_DEFAULT ();
-      slot.clk = sdclk.num;
-      slot.cmd = sdcmd.num;
-      slot.d0 = sddat0.num;
-      slot.d1 = sddat1.set ? sddat1.num : -1;
-      slot.d2 = sddat2.set ? sddat2.num : -1;
-      slot.d3 = sddat3.set ? sddat3.num : -1;
-      //slot.cd = sdcd.set ? sdcd.num : -1; // We do CD, and not sure how we would tell it polarity
-      slot.width = (sddat2.set && sddat3.set ? 4 : sddat1.set ? 2 : 1);
-      if (slot.width == 1)
-         slot.flags |= SDMMC_SLOT_FLAG_INTERNAL_PULLUP; // Old boards?
-      sdmmc_host_t host = SDMMC_HOST_DEFAULT ();
-      host.max_freq_khz = SDMMC_FREQ_HIGHSPEED;
-      host.slot = SDMMC_HOST_SLOT_1;
-      esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-         .format_if_mount_failed = 1,
-         .max_files = 2,
-         .allocation_unit_size = 16 * 1024,
-         .disk_status_check_enable = 1,
-      };
-      if (esp_vfs_fat_sdmmc_mount (sd_mount, &host, &slot, &mount_config, &card))
-      {
-         jo_t j = jo_object_alloc ();
-         ESP_LOGE (TAG, "SD Mount failed");
-         jo_string (j, "error", "Failed to mount");
-         revk_error ("SD", &j);
-         card = NULL;
-      } else
-      {
-         esp_vfs_fat_info (sd_mount, &sdsize, &sdfree);
-         ESP_LOGE (TAG, "SD Mounted %llu/%llu", sdfree, sdsize);
-      }
-   }
+      revk_task ("sd", sd_task, NULL, 4);
 #ifdef	GFX_EPD
    void flash (void)
    {                            // Random data

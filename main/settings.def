@@ -28,6 +28,7 @@ u32	refresh		86400	.live .unit="s"		// Full refresh time
 
 gpio	relay						// Relay output
 
+gpio	nfc.pwr						// NFC power
 gpio    nfc.rx 			                        // NFC Reader Rx from reader
 gpio    nfc.tx                 			  	// NFC Reader Tx to reader
 bit	nfc.ndef					// Operate NFC as a target
@@ -59,7 +60,7 @@ s	pos.town		.live 	// Town name (for weather)
 
 gpio	light.gpio	2	.old="rgb"		// Lights GPIO
 u8	light.count	25	.old="leds"		// Number of Lights
-enum	light.mode	1	.live .array=3 .enums="RGB-Pattern,Status,Off"	// Mode for initial LEDs (the RGB-Pattern for rest)
+enum	light.mode	1	.live .array=3 .enums="RGB-Pattern,Status,SD-Status,Off"	// Mode for initial LEDs
 s	light.pattern	RGB	.live .old="lights"		// Lights pattern (colour letters)
 u16	light.on		.live	.digits=4 .place="HHMM"	// Lights on time (HHMM). 5000±59 sinrise, 7000±59 sunset
 u16	light.off		.live	.digits=4 .place="HHMM"	// Lights off time (HHMM). 5000±59 sinrise, 7000±59 sunset
