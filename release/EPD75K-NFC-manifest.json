@@ -3,6 +3,7 @@
   "url": "https://ota.revk.uk/EPD75K-NFC-manifest.json.json",
   "chip": "ESP32S3MCN4R2",
   "id":"EPD-S3-MINI-N4-R2-EPD75K",
+  "wait":20,
   "setting":{
 	  "gfx":{
 		  "pwr":11,
