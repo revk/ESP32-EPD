@@ -1,6 +1,6 @@
 {
   "name":"EPD75K-NFC",
-  "url": "https://ota.revk.uk/EPD75K-NFC-manifest.json.json",
+  "url": "https://ota.revk.uk/EPD75K-NFC-manifest.json",
   "chip": "ESP32S3MCN4R2",
   "id":"EPD-S3-MINI-N4-R2-EPD75K",
   "wait":20,
