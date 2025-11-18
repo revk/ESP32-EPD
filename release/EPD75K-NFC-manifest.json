@@ -1,0 +1,72 @@
+{
+  "name":"EPD75K-NFC",
+  "url": "https://ota.revk.uk/EPD75K-NFC-manifest.json.json",
+  "chip": "ESP32S3MCN4R2",
+  "id":"EPD-S3-MINI-N4-R2-EPD75K",
+  "setting":{
+	  "gfx":{
+		  "pwr":11,
+		  "mosi":40,
+		  "sck":39,
+		  "cs":38,
+		  "dc":37,
+		  "rst":36,
+		  "busy":35,
+		  "flip":6,
+		  "invert":true,
+		  "night":true
+	  },
+	  "nfc":{
+		  "pwr":12,
+		  "rx":34,
+		  "tx":33
+	  },
+	  "sd":{
+		  "dat2":3,
+		  "dat3":4,
+		  "cmd":5,
+		  "clk":6,
+		  "dat0":7,
+		  "dat1":8,
+		  "cd":-7
+	  },
+	  "light":{
+		  "gpio":2,
+		  "count":26,
+		  "mode1":1,
+		  "mode2":2,
+		  "mode3":0,
+		  "pattern":"RGB"
+	  },
+	  "scl":15,
+	  "sda":16,
+	  "i2s":{
+		  "clock":18,
+		  "data":17
+	  },
+	  "sht40i2c":"44",
+	  "scd41i2c":"62",
+	  "gzp6816di2c":"78",
+	  "relay":13,
+	  "ds18b20":14,
+	  "btnp":-41
+  },
+  "flash": [
+    {
+      "url":"https://ota.revk.uk/EPD-S3-MINI-N4-R2-bootloader.bin"
+    },
+    {
+      "address": "8000",
+      "url":"https://ota.revk.uk/EPD-S3-MINI-N4-R2-partition-table.bin"
+    },
+    {
+      "address": "D000",
+      "url":"https://ota.revk.uk/EPD-S3-MINI-N4-R2-ota_data_initial.bin"
+    },
+    {
+      "address": "10000",
+      "url": "https://ota.revk.uk/EPD-S3-MINI-N4-R2-EPD75K.bin",
+      "app":true
+    }
+  ]
+}

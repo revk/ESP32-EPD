@@ -3442,6 +3442,7 @@ app_main ()
    }
 #endif
    showlights ("");
+   revk_ate_pass();	// TODO would be good to test stuff
    int16_t lastday = -1;
    int8_t lasthour = -1;
    int8_t lastmin = -1;
