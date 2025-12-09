@@ -3,6 +3,7 @@ if($?QUERY_STRING) then
 	setenv UPRN "$QUERY_STRING"
 else
 	setenv UPRN "$1"
+	shift
 endif
 if(! "$UPRN") then
 	echo Specify UPRN
@@ -16,14 +17,19 @@ echo ""
 endif
 
 setenv CACHE `date +/tmp/bins-$UPRN-%F-%H.json`
-if(-e "$CACHE") then
+if(-e "$CACHE" && $?QUERY_STRING) then
 	cat "$CACHE"
 	exit 0
 endif
 
-setenv TMP `mktemp`
-setenv COOKIE `mktemp`
-curl -s -L -c "$COOKIE" -b "$COOKIE" "https://maps.monmouthshire.gov.uk/?action=SetAddress&UniqueId=$UPRN" | /projects/tools/bin/htmlclean > "$TMP"
+if("$1" != "") then
+	setenv TMP "$1"
+else
+	setenv TMP `mktemp`
+	setenv COOKIE `mktemp`
+	curl -s -L -c "$COOKIE" -b "$COOKIE" "https://maps.monmouthshire.gov.uk/?action=SetAddress&UniqueId=$UPRN" | /projects/tools/bin/htmlclean > "$TMP"
+endif
+
 setenv BLACK `grep "^Household rubbish bag" -A8 "$TMP" |grep -v '^<'|tail -1|sed -e "s/st / /" -e "s/nd / /" -e "s/rd / /" -e "s/th / /"`
 setenv RED `grep "^Red &amp; purple recycling bags" -A8 "$TMP" |grep -v '^<'|tail -1|sed -e "s/st / /" -e "s/nd / /" -e "s/rd / /" -e "s/th / /"`
 setenv PURPLE `grep "^Red &amp; purple recycling bags" -A8 "$TMP" |grep -v '^<'|tail -1|sed -e "s/st / /" -e "s/nd / /" -e "s/rd / /" -e "s/th / /"`
@@ -40,17 +46,19 @@ if(`date +%b` == Dec) then
 	if("$GARDEN" =~ *January*) setenv GARDEN "$GARDEN next year"
 	if("$YELLOW" =~ *January*) setenv YELLOW "$YELLOW next year"
 endif
-rm -f "$COOKIE" "$TMP"
+if($?COOKIE) then
+	rm -f "$COOKIE" "$TMP"
+endif
 
-setenv DAY "$BLACK"
-setenv MIN `date +%s -d yesterday`
-if("$DAY" == "" || ("$RED" != "" && `date +%s -d "$RED"` > "$MIN" && `date +%s -d "$RED"` < `date +%s -d "$DAY"`)) setenv DAY "$RED"
-if("$DAY" == "" || ("$PURPLE" != "" && `date +%s -d "$PURPLE"` > "$MIN" && `date +%s -d "$PURPLE"` <`date +%s -d "$DAY"`)) setenv DAY "$PURPLE"
-if("$DAY" == "" || ("$BLUE" != "" && `date +%s -d "$BLUE"` > "$MIN" && `date +%s -d "$BLUE"` < `date +%s -d "$DAY"`)) setenv DAY "$BLUE"
-if("$DAY" == "" || ("$GREEN" != "" && `date +%s -d "$GREEN"` > "$MIN" && `date +%s -d "$GREEN"` < `date +%s -d "$DAY"`)) setenv DAY "$GREEN"
-if("$DAY" == "" || ("$GARDEN" != "" && `date +%s -d "$GARDEN"` > "$MIN" && `date +%s -d "$GARDEN"` < `date +%s -d "$DAY"`)) setenv DAY "$GARDEN"
-if("$DAY" == "" || ("$YELLOW" != "" && `date +%s -d "$YELLOW"` > "$MIN" && `date +%s -d "$YELLOW"` <`date +%s -d "$DAY"`)) setenv DAY "$YELLOW"
-
+setenv DAY ""
+setenv MIN `date +%s -d 'today 00:00:00'`
+if("$BLACK" != "" && `date +%s -d "$BLACK"` > "$MIN" && ("$DAY" == "" || `date +%s -d "$BLACK"` < `date +%s -d "$DAY"`)) setenv DAY "$BLACK"
+if("$RED" != "" && `date +%s -d "$RED"` > "$MIN" && ("$DAY" == "" || `date +%s -d "$RED"` < `date +%s -d "$DAY"`)) setenv DAY "$RED"
+if("$PURPLE" != "" && `date +%s -d "$PURPLE"` > "$MIN" && ("$DAY" == "" || `date +%s -d "$PURPLE"` < `date +%s -d "$DAY"`)) setenv DAY "$PURPLE"
+if("$BLUE" != "" && `date +%s -d "$BLUE"` > "$MIN" && ("$DAY" == "" || `date +%s -d "$BLUE"` < `date +%s -d "$DAY"`)) setenv DAY "$BLUE"
+if("$GREEN" != "" && `date +%s -d "$GREEN"` > "$MIN" && ("$DAY" == "" || `date +%s -d "$GREEN"` < `date +%s -d "$DAY"`)) setenv DAY "$GREEN"
+if("$GARDEN" != "" && `date +%s -d "$GARDEN"` > "$MIN" && ("$DAY" == "" || `date +%s -d "$GARDEN"` < `date +%s -d "$DAY"`)) setenv DAY "$GARDEN"
+if("$YELLOW" != "" && `date +%s -d "$YELLOW"` > "$MIN" && ("$DAY" == "" || `date +%s -d "$YELLOW"` < `date +%s -d "$DAY"`)) setenv DAY "$YELLOW"
 
 rm -f "$CACHE"
 echo "{" >> "$CACHE"
