@@ -43,12 +43,13 @@ endif
 rm -f "$COOKIE" "$TMP"
 
 setenv DAY "$BLACK"
-if("$DAY" == "" || ("$RED" != "" && `date +%s -d "$RED"` < `date +%s -d "$DAY"`)) setenv DAY "$RED"
-if("$DAY" == "" || ("$PURPLE" != "" && `date +%s -d "$PURPLE"` < `date +%s -d "$DAY"`)) setenv DAY "$PURPLE"
-if("$DAY" == "" || ("$BLUE" != "" && `date +%s -d "$BLUE"` < `date +%s -d "$DAY"`)) setenv DAY "$BLUE"
-if("$DAY" == "" || ("$GREEN" != "" && `date +%s -d "$GREEN"` < `date +%s -d "$DAY"`)) setenv DAY "$GREEN"
-if("$DAY" == "" || ("$GARDEN" != "" && `date +%s -d "$GARDEN"` < `date +%s -d "$DAY"`)) setenv DAY "$GARDEN"
-if("$DAY" == "" || ("$YELLOW" != "" && `date +%s -d "$YELLOW"` < `date +%s -d "$DAY"`)) setenv DAY "$YELLOW"
+setenv MIN `date +%s -d yesterday`
+if("$DAY" == "" || ("$RED" != "" && `date +%s -d "$RED"` > "$MIN" && `date +%s -d "$RED"` < `date +%s -d "$DAY"`)) setenv DAY "$RED"
+if("$DAY" == "" || ("$PURPLE" != "" && `date +%s -d "$PURPLE"` > "$MIN" && `date +%s -d "$PURPLE"` <`date +%s -d "$DAY"`)) setenv DAY "$PURPLE"
+if("$DAY" == "" || ("$BLUE" != "" && `date +%s -d "$BLUE"` > "$MIN" && `date +%s -d "$BLUE"` < `date +%s -d "$DAY"`)) setenv DAY "$BLUE"
+if("$DAY" == "" || ("$GREEN" != "" && `date +%s -d "$GREEN"` > "$MIN" && `date +%s -d "$GREEN"` < `date +%s -d "$DAY"`)) setenv DAY "$GREEN"
+if("$DAY" == "" || ("$GARDEN" != "" && `date +%s -d "$GARDEN"` > "$MIN" && `date +%s -d "$GARDEN"` < `date +%s -d "$DAY"`)) setenv DAY "$GARDEN"
+if("$DAY" == "" || ("$YELLOW" != "" && `date +%s -d "$YELLOW"` > "$MIN" && `date +%s -d "$YELLOW"` <`date +%s -d "$DAY"`)) setenv DAY "$YELLOW"
 
 
 rm -f "$CACHE"
