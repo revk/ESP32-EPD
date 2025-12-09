@@ -3,7 +3,6 @@ if($?QUERY_STRING) then
 	setenv UPRN "$QUERY_STRING"
 else
 	setenv UPRN "$1"
-	shift
 endif
 if(! "$UPRN") then
 	echo Specify UPRN
@@ -22,13 +21,9 @@ if(-e "$CACHE" && $?QUERY_STRING) then
 	exit 0
 endif
 
-if("$1" != "") then
-	setenv TMP "$1"
-else
-	setenv TMP `mktemp`
-	setenv COOKIE `mktemp`
-	curl -s -L -c "$COOKIE" -b "$COOKIE" "https://maps.monmouthshire.gov.uk/?action=SetAddress&UniqueId=$UPRN" | /projects/tools/bin/htmlclean > "$TMP"
-endif
+setenv TMP `mktemp`
+setenv COOKIE `mktemp`
+curl -s -L -c "$COOKIE" -b "$COOKIE" "https://maps.monmouthshire.gov.uk/?action=SetAddress&UniqueId=$UPRN" | /projects/tools/bin/htmlclean > "$TMP"
 
 setenv BLACK `grep "^Household rubbish bag" -A8 "$TMP" |grep -v '^<'|tail -1|sed -e "s/st / /" -e "s/nd / /" -e "s/rd / /" -e "s/th / /"`
 setenv RED `grep "^Red &amp; purple recycling bags" -A8 "$TMP" |grep -v '^<'|tail -1|sed -e "s/st / /" -e "s/nd / /" -e "s/rd / /" -e "s/th / /"`
@@ -46,9 +41,7 @@ if(`date +%b` == Dec) then
 	if("$GARDEN" =~ *January*) setenv GARDEN "$GARDEN next year"
 	if("$YELLOW" =~ *January*) setenv YELLOW "$YELLOW next year"
 endif
-if($?COOKIE) then
-	rm -f "$COOKIE" "$TMP"
-endif
+rm -f "$COOKIE" "$TMP"
 
 setenv DAY ""
 setenv MIN `date +%s -d 'today 00:00:00'`
