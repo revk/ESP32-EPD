@@ -6,7 +6,6 @@
 #define	GFX_EPD
 #endif
 
-
 gpio	gfx.pwr						// Display power
 gpio	gfx.ena						// Display ENA
 gpio	gfx.mosi	40				// Display MOSI
